@@ -1,0 +1,114 @@
+### ==========================================
+### 1. GESTIÓN DE USUARIOS (REGISTRO)
+### ==========================================
+
+### 1.1 Crear Usuario ESTUDIANTE (Caso Exitoso)
+# Esperado: 201 Created
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolis@unemi.edu.ec",
+    "password": "mi_password_seguro",
+    "rol": "ESTUDIANTE"
+}
+
+### 1.2 Crear Usuario ADMIN (Caso Exitoso)
+# Esperado: 201 Created
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+{
+    "correo_institucional": "admin@unemi.edu.ec",
+    "password": "admin_password",
+    "rol": "ADMIN"
+}
+
+### 1.3 Error: Registro Duplicado (Validación Unique)
+# Intenta registrar el mismo correo de arriba.
+# Esperado: 409 Conflict (o 400 según tu controller actual)
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolas@unemi.edu.ec",
+    "password": "otra_password",
+    "rol": "ESTUDIANTE"
+}
+
+### 1.4 Error: Datos Incompletos (Validación Null)
+# Esperado: 400 Bad Request
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+{
+    "correo_institucional": "",
+    "password": "123"
+}
+
+### ==========================================
+### 2. AUTENTICACIÓN Y SEGURIDAD (LOGIN)
+### ==========================================
+
+### 2.1 Login EXITOSO (Registro de Dispositivo)
+# Este es el PRIMER inicio de sesión. El sistema guardará la huella.
+# Esperado: 200 OK (Recibes Token)
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolis@unemi.edu.ec",
+    "password": "mi_password_seguro",
+    "huella_dispositivo": "pc_casa_hash_12345"
+}
+
+### 2.2 Login EXITOSO (Mismo Dispositivo)
+# El usuario vuelve a entrar desde el mismo PC. Debe funcionar.
+# Esperado: 200 OK
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolis@unemi.edu.ec",
+    "password": "mi_password_seguro",
+    "huella_dispositivo": "pc_casa_hash_12345"
+}
+
+### 2.3 BLOQUEO DE SEGURIDAD (Intento de Robo de Cuenta)
+# Usuario correcto, password correcto, PERO dispositivo diferente.
+# Esperado: 403 Forbidden (Acceso denegado)
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolis@unemi.edu.ec",
+    "password": "mi_password_seguro",
+    "huella_dispositivo": "celular_hacker_99999"
+}
+
+### 2.4 Error: Credenciales Incorrectas
+# Contraseña errónea.
+# Esperado: 401 Unauthorized
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "correo_institucional": "nicolas@unemi.edu.ec",
+    "password": "CLAVE_FALSA_123",
+    "huella_dispositivo": "pc_casa_hash_12345"
+}
+
+### ==========================================
+### 3. ADMINISTRACIÓN (Rutas Protegidas)
+### ==========================================
+
+### 3.1 Listar todos los usuarios
+# Esperado: 200 OK
+GET http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+### 3.2 Eliminar un usuario
+# Asegúrate de cambiar el ID '1' por uno real que exista en tu BD
+# Esperado: 200 OK
+DELETE http://localhost:3000/api/usuarios/8
+Content-Type: application/json
