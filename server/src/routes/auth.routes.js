@@ -1,5 +1,5 @@
 import { Router } from "express";
-import bcrypt from "bcrypt"; // 📦 Necesario: npm install bcrypt
+import argon2 from "argon2"; // 📦 Necesario: npm install argon2
 import { Usuario, Dispositivo, LogSeguridad } from "../models/relacionesModel.js";
 import { TokenFactory } from "../utils/tokenFactory.js";
 
@@ -17,8 +17,7 @@ router.post("/usuarios", async (req, res) => {
         }
 
         // 🔒 SEGURIDAD: Encriptar contraseña antes de guardar
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await argon2.hash(password);
 
         const nuevoUsuario = await Usuario.create({
             correo_institucional,
@@ -101,9 +100,9 @@ router.post("/login", async (req, res) => {
         // 1. Búsqueda de Usuario
         const usuario = await Usuario.findOne({ where: { correo_institucional, activo: true } });
         
-        // 2. Verificación de Password (con bcrypt)
+        // 2. Verificación de Password (con argon2)
         // Usamos una variable genérica para evitar Timing Attacks (si el usuario no existe)
-        const validPassword = usuario ? await bcrypt.compare(password, usuario.password) : false;
+        const validPassword = usuario ? await argon2.verify(usuario.password, password) : false;
 
         if (!usuario || !validPassword) {
             if (usuario) {

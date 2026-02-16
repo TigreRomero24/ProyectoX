@@ -1,0 +1,96 @@
+/* About Styles */
+
+.about-container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.about-container h2 {
+    color: #0056b3;
+    font-size: 32px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.about-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #0056b3;
+}
+
+.about-section h3 {
+    color: #0056b3;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.about-section p {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.about-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.about-section li {
+    color: #333;
+    margin: 10px 0;
+    padding-left: 25px;
+    position: relative;
+    line-height: 1.6;
+}
+
+.about-section li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #0056b3;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.about-section strong {
+    color: #0056b3;
+    font-weight: 600;
+}
+
+.version {
+    text-align: center;
+    background: linear-gradient(135deg, #e7f1ff 0%, #f9f9f9 100%);
+}
+
+.version p {
+    color: #0056b3;
+    font-weight: 600;
+    margin: 5px 0;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .about-container {
+        padding: 20px;
+    }
+    
+    .about-container h2 {
+        font-size: 24px;
+    }
+    
+    .about-section h3 {
+        font-size: 18px;
+    }
+}

@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from "dotenv";
+import cors from "cors";
 import LoginRoutes from "./src/routes/auth.routes.js";
 import { dbConnect } from "./src/config/database.js"; 
 
@@ -9,6 +10,10 @@ dotenv.config();
 const app = express();
 // OJO: Si en tu .http usas 3000, asegúrate que aquí sea 3000 o que tu .env diga PORT=3000
 const PORT = process.env.PORT; 
+
+app.use(cors({
+    origin: "http://localhost:5173"
+}));
 
 app.use(express.json());
 
