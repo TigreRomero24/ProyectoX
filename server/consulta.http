@@ -1,114 +1,157 @@
-### ==========================================
-### 1. GESTIÓN DE USUARIOS (REGISTRO)
-### ==========================================
+### ====================================================================
+### 1. BLOQUE DE REGISTRO (Validación de Datos)
+### ====================================================================
 
-### 1.1 Crear Usuario ESTUDIANTE (Caso Exitoso)
+### 1.1 Registro EXITOSO (Estudiante)
 # Esperado: 201 Created
 POST http://localhost:3000/api/usuarios
 Content-Type: application/json
 
 {
-    "correo_institucional": "nicolis@unemi.edu.ec",
-    "password": "mi_password_seguro",
+    "correo_institucional": "test_user12@unemi.edu.ec",
+    "password": "PasswordSeguro123!",
     "rol": "ESTUDIANTE"
 }
 
-### 1.2 Crear Usuario ADMIN (Caso Exitoso)
-# Esperado: 201 Created
-POST http://localhost:3000/api/usuarios
-Content-Type: application/json
-
-{
-    "correo_institucional": "admin@unemi.edu.ec",
-    "password": "admin_password",
-    "rol": "ADMIN"
-}
-
-### 1.3 Error: Registro Duplicado (Validación Unique)
-# Intenta registrar el mismo correo de arriba.
-# Esperado: 409 Conflict (o 400 según tu controller actual)
-POST http://localhost:3000/api/usuarios
-Content-Type: application/json
-
-{
-    "correo_institucional": "nicolas@unemi.edu.ec",
-    "password": "otra_password",
-    "rol": "ESTUDIANTE"
-}
-
-### 1.4 Error: Datos Incompletos (Validación Null)
+### 1.2 Error: Dominio No Institucional
+# Intento de registro con Gmail
 # Esperado: 400 Bad Request
 POST http://localhost:3000/api/usuarios
 Content-Type: application/json
 
 {
-    "correo_institucional": "",
-    "password": "123"
+    "correo_institucional": "hacker@gmail.com",
+    "password": "Password123!"
 }
 
-### ==========================================
-### 2. AUTENTICACIÓN Y SEGURIDAD (LOGIN)
-### ==========================================
+### 1.3 Error: Usuario Duplicado
+# Intenta registrar el mismo correo del paso 1.1
+# Esperado: 409 Conflict
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
 
-### 2.1 Login EXITOSO (Registro de Dispositivo)
-# Este es el PRIMER inicio de sesión. El sistema guardará la huella.
-# Esperado: 200 OK (Recibes Token)
+{
+    "correo_institucional": "test_user1@unemi.edu.ec",
+    "password": "Password123!"
+}
+
+### 1.4 Error: Inyección de Rol (Intento de crear Admin)
+# El backend debe ignorar "ADMIN" y crear "ESTUDIANTE"
+# Esperado: 201 Created (pero como estudiante)
+POST http://localhost:3000/api/usuarios
+Content-Type: application/json
+
+{
+    "correo_institucional": "falso_admin2@unemi.edu.ec",
+    "password": "Password123!",
+    "rol": "ADMIN"
+}
+
+### ====================================================================
+### 2. BLOQUE DE LOGIN Y SESIÓN (El Core de tu Seguridad)
+### ====================================================================
+
+### 2.1 Login EXITOSO - Primer Dispositivo (PC CASA)
+# @name loginEstudiante
+# NOTA: Captura automática del token para siguientes peticiones
+# Esperado: 200 OK + accessToken
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-    "correo_institucional": "nicolis@unemi.edu.ec",
-    "password": "mi_password_seguro",
-    "huella_dispositivo": "pc_casa_hash_12345"
+    "correo_institucional": "test_user@unemi.edu.ec",
+    "password": "PasswordSeguro123!",
+    "huella_dispositivo": "HUELLA_PC_CASA_12345"
 }
 
-### 2.2 Login EXITOSO (Mismo Dispositivo)
-# El usuario vuelve a entrar desde el mismo PC. Debe funcionar.
+### VARIABLE AUTOMÁTICA (No tocar)
+@authToken = {{loginEstudiante.response.body.accessToken}}
+
+### 2.2 Login EXITOSO - Mismo Dispositivo (PC CASA)
+# Simula al usuario volviendo a entrar desde el mismo PC
 # Esperado: 200 OK
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-    "correo_institucional": "nicolis@unemi.edu.ec",
-    "password": "mi_password_seguro",
-    "huella_dispositivo": "pc_casa_hash_12345"
+    "correo_institucional": "test_user@unemi.edu.ec",
+    "password": "PasswordSeguro123!",
+    "huella_dispositivo": "HUELLA_PC_CASA_12345"
 }
 
-### 2.3 BLOQUEO DE SEGURIDAD (Intento de Robo de Cuenta)
-# Usuario correcto, password correcto, PERO dispositivo diferente.
-# Esperado: 403 Forbidden (Acceso denegado)
+### 2.3 ERROR CRÍTICO: Robo de Credenciales (Dispositivo Diferente)
+# Simula que un hacker tiene el usuario y password, pero entra desde otro PC
+# Regla de Negocio #1
+# Esperado: 403 Forbidden
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-    "correo_institucional": "nicolis@unemi.edu.ec",
-    "password": "mi_password_seguro",
-    "huella_dispositivo": "celular_hacker_99999"
+    "correo_institucional": "test_user@unemi.edu.ec",
+    "password": "PasswordSeguro123!",
+    "huella_dispositivo": "HUELLA_HACKER_MOVIL_999"
 }
 
-### 2.4 Error: Credenciales Incorrectas
-# Contraseña errónea.
+### 2.4 Error: Password Incorrecto
 # Esperado: 401 Unauthorized
 POST http://localhost:3000/api/login
 Content-Type: application/json
 
 {
-    "correo_institucional": "nicolas@unemi.edu.ec",
-    "password": "CLAVE_FALSA_123",
-    "huella_dispositivo": "pc_casa_hash_12345"
+    "correo_institucional": "test_user@unemi.edu.ec",
+    "password": "PasswordMALO",
+    "huella_dispositivo": "HUELLA_PC_CASA_12345"
 }
 
-### ==========================================
-### 3. ADMINISTRACIÓN (Rutas Protegidas)
-### ==========================================
+### ====================================================================
+### 3. BLOQUE DE RUTAS PROTEGIDAS (Middleware Test)
+### ====================================================================
 
-### 3.1 Listar todos los usuarios
+### 3.1 Acceso EXITOSO a Perfil
+# Envía Token válido Y Huella correcta en headers
 # Esperado: 200 OK
 GET http://localhost:3000/api/usuarios
+Authorization: Bearer {{authToken}}
+X-Device-Fingerprint: HUELLA_PC_CASA_12345
+
+### 3.2 ROBO DE SESIÓN (Token Hijacking)
+# Tengo el Token (robado), pero mi huella es diferente
+# Esperado: 403 Forbidden (Tu middleware debe bloquear esto)
+GET http://localhost:3000/api/usuarios
+Authorization: Bearer {{authToken}}
+X-Device-Fingerprint: HUELLA_HACKER_MOVIL_999
+
+### 3.3 Error: Token Manipulado/Falso
+# Esperado: 401 Unauthorized
+GET http://localhost:3000/api/usuarios
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.falso.token
+X-Device-Fingerprint: HUELLA_PC_CASA_12345
+
+### 3.4 Error: Falta Header de Huella
+# Esperado: 400 Bad Request
+GET http://localhost:3000/api/usuarios
+Authorization: Bearer {{authToken}}
+# (Sin header X-Device-Fingerprint)
+
+### ====================================================================
+### 4. CICLO DE VIDA DEL TOKEN (Refresh & Logout)
+### ====================================================================
+
+### 4.1 Refrescar Token (Cookie automática)
+# Esperado: 200 OK + Nuevo Access Token
+POST http://localhost:3000/api/refresh
 Content-Type: application/json
 
-### 3.2 Eliminar un usuario
-# Asegúrate de cambiar el ID '1' por uno real que exista en tu BD
+### 4.2 Cerrar Sesión (Logout)
+# Debe limpiar la cookie y la BD
 # Esperado: 200 OK
-DELETE http://localhost:3000/api/usuarios/8
+POST http://localhost:3000/api/logout
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 4.3 Verificar Logout
+# Intentar usar el token viejo después de logout
+# Esperado: 401 Unauthorized
+GET http://localhost:3000/api/usuarios
+Authorization: Bearer {{authToken}}
+X-Device-Fingerprint: HUELLA_PC_CASA_12345

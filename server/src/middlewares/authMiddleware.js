@@ -1,46 +1,57 @@
-import { TokenFactory } from '../utils/tokenFactory.js';
+import { Usuario, Dispositivo } from "../models/relacionesModel.js";
+import { TokenFactory } from "../utils/tokenFactory.js";
+import { env } from "../config/environment.js";
 
-export const authMiddleware = (req, res, next) => {
-    try {
-        // 1. Obtener la cabecera Authorization
-        const authHeader = req.headers.authorization;
-
-        // 2. Validación Estricta: ¿Existe y empieza con "Bearer "?
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ 
-                ok: false, 
-                mensaje: "Acceso denegado. Formato de token inválido (se espera 'Bearer <token>')." 
-            });
-        }
-
-        // 3. Extracción limpia del token
-        const token = authHeader.split(" ")[1];
-
-        // 4. Instancia y Verificación (Usando tu Factory)
-        const tokenHandler = TokenFactory.createToken("JWT");
-        const decoded = tokenHandler.verify(token);
-
-        // 5. Manejo de Errores de Token
-        if (!decoded) { 
-            // Usamos 401 (Unauthorized) porque el token no es válido o expiró.
-            // 403 (Forbidden) se usa cuando el token ES válido, pero el usuario no tiene permisos (rol).
-            return res.status(401).json({ 
-                ok: false, 
-                mensaje: "Sesión inválida o expirada. Por favor, inicie sesión nuevamente." 
-            });
-        }
-
-        // 6. Inyección de contexto (Context Injection)
-        // Guardamos los datos del usuario en la request para que el Controlador los use.
-        req.usuario = decoded; 
-        
-        next();
-
-    } catch (error) {
-        console.error("Middleware Auth Error:", error);
-        return res.status(500).json({ 
-            ok: false, 
-            mensaje: "Error interno al procesar la autenticación." 
-        });
+export const authMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ ok: false, mensaje: "Token requerido" });
     }
+
+    const token = authHeader.split(" ")[1];
+    const tokenFactory = TokenFactory.create("ACCESS", env.jwt);
+
+    let decoded;
+    try {
+      decoded = tokenFactory.verifyToken(token);
+    } catch (error) {
+      return res
+        .status(401)
+        .json({ ok: false, mensaje: "Token inválido o expirado" });
+    }
+
+    // BUSCAMOS AL USUARIO E INCLUIMOS TODOS SUS DISPOSITIVOS VINCULADOS
+    const usuario = await Usuario.findByPk(decoded.id, {
+      include: [
+        {
+          model: Dispositivo,
+          as: "dispositivo",
+        },
+      ],
+    });
+
+    if (!usuario || !usuario.activo) {
+      return res
+        .status(401)
+        .json({ ok: false, mensaje: "Usuario no autorizado o inactivo" });
+    }
+
+    // VALIDAR SESIÓN STATEFUL
+    if (usuario.token_sesion_actual !== token) {
+      return res.status(401).json({
+        ok: false,
+        mensaje: "Sesión cerrada o iniciada en otro lugar",
+      });
+    }
+
+    // Inyectamos el usuario con su lista de dispositivos
+    req.usuario = usuario;
+    next();
+  } catch (error) {
+    console.error("🔴 Error en AuthMiddleware:", error);
+    return res
+      .status(500)
+      .json({ ok: false, mensaje: "Error interno en autenticación" });
+  }
 };

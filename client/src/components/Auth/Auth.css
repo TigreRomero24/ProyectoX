@@ -1,117 +1,154 @@
 /* Auth Components Styles */
 
 .auth-container {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #e7f1ff;
-    padding: 20px;
-    overflow: auto;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #e7f1ff;
+  padding: 20px;
+  overflow: auto;
 }
 
-
 .auth-card {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 480px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
 }
 
 .auth-card h1 {
-    color: #0056b3;
-    margin-bottom: 30px;
-    text-align: center;
-    font-size: 24px;
+  color: #0056b3;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 24px;
 }
 
 .auth-card form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    color :white;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: white;
 }
 
 .auth-card input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e7f1ff;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e7f1ff;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
 }
 
 .auth-card input:focus {
-    border-color: #0056b3;
-    outline: none;
-    color:#333333;
-    background-color: #e7f1ff;
+  border-color: #0056b3;
+  outline: none;
+  color: #333333;
+  background-color: #e7f1ff;
 }
 
 .auth-card button[type="submit"] {
-    background-color: #0056b3;
-    color: #fff;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    transition: background-color 0.3s;
+  background-color: #0056b3;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.3s;
 }
 
 .auth-card button[type="submit"]:hover:not(:disabled) {
-    background-color: #003d82;
+  background-color: #003d82;
 }
 
 .auth-card button[type="submit"]:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .auth-card p {
-    text-align: center;
-    margin-top: 20px;
-    color: #333333;
-    font-size: 14px;
+  text-align: center;
+  margin-top: 20px;
+  color: #333333;
+  font-size: 14px;
 }
 
 .link-btn {
-    background: none;
-    border: none;
-    color: #0056b3;
-    cursor: pointer;
-    font-weight: 600;
-    text-decoration: underline;
-    margin-left: 5px;
-    padding: 0;
-    font-size: inherit;
+  background: none;
+  border: none;
+  color: #0056b3;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-left: 5px;
+  padding: 0;
+  font-size: inherit;
 }
 
 .link-btn:hover {
-    color: #003d82;
+  color: #003d82;
 }
 
-
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    border-left: 4px solid #28a745;
-    font-size: 14px;
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border-left: 4px solid #28a745;
+  font-size: 14px;
 }
 
 @media (max-width: 480px) {
-    .auth-card {
-        padding: 30px 20px;
-    }
+  .auth-card {
+    padding: 30px 20px;
+  }
 
-    .auth-card h1 {
-        font-size: 20px;
-    }
+  .auth-card h1 {
+    font-size: 20px;
+  }
+}
+/* Estilo del Botón de Google Estándar */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  background-color: #ffffff;
+  color: #3c4043; /* Color de texto oficial de Google */
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
+  box-shadow:
+    0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.btn-google:hover {
+  background-color: #f8f9fa;
+  box-shadow:
+    0 1px 3px 0 rgba(60, 64, 67, 0.3),
+    0 4px 8px 3px rgba(60, 64, 67, 0.15);
+}
+
+.btn-google:active {
+  background-color: #eeeeee;
+}
+
+/* Estilo del icono G */
+.google-icon {
+  width: 18px;
+  height: 18px;
 }
