@@ -3,79 +3,88 @@ import { useAuth } from "../../hooks/useAuth";
 import "./Auth.css";
 import "../../styles/global.css";
 
-export default function Login({ onRegisterClick }) {
-  const [correo, setCorreo] = useState("");
-  const [password, setPassword] = useState("");
+// Mensajes legibles para cada código de error que devuelve el backend
+const MENSAJES_ERROR = {
+  correo_no_institucional:
+    "Acceso denegado: Solo se permiten cuentas institucionales (@unemi.edu.ec).",
+  usuario_no_registrado:
+    "Tu cuenta no está registrada en el sistema. Contacta al administrador.",
+  usuario_inactivo: "Tu cuenta está deshabilitada. Contacta al administrador.",
+  google_auth_failed:
+    "La autenticación con Google fue cancelada o falló. Intenta de nuevo.",
+};
+
+export default function Login() {
   const [error, setError] = useState("");
-  const { login, loading } = useAuth();
+  const { loading } = useAuth();
 
-  //  2. Atrapamos el error que viene del Backend en la URL
+  // Captura cualquier ?error=codigo que devuelva el backend tras OAuth
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const errorGoogle = urlParams.get("error");
-
-    if (errorGoogle === "correo_no_institucional") {
+    const params = new URLSearchParams(window.location.search);
+    const codigo = params.get("error");
+    if (codigo) {
       setError(
-        "Acceso denegado: Se requiere un correo institucional (@unemi.edu.ec).",
+        MENSAJES_ERROR[codigo] ?? "Error al iniciar sesión. Intenta de nuevo.",
       );
-
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (errorGoogle === "google_auth_failed") {
-      setError("La autenticación con Google fue cancelada o falló.");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const result = await login(correo, password);
-
-    if (!result.ok) {
-      setError(result.mensaje || "Error en autenticación");
-    }
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/v1/auth/google";
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+  const handleLoginDirecto = async (rol) => {
+    const correo =
+      rol === "ADMINISTRADOR"
+        ? "admin@unemi.edu.ec"
+        : "estudiante@unemi.edu.ec";
+    try {
+      const res = await fetch("/api/v1/auth/login-directo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, rol }),
+      });
+      const data = await res.json();
+      if (data.accessToken) {
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.usuario));
+        window.location.href = "/dashboard?token=" + data.accessToken;
+      } else {
+        setError(data.error || "Error al iniciar sesión.");
+      }
+    } catch {
+      setError("Error de conexión. Verifica tu red e intenta de nuevo.");
+    }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>EduQuery Login</h1>
+        <div className="auth-logo">
+          <span className="auth-logo-icon">📚</span>
+          <h1>EduQuery</h1>
+          <p className="auth-subtitle">Plataforma de evaluaciones académicas</p>
+        </div>
 
-        {error && <div className="alert-error">{error}</div>}
+        {error && (
+          <div className="alert-error">
+            <span className="alert-icon">⚠️</span>
+            <span>{error}</span>
+            <button className="alert-close" onClick={() => setError("")}>
+              ✕
+            </button>
+          </div>
+        )}
 
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Correo Institucional"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? "Autenticando..." : "Ingresar"}
-          </button>
-        </form>
-
-        <div style={{ margin: "20px 0", textAlign: "center" }}>
-          <p style={{ margin: "10px 0", fontSize: "0.9rem", color: "#666" }}>
-            O también puedes
-          </p>
+        <div className="auth-google-section">
+          <p className="auth-hint">Ingresa con tu cuenta institucional</p>
           <button
             type="button"
             onClick={handleGoogleLogin}
             className="btn-google"
+            disabled={loading}
           >
-            {/* SVG Oficial de Google */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 48 48"
@@ -103,12 +112,20 @@ export default function Login({ onRegisterClick }) {
           </button>
         </div>
 
-        <p>
-          ¿No tienes cuenta?
-          <button className="link-btn" onClick={onRegisterClick}>
-            Registrate aquí
-          </button>
-        </p>
+        {/* Solo para pruebas — eliminar en producción
+         **********************************************
+         *********************************************/}
+        <div className="auth-dev-panel">
+          <p>Pruebas (eliminar en producción)</p>
+          <div className="auth-dev-buttons">
+            <button onClick={() => handleLoginDirecto("ADMINISTRADOR")}>
+              Login Admin
+            </button>
+            <button onClick={() => handleLoginDirecto("ESTUDIANTE")}>
+              Login Estudiante
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

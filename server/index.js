@@ -1,57 +1,68 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import LoginRoutes from "./src/routes/auth.routes.js";
+
+import { env } from "./src/config/environment.js";
+import passport from "./src/config/passport.js";
 import { dbConnect } from "./src/config/database.js";
+
+import "./src/models/index.js";
 import "./src/models/relacionesModel.js";
 
-// ====================================================================
-// IMPORTACIONES NUEVAS (CONFIGURACIÓN Y SEGURIDAD)
-// ====================================================================
-import { env } from "./src/config/environment.js"; // Reemplaza a dotenv directo
-import passport from "./src/config/passport.js"; // Instancia de Google OAuth
+import apiRoutes from "./src/routes/api.routes.js";
+import { ErrorMiddleware } from "./src/middlewares/errorMiddleware.js";
 
 const app = express();
-const PORT = env.port; // Usamos el puerto validado de tu environment.js
 
-// ====================================================================
-// MIDDLEWARES GLOBALES
-// ====================================================================
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true, // Permite envío de cookies (Refresh Token)
+    origin: env.frontendUrl,
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Device-Fingerprint"],
   }),
 );
 
-app.use(express.json());
-app.use(cookieParser()); // Parsear cookies
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ extended: true, limit: "50kb" }));
 
-// NUEVO: Inicializar Passport.
+app.use(cookieParser());
+
 app.use(passport.initialize());
-// ====================================================================
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // RUTAS
-// ====================================================================
-// RUTA DE PRUEBA
-app.get("/", (req, res) => res.send("API v1.0 - Estado: OK 🚀"));
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// Rutas de Autenticación y Usuarios
-app.use("/api", LoginRoutes);
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    proyecto: "EduQuery API",
+    version: "1.0.0",
+    estado: "Online",
+    timestamp: new Date().toISOString(),
+  });
+});
 
-// ====================================================================
-// INICIALIZACIÓN DEL SERVIDOR
-// ====================================================================
+app.use("/api/v1", apiRoutes);
+
+app.use(ErrorMiddleware.handle);
+
 const startServer = async () => {
   try {
-    await dbConnect(); // Conexión a PostgreSQL (Sequelize)
+    console.info("⏳ Conectando con la base de datos...");
+    await dbConnect();
 
-    app.listen(PORT, () => {
-      console.info(`✅ Servidor activo en http://localhost:${PORT}`);
-      console.info(`📅 Entorno: ${env.nodeEnv}`);
+    app.listen(env.port, () => {
+      console.info("-------------------------------------------------------");
+      console.info(`✅ SERVIDOR ACTIVO: http://localhost:${env.port}`);
+      console.info(
+        `🌍 ENTORNO: ${env.isProduction ? "PRODUCCIÓN 🚀" : "DESARROLLO 🧪"}`,
+      );
+      console.info(`🔗 FRONTEND: ${env.frontendUrl}`);
+      console.info("-------------------------------------------------------");
     });
   } catch (error) {
-    console.error("❌ Error crítico al iniciar el servidor:", error);
+    console.error("❌ ERROR CRÍTICO: No se pudo levantar el servicio.");
+    console.error(error.message);
     process.exit(1);
   }
 };

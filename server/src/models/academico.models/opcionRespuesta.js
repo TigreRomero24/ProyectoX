@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import { sequelize } from "../../config/database.js";
 
-export const AnswerOption = sequelize.define(
-  "AnswerOption",
+export const OpcionRespuesta = sequelize.define(
+  "Opcion_Respuesta",
   {
     id_opcion: {
       type: DataTypes.INTEGER,
@@ -14,8 +14,11 @@ export const AnswerOption = sequelize.define(
       allowNull: false,
     },
     texto: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     es_correcta: {
       type: DataTypes.BOOLEAN,
@@ -24,7 +27,13 @@ export const AnswerOption = sequelize.define(
     },
   },
   {
-    tableName: "Opcion_Respuesta",
-    timestamps: false,
+    tableName: "opcion_respuesta",
+    timestamps: true,
+    indexes: [
+      {
+        name: "idx_opcion_pregunta",
+        fields: ["id_pregunta"],
+      },
+    ],
   },
 );

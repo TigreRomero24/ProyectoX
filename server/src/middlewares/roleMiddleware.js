@@ -1,24 +1,31 @@
-/**
- * roleMiddleware.js
- * @param {Array} rolesAutorizados - Ejemplo: ['ADMINISTRADOR']
- */
-export const roleMiddleware = (rolesAutorizados) => {
-  return (req, res, next) => {
-    if (!req.usuario) {
-      return res
-        .status(500)
-        .json({ ok: false, mensaje: "Se requiere authMiddleware antes" });
-    }
+export class RoleMiddleware {
+  /**
+   * @param {string[]} allowedRoles -
+   */
+  static require(allowedRoles) {
+    return (req, res, next) => {
+      try {
+        const userRole = req.user?.rol;
+        if (!userRole) {
+          return res.status(403).json({
+            error: "No se pudo determinar su nivel de acceso.",
+          });
+        }
 
-    // Verificamos si el rol del usuario está permitido para esta ruta
-    if (!rolesAutorizados.includes(req.usuario.rol)) {
-      return res.status(403).json({
-        ok: false,
-        codigo: "ACCESO_DENEGADO",
-        mensaje: "No tienes permisos suficientes para realizar esta acción.",
-      });
-    }
+        if (!allowedRoles.includes(userRole)) {
+          return res.status(403).json({
+            error:
+              "No tiene los privilegios necesarios para realizar esta acción.",
+          });
+        }
 
-    next();
-  };
-};
+        next();
+      } catch (error) {
+        console.error("[RoleMiddleware Error]:", error);
+        return res
+          .status(500)
+          .json({ error: "Error al validar los permisos." });
+      }
+    };
+  }
+}

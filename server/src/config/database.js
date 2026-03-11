@@ -1,37 +1,51 @@
-import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
+import { Sequelize } from "sequelize";
+import { env } from "./environment.js"; // Única fuente de verdad
 
-dotenv.config();
-
-// Solo una instancia: Sequelize maneja todo (conexión, pool, modelos)
 export const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
-    {
-        host: process.env.DB_HOST,
-        dialect: 'postgres',
-        port: process.env.DB_PORT,
-        logging: false, // Pon en true si quieres ver las consultas SQL en la terminal
-        dialectOptions: {
-            // Opcional: necesario si usas SSL en producción (ej. Render/Heroku)
-            // ssl: { require: true, rejectUnauthorized: false }
-        }
-    }
+  env.db.name,
+  env.db.user,
+  env.db.password,
+  {
+    host: env.db.host,
+    port: env.db.port,
+    dialect: "postgres",
+    logging: env.isDevelopment ? console.log : false,
+
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+
+    define: {
+      timestamps: true,
+      underscored: true,
+    },
+  },
 );
 
-// Función para iniciar la base de datos
 export const dbConnect = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Base de Datos: Conexión establecida (Sequelize).");
+
+    await sequelize.sync({ force: false, alter: env.isDevelopment });
+    console.log("✅ Base de Datos: Tablas sincronizadas correctamente.");
+
     try {
-        // 1. Verificar conexión
-        await sequelize.authenticate();
-        console.log('✅ Conexión a PostgreSQL exitosa (vía Sequelize).');
-
-        // 2. Sincronizar modelos (Crear tablas si no existen)
-        await sequelize.sync({ force: false, alter: true });
-        console.log('✅ Tablas sincronizadas.');
-
-    } catch (error) {
-        console.error('❌ Error al conectar con la base de datos:', error);
+      await sequelize.query(
+        `DROP INDEX IF EXISTS "sesion_dispositivo_dispositivo_id_key"`,
+      );
+      console.log(
+        "✅ Índice único eliminado: sesion_dispositivo_dispositivo_id_key",
+      );
+    } catch (idxError) {
+      console.log("ℹ️ Índice no existía o ya eliminado");
     }
+  } catch (error) {
+    console.error("❌ FATAL: Error al conectar con la Base de Datos:");
+    console.error(`   Detalle: ${error.message}`);
+    process.exit(1);
+  }
 };

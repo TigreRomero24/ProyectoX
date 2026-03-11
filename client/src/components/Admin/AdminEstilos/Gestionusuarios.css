@@ -1,0 +1,301 @@
+/* ─── Root ─────────────────────────────────────────── */
+.gu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Header ────────────────────────────────────────── */
+.gu-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.gu-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.gu-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.gu-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.gu-btn-add:hover {
+  background: #1d4ed8;
+}
+
+/* ─── Error banner ───────────────────────────────────── */
+.gu-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.875rem;
+}
+.gu-error-close {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  margin-left: auto;
+  font-size: 0.9rem;
+  padding: 2px 4px;
+}
+
+/* ─── Tabla ──────────────────────────────────────────── */
+.gu-table-wrap {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+}
+.gu-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gu-table thead tr {
+  background: #0f172a;
+}
+.gu-table thead th {
+  padding: 13px 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.gu-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.1s;
+}
+.gu-table tbody tr:last-child {
+  border-bottom: none;
+}
+.gu-table tbody tr:hover:not(.gu-row--busy) {
+  background: #f8fafc;
+}
+.gu-table tbody tr.gu-row--busy {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.gu-table td {
+  padding: 13px 20px;
+  font-size: 0.875rem;
+  color: #334155;
+  vertical-align: middle;
+}
+.gu-td-id {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #94a3b8;
+  width: 60px;
+}
+.gu-td-email {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+/* ─── Badges ─────────────────────────────────────────── */
+.gu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.gu-badge--admin {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.gu-badge--student {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+.gu-badge--active {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.gu-badge--inactive {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ─── Acciones ───────────────────────────────────────── */
+.gu-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── Switch deslizante ── */
+.gu-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.gu-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.gu-switch-track {
+  position: absolute;
+  inset: 0;
+  background: #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.gu-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+/* Estado ON */
+.gu-switch--on .gu-switch-track {
+  background: #22c55e;
+}
+.gu-switch--on .gu-switch-track::after {
+  transform: translateX(18px);
+}
+/* Deshabilitado */
+.gu-switch--disabled .gu-switch-track {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Botón eliminar — ícono SVG + texto, siempre visible ── */
+.gu-btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #fecaca;
+  background: #fff1f2;
+  color: #e11d48;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gu-btn-delete svg {
+  flex-shrink: 0;
+  color: #e11d48;
+}
+.gu-btn-delete:hover:not(:disabled) {
+  background: #ffe4e6;
+  border-color: #fda4af;
+  color: #be123c;
+}
+.gu-btn-delete:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.gu-btn-delete:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+}
+.gu-btn-delete:disabled svg {
+  color: #94a3b8;
+}
+.gu-btn-delete:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── Estado vacío / cargando ─────────────────────────── */
+.gu-td-state {
+  text-align: center !important;
+  padding: 52px 20px !important;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+.gu-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: gu-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes gu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .gu-table thead th:first-child,
+  .gu-table tbody td:first-child {
+    display: none;
+  }
+  .gu-table td,
+  .gu-table th {
+    padding: 10px 12px;
+  }
+  .gu-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gu-btn-add {
+    justify-content: center;
+  }
+}

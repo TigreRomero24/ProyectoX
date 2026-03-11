@@ -1,57 +1,67 @@
-import { Usuario, Dispositivo } from "../models/relacionesModel.js";
-import { TokenFactory } from "../utils/tokenFactory.js";
 import { env } from "../config/environment.js";
+import { TokenFactory } from "../utils/tokenFactory.js";
 
-export const authMiddleware = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ ok: false, mensaje: "Token requerido" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const tokenFactory = TokenFactory.create("ACCESS", env.jwt);
-
-    let decoded;
+export class AuthMiddleware {
+  static handle(req, res, next) {
     try {
-      decoded = tokenFactory.verifyToken(token);
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+          ok: false,
+          codigo: "TOKEN_REQUERIDO",
+          mensaje:
+            "Acceso denegado. Token no proporcionado o formato inválido.",
+        });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const accessFactory = TokenFactory.create("ACCESS", env.jwt);
+
+      const decoded = accessFactory.verifyToken(token);
+
+      req.user = decoded;
+
+      next();
     } catch (error) {
-      return res
-        .status(401)
-        .json({ ok: false, mensaje: "Token inválido o expirado" });
-    }
+      if (
+        error.message === "ACCESS_TOKEN_EXPIRED" ||
+        error.name === "TokenExpiredError"
+      ) {
+        return res.status(401).json({
+          ok: false,
+          codigo: "TOKEN_EXPIRADO",
+          mensaje: "Su sesión ha expirado.",
+        });
+      }
 
-    // BUSCAMOS AL USUARIO E INCLUIMOS TODOS SUS DISPOSITIVOS VINCULADOS
-    const usuario = await Usuario.findByPk(decoded.id, {
-      include: [
-        {
-          model: Dispositivo,
-          as: "dispositivo",
-        },
-      ],
-    });
-
-    if (!usuario || !usuario.activo) {
-      return res
-        .status(401)
-        .json({ ok: false, mensaje: "Usuario no autorizado o inactivo" });
-    }
-
-    // VALIDAR SESIÓN STATEFUL
-    if (usuario.token_sesion_actual !== token) {
       return res.status(401).json({
         ok: false,
-        mensaje: "Sesión cerrada o iniciada en otro lugar",
+        codigo: "TOKEN_INVALIDO",
+        mensaje: "Token inválido o corrupto.",
       });
     }
-
-    // Inyectamos el usuario con su lista de dispositivos
-    req.usuario = usuario;
-    next();
-  } catch (error) {
-    console.error("🔴 Error en AuthMiddleware:", error);
-    return res
-      .status(500)
-      .json({ ok: false, mensaje: "Error interno en autenticación" });
   }
-};
+
+  static authorize(rolesPermitidos = []) {
+    return (req, res, next) => {
+      if (!req.user || !req.user.rol) {
+        return res.status(403).json({
+          ok: false,
+          codigo: "IDENTIDAD_DESCONOCIDA",
+          mensaje: "No se pudo determinar el rol del usuario.",
+        });
+      }
+
+      if (!rolesPermitidos.includes(req.user.rol)) {
+        return res.status(403).json({
+          ok: false,
+          codigo: "ACCESO_DENEGADO",
+          mensaje: "No tiene los permisos necesarios.",
+        });
+      }
+
+      next();
+    };
+  }
+}

@@ -1,0 +1,614 @@
+/* ─── Root ───────────────────────────────────────────────────────────────────── */
+.hi-root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 4px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────────── */
+.hi-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hi-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.hi-subtitulo {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────────────────────── */
+.hi-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.hi-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hi-tab--active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.hi-tab:not(.hi-tab--active):hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* ─── Stats cards ────────────────────────────────────────────────────────────── */
+.hi-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.hi-stat {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hi-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.hi-stat-icon--blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.hi-stat-icon--green {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.hi-stat-icon--teal {
+  background: #f0fdfa;
+  color: #0d9488;
+}
+.hi-stat-icon--orange {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.hi-stat-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hi-stat-val--blue {
+  color: #111827;
+}
+.hi-stat-val--green {
+  color: #111827;
+}
+.hi-stat-val--teal {
+  color: #0d9488;
+}
+.hi-stat-val--orange {
+  color: #111827;
+}
+
+.hi-stat-label {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ─── Filtros ────────────────────────────────────────────────────────────────── */
+.hi-filtros-wrap {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hi-filtros-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hi-search {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.hi-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.hi-search input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #111827 !important;
+  background: #fff !important;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.hi-search input::placeholder {
+  color: #9ca3af !important;
+}
+.hi-search input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.hi-select-wrap {
+  position: relative;
+  min-width: 190px;
+}
+
+.hi-select-wrap select {
+  width: 100%;
+  appearance: none;
+  padding: 10px 36px 10px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151 !important;
+  background: #fff !important;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.hi-select-wrap select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.hi-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.hi-filtros-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─── Botones ────────────────────────────────────────────────────────────────── */
+.hi-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hi-btn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+.hi-btn--primary:hover {
+  background: #1d4ed8;
+}
+
+.hi-btn--export {
+  background: #16a34a;
+  color: #fff;
+}
+.hi-btn--export:hover {
+  background: #15803d;
+}
+
+.hi-btn--ghost {
+  background: #f3f4f6;
+  color: #374151;
+}
+.hi-btn--ghost:hover {
+  background: #e5e7eb;
+}
+
+/* ─── Tabla ──────────────────────────────────────────────────────────────────── */
+.hi-tabla {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.hi-tabla-head {
+  display: grid;
+  grid-template-columns: 220px 100px 180px 140px 110px 80px;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hi-tabla-head--todos {
+  grid-template-columns: 200px 160px 110px 160px 140px 100px 80px;
+}
+
+/* ─── Fila ───────────────────────────────────────────────────────────────────── */
+.hi-fila {
+  display: grid;
+  grid-template-columns: 220px 100px 180px 140px 110px 80px;
+  gap: 8px;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+/* cuando es vista todos: usuario + materia + modo + puntuacion + fecha + duracion + estado */
+.hi-fila:has(.hi-fila-usuario) {
+  grid-template-columns: 200px 160px 110px 160px 140px 100px 80px;
+}
+
+.hi-fila:last-child {
+  border-bottom: none;
+}
+.hi-fila:hover {
+  background: #f9fafb;
+}
+
+.hi-fila-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hi-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.hi-usuario-nombre {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hi-usuario-correo {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.hi-fila-materia {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hi-fila-puntuacion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hi-pct {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.hi-correctas {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.hi-fila-fecha,
+.hi-fila-duracion {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.hi-icon-sm {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* ─── Modo badge ─────────────────────────────────────────────────────────────── */
+.hi-modo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.hi-modo-badge--examen {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.hi-modo-badge--test {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+/* ─── Estado badge ───────────────────────────────────────────────────────────── */
+.hi-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.hi-estado-badge--ok {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.hi-estado-badge--fail {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ─── Back button ────────────────────────────────────────────────────────────── */
+.hi-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: gap 0.15s;
+}
+.hi-back:hover {
+  gap: 10px;
+}
+
+/* ─── Detalle ────────────────────────────────────────────────────────────────── */
+.hi-detalle-header {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hi-detalle-titulo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px;
+}
+
+.hi-detalle-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #6b7280;
+  align-items: center;
+}
+
+.hi-detalle-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hi-detalle-nota {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hi-detalle-nota-num {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hi-detalle-nota--ok {
+  color: #16a34a;
+}
+.hi-detalle-nota--fail {
+  color: #dc2626;
+}
+
+.hi-detalle-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.hi-dstat {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hi-dstat span {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.hi-dstat small {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.hi-detalle-placeholder {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.hi-detalle-placeholder p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ─── State vacío / loading ──────────────────────────────────────────────────── */
+.hi-state {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.hi-state--error {
+  color: #dc2626;
+}
+
+.hi-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: hi-spin 0.7s linear infinite;
+}
+
+@keyframes hi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hi-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hi-tabla-head,
+  .hi-fila {
+    grid-template-columns: 1fr 80px 90px 100px !important;
+  }
+
+  /* Ocultar fecha y duración en móvil */
+  .hi-fila-fecha,
+  .hi-fila-duracion,
+  .hi-tabla-head span:nth-child(5),
+  .hi-tabla-head span:nth-child(6) {
+    display: none;
+  }
+
+  .hi-detalle-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .hi-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hi-filtros-row {
+    flex-direction: column;
+  }
+  .hi-select-wrap {
+    min-width: unset;
+  }
+}

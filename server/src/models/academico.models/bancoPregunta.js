@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/database.js";
+import { sequelize } from "../../config/database.js";
 
-export const Question = sequelize.define(
-  "Question",
+export const BancoPregunta = sequelize.define(
+  "Banco_Pregunta",
   {
     id_pregunta: {
       type: DataTypes.INTEGER,
@@ -16,10 +16,17 @@ export const Question = sequelize.define(
     enunciado: {
       type: DataTypes.TEXT,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     url_imagen: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: true,
+    },
+    tipo_pregunta: {
+      type: DataTypes.ENUM("MULTIPLE", "VERDADERO_FALSO"),
+      allowNull: false,
     },
     activo: {
       type: DataTypes.BOOLEAN,
@@ -27,7 +34,13 @@ export const Question = sequelize.define(
     },
   },
   {
-    tableName: "Banco_Pregunta",
+    tableName: "banco_pregunta",
     timestamps: true,
+    indexes: [
+      {
+        name: "idx_pregunta_materia",
+        fields: ["id_materia"],
+      },
+    ],
   },
 );

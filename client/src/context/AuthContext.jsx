@@ -1,159 +1,277 @@
-import { createContext, useState, useEffect, useCallback } from "react";
-import { getDeviceFingerprint } from "../services/deviceFingerprint";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
+import { api } from "../services/api";
 
 export const AuthContext = createContext();
 
+export const useAuth = () => useContext(AuthContext);
+
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+};
+
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
+
+const persistirSesion = (token, usuario) => {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(usuario));
+};
+
+const limpiarSesion = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem(USER_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      limpiarSesion();
+      return null;
+    }
+  });
+
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("huella_oficial");
-    window.location.href = "/";
+  const logout = useCallback(async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.error("[AuthContext] Error al cerrar sesión:", err.message);
+    } finally {
+      setUser(null);
+      setToken(null);
+      limpiarSesion();
+      window.location.replace("/");
+    }
   }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = urlParams.get("token");
+    const urlError = urlParams.get("error");
 
-    if (urlToken && !token) {
-      const vincularGoogle = async () => {
-        setLoading(true);
-        try {
-          // Seteamos un usuario provisional para que las rutas protegidas
-          // no nos echen mientras validamos el dispositivo
-          setUser({ correo: "Cargando perfil...", rol: "ESTUDIANTE" });
-
-          const huella = await getDeviceFingerprint();
-
-          const response = await fetch(
-            "http://localhost:3000/api/dispositivo/vincular",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${urlToken}`,
-              },
-              body: JSON.stringify({ huella_dispositivo: huella }),
-            },
-          );
-
-          const data = await response.json();
-
-          if (data.ok) {
-            const tokenDefinitivo = data.accessToken || data.token;
-
-            setToken(tokenDefinitivo);
-            localStorage.setItem("token", tokenDefinitivo);
-
-            setUser(data.usuario);
-            localStorage.setItem("user", JSON.stringify(data.usuario));
-
-            // 👈 NUEVO: Guardamos la huella oficial al loguearse con Google
-            localStorage.setItem("huella_oficial", huella);
-
-            window.history.replaceState(
-              {},
-              document.title,
-              window.location.pathname,
-            );
-          } else {
-            setError(data.mensaje || "Límite de dispositivos alcanzado");
-            setTimeout(() => logout(), 3000); // Damos 3 segundos para que el usuario lea el error
-          }
-        } catch (err) {
-          console.error("Error en sincronización Google:", err);
-          setError("Error de conexión con el servidor");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      vincularGoogle();
+    if (urlError) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
     }
 
-    // Lógica Original: Cargar usuario desde localStorage
-    if (!urlToken) {
-      const savedUser = localStorage.getItem("user");
-      if (savedUser && token) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (e) {
-          console.error("Error al cargar usuario:", e);
+    if (!urlToken) return;
+
+    const sincronizarGoogle = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const payload = decodeJWT(urlToken);
+
+        if (!payload?.id) {
+          throw new Error("Token de autenticación inválido.");
         }
+
+        const usuarioData = {
+          id: payload.id,
+          rol: payload.rol ?? "ESTUDIANTE",
+        };
+
+        persistirSesion(urlToken, usuarioData);
+        setToken(urlToken);
+        setUser(usuarioData);
+
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      } catch (err) {
+        console.error(
+          "[AuthContext] Error en sincronización Google:",
+          err.message,
+        );
+        setError("Error al procesar la autenticación. Intente nuevamente.");
+        limpiarSesion();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    sincronizarGoogle();
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dashToken = urlParams.get("token");
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+
+    if (token) return;
+
+    if (storedToken && !token) {
+      const storedUser = (() => {
+        try {
+          const u = localStorage.getItem(USER_KEY);
+          return u ? JSON.parse(u) : null;
+        } catch {
+          return null;
+        }
+      })();
+
+      if (storedUser) {
+        setToken(storedToken);
+        setUser(storedUser);
       }
     }
 
-    // Bloqueos de seguridad originales
-    const preventScreenshot = (e) => {
+    if (dashToken) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const renovarSiExpira = async () => {
+      const payload = decodeJWT(token);
+      if (!payload?.exp) return;
+
+      const ahora = Math.floor(Date.now() / 1000);
+      const segundosRestantes = payload.exp - ahora;
+
+      if (segundosRestantes < 300) {
+        try {
+          const data = await api.refreshToken();
+          const nuevoPayload = decodeJWT(data.accessToken);
+          const usuarioData = {
+            id: nuevoPayload.id,
+            rol: nuevoPayload.rol ?? user?.rol,
+          };
+          persistirSesion(data.accessToken, usuarioData);
+          setToken(data.accessToken);
+          setUser(usuarioData);
+        } catch {
+          logout();
+        }
+      }
+    };
+
+    renovarSiExpira();
+    const intervalo = setInterval(renovarSiExpira, 4 * 60 * 1000);
+    return () => clearInterval(intervalo);
+  }, [token, logout, user?.rol]);
+
+  // ── Seguridad global ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeydown = (e) => {
+      const enInput = ["INPUT", "TEXTAREA"].includes(
+        document.activeElement?.tagName,
+      );
+
+      // Ctrl+C bloqueado fuera de inputs — formularios propios siguen funcionando
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c" && !enInput) {
+        e.preventDefault();
+      }
+      // Ctrl+P — imprimir bloqueado
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        alert("La impresión está deshabilitada por políticas de seguridad.");
+      }
+      // Ctrl+S — guardar página bloqueado
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyup = async (e) => {
       if (e.key === "PrintScreen") {
-        e.preventDefault();
-        alert("⚠️ No se permiten capturas de pantalla");
+        try {
+          await navigator.clipboard.writeText(
+            "Captura deshabilitada - Derechos reservados EduQuery",
+          );
+        } catch {}
+        alert("Las capturas de pantalla están prohibidas en esta plataforma.");
       }
     };
 
-    const preventCopy = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
-        e.preventDefault();
-        alert("⚠️ Copiar está deshabilitado");
-      }
+    const preventContextMenu = (e) => e.preventDefault();
+
+    const handleWindowBlur = () => {
+      document.body.style.filter = "blur(12px)";
+      document.body.style.transition = "filter 0.1s ease";
     };
 
-    document.addEventListener("keydown", preventScreenshot);
-    document.addEventListener("keydown", preventCopy);
+    const handleWindowFocus = () => {
+      document.body.style.filter = "none";
+    };
+
+    document.body.style.userSelect = "none";
+    document.body.style.webkitUserSelect = "none";
+
+    document.addEventListener("keydown", handleKeydown);
+    document.addEventListener("keyup", handleKeyup);
+    document.addEventListener("contextmenu", preventContextMenu);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
 
     return () => {
-      document.removeEventListener("keydown", preventScreenshot);
-      document.removeEventListener("keydown", preventCopy);
+      document.removeEventListener("keydown", handleKeydown);
+      document.removeEventListener("keyup", handleKeyup);
+      document.removeEventListener("contextmenu", preventContextMenu);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.body.style.userSelect = "auto";
+      document.body.style.webkitUserSelect = "auto";
+      document.body.style.filter = "none";
     };
-  }, [token, logout]); // Dependencias optimizadas
+  }, []);
 
-  // --- MANTENEMOS TU LÓGICA DE LOGIN/REGISTER ---
-
-  const login = async (correo, password) => {
-    setLoading(true);
+  // ── Login ─────────────────────────────────────────────────────────────────────
+  const loginConGoogle = useCallback(() => {
     setError("");
-    try {
-      const huella = await getDeviceFingerprint();
-      const response = await fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          correo_institucional: correo,
-          password,
-          huella_dispositivo: huella,
-        }),
-      });
-      const data = await response.json();
+    api.loginGoogle();
+  }, []);
 
-      if (data.ok) {
-        const tkn = data.accessToken || data.token;
-        setToken(tkn);
-        setUser(data.usuario);
-        localStorage.setItem("token", tkn);
-        localStorage.setItem("user", JSON.stringify(data.usuario));
-        localStorage.setItem("huella_oficial", huella);
-        return { ok: true };
-      }
-      setError(data.mensaje || "Credenciales inválidas");
-      return data;
-    } catch (err) {
-      setError("Error de conexión");
-      return { ok: false };
-    } finally {
-      setLoading(false);
-    }
-  };
+  const login = loginConGoogle;
+  const register = loginConGoogle;
 
+  // ── Valor expuesto ────────────────────────────────────────────────────────────
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, loading, error }}
+      value={{
+        user,
+        token,
+        loading,
+        error,
+        setError,
+        login,
+        register,
+        loginConGoogle,
+        logout,
+        isAdmin: user?.rol === "ADMINISTRADOR",
+        isAuthenticated: !!token,
+      }}
     >
       {children}
     </AuthContext.Provider>

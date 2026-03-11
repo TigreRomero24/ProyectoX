@@ -1,0 +1,548 @@
+/* ─── Encabezado ─────────────────────────────────────────────────────────────── */
+.gm-header {
+  margin-bottom: 24px;
+}
+.gm-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.gm-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ─── Error banner ───────────────────────────────────────────────────────────── */
+.gm-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+}
+.gm-error-banner button {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+}
+
+/* ─── Card de acción ─────────────────────────────────────────────────────────── */
+.gm-actions-row {
+  margin-bottom: 32px;
+}
+
+.gm-action-card {
+  background: #fff;
+  border: 1.5px solid #d1fae5;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  max-width: 360px;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+}
+.gm-action-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.gm-action-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.gm-icon-green {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.gm-action-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+.gm-action-desc {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin: 0 0 8px;
+  line-height: 1.45;
+}
+.gm-action-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+/* ─── Sección lista ──────────────────────────────────────────────────────────── */
+.gm-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.gm-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.gm-badge-count {
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+/* ─── Grid de cards ──────────────────────────────────────────────────────────── */
+.gm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.gm-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+}
+.gm-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+}
+
+.gm-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gm-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.gm-card-nombre {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+.gm-card-fecha {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.gm-card-footer {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 10px;
+}
+
+.gm-btn-edit,
+.gm-btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gm-btn-edit {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.gm-btn-edit:hover {
+  background: #dbeafe;
+}
+.gm-btn-delete {
+  background: #fef2f2;
+  color: #ef4444;
+}
+.gm-btn-delete:hover {
+  background: #fee2e2;
+}
+
+/* ─── Estados ────────────────────────────────────────────────────────────────── */
+.gm-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.gm-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: gm-spin 0.7s linear infinite;
+}
+@keyframes gm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: #9ca3af;
+  text-align: center;
+}
+.gm-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.gm-empty-icon {
+  width: 56px;
+  height: 56px;
+  background: #f3f4f6;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+/* ─── Botones globales ───────────────────────────────────────────────────────── */
+.gm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gm-btn-primary:hover {
+  background: #1d4ed8;
+}
+.gm-btn-primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+.gm-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gm-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* ─── Modal ──────────────────────────────────────────────────────────────────── */
+.gm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  animation: gm-fade 0.15s ease;
+}
+@keyframes gm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gm-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+  animation: gm-up 0.2s ease;
+  overflow: hidden;
+}
+@keyframes gm-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.gm-modal-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.gm-modal-close {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  display: flex;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.gm-modal-close:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.gm-modal-body {
+  padding: 22px 24px;
+}
+
+.gm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ─── Formulario ─────────────────────────────────────────────────────────────── */
+.gm-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.gm-input {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+.gm-input:focus {
+  border-color: #2563eb;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.gm-input--err {
+  border-color: #ef4444;
+}
+.gm-input::placeholder {
+  color: #9ca3af;
+}
+.gm-input-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin: 6px 0 0;
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────────────────── */
+.gm-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #111827;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: gm-up 0.2s ease;
+}
+
+/* ─── Modal de confirmación ──────────────────────────────────────────────────── */
+.gm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.gm-confirm-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  animation: gm-modal-in 0.18s ease;
+}
+
+@keyframes gm-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.gm-confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.gm-confirm-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.gm-confirm-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.gm-confirm-msg {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.gm-confirm-msg strong {
+  color: #111827;
+}
+
+.gm-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.gm-confirm-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gm-confirm-btn--cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+.gm-confirm-btn--cancel:hover {
+  background: #e5e7eb;
+}
+
+.gm-confirm-btn--delete {
+  background: #dc2626;
+  color: #fff;
+}
+.gm-confirm-btn--delete:hover {
+  background: #b91c1c;
+}
+.gm-confirm-btn--delete svg {
+  width: 14px;
+  height: 14px;
+}

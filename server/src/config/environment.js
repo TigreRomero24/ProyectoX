@@ -1,23 +1,16 @@
 import dotenv from "dotenv";
 import path from "path";
 
-/**
- * ====================================================================
- * ENVIRONMENT.JS - CONFIGURACIÓN CENTRALIZADA (ACTUALIZADA)
- * ====================================================================
- */
-
 const envPath = path.resolve(process.cwd(), ".env");
 const { error } = dotenv.config({ path: envPath });
 
 if (error) {
-  console.error("\n🔴 FATAL: No se encontró el archivo .env");
-  console.error(`    Buscado en: ${envPath}`);
+  console.error("\n🔴 FATAL: No se encontró el archivo .env o es ilegible.");
   process.exit(1);
 }
 
 // ====================================================================
-// 2. VARIABLES REQUERIDAS (Se incluyen las de Google)
+// 1. VARIABLES REQUERIDAS (Contrato de existencia)
 // ====================================================================
 const REQUIRED = [
   "JWT_ACCESS_SECRET",
@@ -25,12 +18,17 @@ const REQUIRED = [
   "JWT_ACCESS_EXPIRES_IN",
   "JWT_REFRESH_EXPIRES_IN",
   "JWT_ISSUER",
-  "JWT_ACCESS_AUDIENCE",
-  "JWT_REFRESH_AUDIENCE",
   "JWT_ALGORITHM",
-  "GOOGLE_CLIENT_ID", // Obligatorio para Passport
-  "GOOGLE_CLIENT_SECRET", // Obligatorio para Passport
-  "GOOGLE_CALLBACK_URL", // Obligatorio para redirección
+
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GOOGLE_CALLBACK_URL",
+
+  "DB_NAME",
+  "DB_USER",
+  "DB_PASSWORD",
+  "DB_HOST",
+  "DB_PORT",
 ];
 
 const missing = REQUIRED.filter((key) => !process.env[key]);
@@ -39,71 +37,67 @@ if (missing.length > 0) {
   console.error("\n🔴 FATAL: Faltan variables de entorno requeridas:");
   missing.forEach((key) => console.error(`    - ${key}`));
   console.error(
-    "\n⚠️  Asegúrate de agregarlas a tu archivo .env para que la app pueda arrancar.\n",
+    "\n⚠️  El sistema no puede iniciar sin estas configuraciones.\n",
   );
   process.exit(1);
 }
-
-// ====================================================================
-// 3. VALIDACIONES DE SEGURIDAD (Se mantienen las existentes)
-// ====================================================================
 
 if (
   process.env.JWT_ACCESS_SECRET.length < 32 ||
   process.env.JWT_REFRESH_SECRET.length < 32
 ) {
   console.error(
-    "\n🔴 SEGURIDAD: Los secrets de JWT deben tener al menos 32 caracteres.\n",
+    "\n🔴 SEGURIDAD: Los secrets de JWT deben tener al menos 32 caracteres.",
   );
   process.exit(1);
 }
 
 if (process.env.JWT_ACCESS_SECRET === process.env.JWT_REFRESH_SECRET) {
   console.error(
-    "\n🔴 SEGURIDAD: Los secrets de access y refresh NO pueden ser iguales.\n",
+    "\n🔴 SEGURIDAD: Los secrets de Access y Refresh no pueden ser iguales.",
   );
   process.exit(1);
 }
 
+// Formato de Tiempo (ej: 15m, 7d)
 const timeRegex = /^[0-9]+[smhd]$/;
 if (
   !timeRegex.test(process.env.JWT_ACCESS_EXPIRES_IN) ||
   !timeRegex.test(process.env.JWT_REFRESH_EXPIRES_IN)
 ) {
-  console.error("\n🔴 ERROR: Formato de tiempo JWT inválido (ej: 15m, 7d).\n");
+  console.error("\n🔴 ERROR: Formato de tiempo JWT inválido (ej: 15m, 7d).");
   process.exit(1);
 }
 
-// ====================================================================
-// 4. CONFIGURACIÓN DE ENTORNO (NODE_ENV)
-// ====================================================================
 const NODE_ENV = process.env.NODE_ENV || "development";
-const IS_PRODUCTION = NODE_ENV === "production";
 
-// ====================================================================
-// 5. EXPORTACIÓN TIPADA E INMUTABLE
-// ====================================================================
 export const env = Object.freeze({
   nodeEnv: NODE_ENV,
-  isProduction: IS_PRODUCTION,
+  isProduction: NODE_ENV === "production",
   isDevelopment: NODE_ENV === "development",
-  port: process.env.PORT || 3000,
+  port: parseInt(process.env.PORT, 10) || 3000,
 
-  // Configuración JWT
+  db: Object.freeze({
+    name: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10) || 5432,
+  }),
+
   jwt: Object.freeze({
     accessSecret: process.env.JWT_ACCESS_SECRET,
     refreshSecret: process.env.JWT_REFRESH_SECRET,
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     issuer: process.env.JWT_ISSUER,
-    audiences: {
-      api: process.env.JWT_ACCESS_AUDIENCE,
-      auth: process.env.JWT_REFRESH_AUDIENCE,
-    },
     algorithm: process.env.JWT_ALGORITHM,
+    audiences: {
+      api: process.env.JWT_ACCESS_AUDIENCE || "eduquery-api",
+      auth: process.env.JWT_REFRESH_AUDIENCE || "eduquery-auth",
+    },
   }),
 
-  // NUEVA SECCIÓN: Configuración Google (Acoplada al estándar del archivo)
   google: Object.freeze({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -114,23 +108,10 @@ export const env = Object.freeze({
     return {
       nodeEnv: this.nodeEnv,
       port: this.port,
-      google: { callbackUrl: this.google.callbackUrl }, // No exponer secretos en logs
-      jwt: {
-        accessExpiresIn: this.jwt.accessExpiresIn,
-        issuer: this.jwt.issuer,
-      },
+      db: { host: this.db.host, name: this.db.name },
+      google: { callbackUrl: this.google.callbackUrl },
     };
   },
 });
 
-// ====================================================================
-// 6. MENSAJE DE CONFIRMACIÓN
-// ====================================================================
-console.log("\n✅ Configuración cargada correctamente");
-console.log(
-  `    🌍 Entorno: ${IS_PRODUCTION ? "🚀 PRODUCCIÓN" : "🧪 DESARROLLO"}`,
-);
-console.log(
-  `    🔑 Google OAuth: ${env.google.clientId.substring(0, 10)}... (Cargado)`,
-);
-console.log("");
+console.log("\n✅ Configuración del sistema cargada correctamente.");
