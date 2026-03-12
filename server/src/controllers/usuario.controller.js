@@ -5,6 +5,22 @@ import { UsuarioService } from "../services/usuario.service.js";
  * @description
  */
 export class UsuarioController {
+  static _normalizarBooleano(valor) {
+    if (typeof valor === "boolean") return valor;
+    if (typeof valor === "number") {
+      if (valor === 1) return true;
+      if (valor === 0) return false;
+      return null;
+    }
+    if (typeof valor === "string") {
+      const v = valor.trim().toLowerCase();
+      if (v === "true" || v === "1") return true;
+      if (v === "false" || v === "0") return false;
+      return null;
+    }
+    return null;
+  }
+
   static _manejarError(res, error, mensajeServidor) {
     console.error(`[Error UsuarioController]:`, error);
     const msg = error.message;
@@ -104,17 +120,24 @@ export class UsuarioController {
         });
       }
 
-      const estadoRaw = req.body.estado;
+      const estadoRaw = req.body.estado ?? req.body.activo;
 
       if (estadoRaw === undefined) {
         return res.status(400).json({
           ok: false,
-          error: "VALIDACION: El campo 'estado' es requerido.",
+          error: "VALIDACION: El campo 'estado' (o 'activo') es requerido.",
         });
       }
 
-      const estado =
-        typeof estadoRaw === "boolean" ? estadoRaw : estadoRaw === "true";
+      const estado = UsuarioController._normalizarBooleano(estadoRaw);
+
+      if (estado === null) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "VALIDACION: El campo 'estado' debe ser booleano (true/false o 1/0).",
+        });
+      }
 
       const resultado = await UsuarioService.cambiarEstadoUsuario(id, estado);
       return res.status(200).json({

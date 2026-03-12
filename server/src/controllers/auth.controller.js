@@ -25,8 +25,28 @@ function codigoDeError(errorMessage) {
 }
 
 export class AuthController {
+  static _frontendUrl(req) {
+    const oauthUrl = req.oauthFrontendUrl?.trim();
+    if (oauthUrl) return oauthUrl.replace(/\/+$/, "");
+
+    const envUrl = process.env.FRONTEND_URL?.trim();
+    if (envUrl) return envUrl.replace(/\/+$/, "");
+
+    const origin = req.headers.origin?.trim();
+    if (origin) return origin.replace(/\/+$/, "");
+
+    const referer = req.headers.referer;
+    if (referer) {
+      try {
+        return new URL(referer).origin;
+      } catch (_) {}
+    }
+
+    return "http://localhost:3000";
+  }
+
   static async googleCallback(req, res) {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = AuthController._frontendUrl(req);
 
     try {
       const googleProfile = req.user;

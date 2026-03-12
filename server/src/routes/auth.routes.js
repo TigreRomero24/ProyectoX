@@ -9,21 +9,69 @@ import { UsuarioService } from "../services/usuario.service.js";
 
 const router = Router();
 
-router.get(
-  "/google",
-  passport.authenticate("google", {
+const DEFAULT_FRONTEND_URL = "http://localhost:3000";
+
+function sanitizeFrontendUrl(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  try {
+    const url = new URL(raw.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.origin;
+  } catch (_) {
+    return null;
+  }
+}
+
+function resolveFrontendUrl(req) {
+  return (
+    sanitizeFrontendUrl(req.query.frontend) ||
+    sanitizeFrontendUrl(process.env.FRONTEND_URL) ||
+    DEFAULT_FRONTEND_URL
+  );
+}
+
+router.get("/google", (req, res, next) => {
+  const frontendUrl = resolveFrontendUrl(req);
+  const state = Buffer.from(
+    JSON.stringify({ frontendUrl }),
+    "utf8",
+  ).toString("base64url");
+
+  return passport.authenticate("google", {
     scope: ["profile", "email"],
     prompt: "select_account",
-  }),
-);
+    state,
+  })(req, res, next);
+});
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=autenticacion_rechazada`,
-  }),
-  AuthController.googleCallback,
+  (req, res, next) => {
+    let frontendUrl = sanitizeFrontendUrl(process.env.FRONTEND_URL);
+    const stateRaw = req.query.state;
+
+    if (typeof stateRaw === "string" && stateRaw.length > 0) {
+      try {
+        const stateDecoded = JSON.parse(
+          Buffer.from(stateRaw, "base64url").toString("utf8"),
+        );
+        frontendUrl = sanitizeFrontendUrl(stateDecoded?.frontendUrl) || frontendUrl;
+      } catch (_) {}
+    }
+
+    req.oauthFrontendUrl = frontendUrl || DEFAULT_FRONTEND_URL;
+
+    passport.authenticate("google", { session: false }, (err, user) => {
+      if (err || !user) {
+        return res.redirect(
+          `${req.oauthFrontendUrl}/login?error=google_auth_failed`,
+        );
+      }
+
+      req.user = user;
+      return AuthController.googleCallback(req, res, next);
+    })(req, res, next);
+  },
 );
 
 router.post("/refresh", AuthController.refreshToken);
