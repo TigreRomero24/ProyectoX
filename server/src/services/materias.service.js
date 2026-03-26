@@ -236,14 +236,15 @@ export class InscripcionService {
   // ─── Datos de soporte para el modal ──────────────────────────────────────────
   static async listarEstudiantes() {
     const rows = await Usuario.findAll({
-      where: { rol: "ESTUDIANTE", activo: true },
-      attributes: ["id_usuario", "correo_institucional"],
+      where: { rol: { [Op.in]: ["ESTUDIANTE", "ADMINISTRADOR"] }, activo: true },
+      attributes: ["id_usuario", "correo_institucional", "rol"],
       order: [["correo_institucional", "ASC"]],
     });
     return rows.map((u) => ({
       id_usuario: u.id_usuario,
       correo: u.correo_institucional,
       nombre: nombreDesdeCorreo(u.correo_institucional),
+      rol: u.rol,
     }));
   }
 
@@ -269,13 +270,13 @@ export class InscripcionService {
       attributes: ["id_usuario", "correo_institucional", "rol", "activo"],
     });
     if (!usuario) throw new Error("NO_ENCONTRADO: El usuario no existe.");
-    if (usuario.rol !== "ESTUDIANTE") {
+    if (!["ESTUDIANTE", "ADMINISTRADOR"].includes(usuario.rol)) {
       throw new Error(
-        "VALIDACION: Solo se pueden inscribir usuarios con rol ESTUDIANTE.",
+        "VALIDACION: Solo se pueden inscribir usuarios con rol ESTUDIANTE o ADMINISTRADOR.",
       );
     }
     if (!usuario.activo) {
-      throw new Error("VALIDACION: El estudiante tiene la cuenta desactivada.");
+      throw new Error("VALIDACION: El usuario tiene la cuenta desactivada.");
     }
 
     const materia = await Materia.findByPk(id_materia);
