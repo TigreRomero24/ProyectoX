@@ -9,9 +9,6 @@ if (error) {
   process.exit(1);
 }
 
-// ====================================================================
-// 1. VARIABLES REQUERIDAS (Contrato de existencia)
-// ====================================================================
 const REQUIRED = [
   "JWT_ACCESS_SECRET",
   "JWT_REFRESH_SECRET",
@@ -19,6 +16,8 @@ const REQUIRED = [
   "JWT_REFRESH_EXPIRES_IN",
   "JWT_ISSUER",
   "JWT_ALGORITHM",
+  "JWT_ACCESS_AUDIENCE",
+  "JWT_REFRESH_AUDIENCE",
 
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
@@ -29,6 +28,7 @@ const REQUIRED = [
   "DB_PASSWORD",
   "DB_HOST",
   "DB_PORT",
+  "FRONTEND_URL",
 ];
 
 const missing = REQUIRED.filter((key) => !process.env[key]);
@@ -59,7 +59,6 @@ if (process.env.JWT_ACCESS_SECRET === process.env.JWT_REFRESH_SECRET) {
   process.exit(1);
 }
 
-// Formato de Tiempo (ej: 15m, 7d)
 const timeRegex = /^[0-9]+[smhd]$/;
 if (
   !timeRegex.test(process.env.JWT_ACCESS_EXPIRES_IN) ||
@@ -70,12 +69,17 @@ if (
 }
 
 const NODE_ENV = process.env.NODE_ENV || "development";
+const TRUE_VALUES = new Set(["1", "true", "yes", "on"]);
+const DB_SQL_LOGGING =
+  TRUE_VALUES.has(String(process.env.DB_SQL_LOGGING || "").toLowerCase()) ||
+  false;
 
 export const env = Object.freeze({
   nodeEnv: NODE_ENV,
   isProduction: NODE_ENV === "production",
   isDevelopment: NODE_ENV === "development",
   port: parseInt(process.env.PORT, 10) || 3000,
+  frontendUrl: process.env.FRONTEND_URL,
 
   db: Object.freeze({
     name: process.env.DB_NAME,
@@ -83,6 +87,7 @@ export const env = Object.freeze({
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT, 10) || 5432,
+    sqlLogging: DB_SQL_LOGGING,
   }),
 
   jwt: Object.freeze({
@@ -108,6 +113,7 @@ export const env = Object.freeze({
     return {
       nodeEnv: this.nodeEnv,
       port: this.port,
+      frontendUrl: this.frontendUrl,
       db: { host: this.db.host, name: this.db.name },
       google: { callbackUrl: this.google.callbackUrl },
     };

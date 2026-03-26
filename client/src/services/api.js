@@ -3,10 +3,13 @@ const API_URL = "/api/v1";
 const request = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
   const headers = {
-    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
+
+  if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -40,7 +43,8 @@ export const api = {
     }),
 
   loginGoogle: () => {
-    window.location.href = "/api/v1/auth/google";
+    const frontend = encodeURIComponent(window.location.origin);
+    window.location.href = `/api/v1/auth/google?frontend=${frontend}`;
   },
 
   logout: () => request("/auth/logout", { method: "POST" }),
@@ -66,7 +70,7 @@ export const api = {
   cambiarEstadoUsuario: (id, activo) =>
     request(`/usuarios/${id}/estado`, {
       method: "PATCH",
-      body: JSON.stringify({ activo }),
+      body: JSON.stringify({ estado: !!activo }),
     }),
 
   eliminarUsuario: (id) => request(`/usuarios/${id}`, { method: "DELETE" }),
@@ -93,6 +97,19 @@ export const api = {
     }),
 
   eliminarMateria: (id) => request(`/materias/${id}`, { method: "DELETE" }),
+
+  subirImagenMateria: (id, archivo) => {
+    const formData = new FormData();
+    formData.append("imagen", archivo);
+
+    return request(`/materias/${id}/imagen`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  eliminarImagenMateria: (id) =>
+    request(`/materias/${id}/imagen`, { method: "DELETE" }),
 
   // ── Preguntas ──────────────────────────────────────────────────────────────────
 
@@ -121,11 +138,22 @@ export const api = {
       body: JSON.stringify(datos),
     }),
 
+  // Compat legacy: históricamente DELETE desactiva.
   eliminarPregunta: (id) =>
     request(`/academico/preguntas/${id}`, { method: "DELETE" }),
 
+  desactivarPregunta: (id) =>
+    request(`/academico/preguntas/${id}/desactivar`, { method: "PATCH" }),
+
+  activarPregunta: (id) =>
+    request(`/academico/preguntas/${id}/activar`, { method: "PATCH" }),
+
+  // Compat legacy: endpoint anterior /reactivar
   reactivarPregunta: (id) =>
     request(`/academico/preguntas/${id}/reactivar`, { method: "PATCH" }),
+
+  eliminarPreguntaFisica: (id) =>
+    request(`/academico/preguntas/${id}/fisica`, { method: "DELETE" }),
 
   crearPreguntasBulk: (idMateria, preguntas, forzarDuplicados = false) =>
     request("/academico/preguntas/bulk", {
@@ -151,16 +179,25 @@ export const api = {
   eliminarConfiguracion: (idConfig) =>
     request(`/evaluaciones/configuraciones/${idConfig}`, { method: "DELETE" }),
 
-  iniciarExamen: (idConfiguracion) =>
+  iniciarExamen: (idConfiguracion, options = {}) =>
     request("/evaluaciones/iniciar", {
       method: "POST",
-      body: JSON.stringify({ id_configuracion: idConfiguracion }),
+      body: JSON.stringify({
+        id_configuracion: idConfiguracion,
+        ...(options.reiniciar ? { reiniciar: true } : {}),
+      }),
     }),
 
   enviarExamen: (idIntento, respuestas) =>
     request(`/evaluaciones/intentos/${idIntento}/enviar`, {
       method: "PATCH",
       body: JSON.stringify({ respuestas }),
+    }),
+
+  guardarProgresoExamen: (idIntento, progreso) =>
+    request(`/evaluaciones/intentos/${idIntento}/progreso`, {
+      method: "PATCH",
+      body: JSON.stringify({ progreso }),
     }),
 
   getIntento: (idIntento) => request(`/evaluaciones/intentos/${idIntento}`),
@@ -181,11 +218,17 @@ export const api = {
 
   getMateriasParaInscripcion: () => request("/inscripciones/materias"),
 
-  crearInscripcion: (id_usuario, id_materia, modo_evaluacion) =>
-    request("/inscripciones", {
+  crearInscripcion: (id_usuario, id_materia, modo_evaluacion) => {
+    const payload = { id_usuario, id_materia };
+    if (modo_evaluacion !== undefined && modo_evaluacion !== null) {
+      payload.modo_evaluacion = modo_evaluacion;
+    }
+
+    return request("/inscripciones", {
       method: "POST",
-      body: JSON.stringify({ id_usuario, id_materia, modo_evaluacion }),
-    }),
+      body: JSON.stringify(payload),
+    });
+  },
 
   cambiarEstadoInscripcion: (id_usuario, id_materia, modo_evaluacion, activo) =>
     request("/inscripciones/estado", {

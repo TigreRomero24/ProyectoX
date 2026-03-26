@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../services/api";
 import "./AdminEstilos/GestionMaterias.css";
 
@@ -110,7 +110,9 @@ export default function GestionMaterias() {
   const [nombreInput, setNombreInput] = useState("");
   const [errModal, setErrModal] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [imagenEnProceso, setImagenEnProceso] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null); // { materia } | null
+  const fileInputsRef = useRef({});
 
   // ── Cargar materias ─────────────────────────────────────────────────────────
   const cargar = async () => {
@@ -195,6 +197,47 @@ export default function GestionMaterias() {
       await cargar();
     } catch (err) {
       setError(err.message || "Error al eliminar.");
+    }
+  };
+
+  const abrirSelectorImagen = (idMateria) => {
+    fileInputsRef.current[idMateria]?.click();
+  };
+
+  const handleSubirImagen = async (materia, event) => {
+    const archivo = event.target.files?.[0];
+    event.target.value = "";
+    if (!archivo) return;
+
+    setImagenEnProceso(materia.id_materia);
+    setError("");
+
+    try {
+      await api.subirImagenMateria(materia.id_materia, archivo);
+      toast(
+        materia.imagen_url
+          ? "Imagen de materia reemplazada correctamente."
+          : "Imagen de materia subida correctamente.",
+      );
+      await cargar();
+    } catch (err) {
+      setError(err.message || "Error al subir imagen de materia.");
+    } finally {
+      setImagenEnProceso(null);
+    }
+  };
+
+  const handleEliminarImagen = async (materia) => {
+    setImagenEnProceso(materia.id_materia);
+    setError("");
+    try {
+      await api.eliminarImagenMateria(materia.id_materia);
+      toast("Imagen de materia eliminada correctamente.");
+      await cargar();
+    } catch (err) {
+      setError(err.message || "Error al eliminar imagen de materia.");
+    } finally {
+      setImagenEnProceso(null);
     }
   };
 
@@ -310,11 +353,22 @@ export default function GestionMaterias() {
                   className="gm-card"
                   style={{ borderTop: `3px solid ${p.color}` }}
                 >
-                  <div
-                    className="gm-card-icon"
-                    style={{ background: p.bg, color: p.color }}
-                  >
-                    <IconBook />
+                  <div className="gm-card-media">
+                    {m.imagen_url ? (
+                      <img
+                        className="gm-card-image"
+                        src={m.imagen_url}
+                        alt={`Imagen de ${m.nombre}`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div
+                        className="gm-card-icon"
+                        style={{ background: p.bg, color: p.color }}
+                      >
+                        <IconBook />
+                      </div>
+                    )}
                   </div>
                   <div className="gm-card-body">
                     <span className="gm-card-nombre">{m.nombre}</span>
@@ -327,6 +381,40 @@ export default function GestionMaterias() {
                           })
                         : "Sin fecha"}
                     </span>
+                    <span className="gm-card-image-state">
+                      {m.imagen_url ? "Con imagen" : "Sin imagen"}
+                    </span>
+                  </div>
+                  <div className="gm-card-image-actions">
+                    <input
+                      ref={(el) => {
+                        fileInputsRef.current[m.id_materia] = el;
+                      }}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                      className="gm-file-input"
+                      onChange={(event) => handleSubirImagen(m, event)}
+                    />
+                    <button
+                      className="gm-btn-image"
+                      onClick={() => abrirSelectorImagen(m.id_materia)}
+                      disabled={imagenEnProceso === m.id_materia}
+                    >
+                      {imagenEnProceso === m.id_materia
+                        ? "Procesando..."
+                        : m.imagen_url
+                          ? "Reemplazar imagen"
+                          : "Subir imagen"}
+                    </button>
+                    {m.imagen_url && (
+                      <button
+                        className="gm-btn-image gm-btn-image--danger"
+                        onClick={() => handleEliminarImagen(m)}
+                        disabled={imagenEnProceso === m.id_materia}
+                      >
+                        Quitar imagen
+                      </button>
+                    )}
                   </div>
                   <div className="gm-card-footer">
                     <button

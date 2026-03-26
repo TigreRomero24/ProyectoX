@@ -21,6 +21,10 @@ export const Materia = sequelize.define(
         },
       },
     },
+    imagen_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
     tableName: "Materia",

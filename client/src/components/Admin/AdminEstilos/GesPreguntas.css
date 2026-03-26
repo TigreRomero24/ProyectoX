@@ -361,6 +361,22 @@
   align-items: center;
   gap: 8px;
 }
+.gp-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.gp-estado-badge--activo {
+  background: #ecfdf5;
+  color: #047857;
+}
+.gp-estado-badge--inactivo {
+  background: #f3f4f6;
+  color: #4b5563;
+}
 .gp-tipo-badge {
   display: inline-flex;
   align-items: center;
@@ -389,6 +405,8 @@
 }
 
 .gp-btn-edit,
+.gp-btn-toggle-on,
+.gp-btn-toggle-off,
 .gp-btn-delete {
   display: flex;
   align-items: center;
@@ -407,6 +425,20 @@
 }
 .gp-btn-edit:hover {
   background: #dbeafe;
+}
+.gp-btn-toggle-on {
+  background: #ecfdf5;
+  color: #047857;
+}
+.gp-btn-toggle-on:hover {
+  background: #d1fae5;
+}
+.gp-btn-toggle-off {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.gp-btn-toggle-off:hover {
+  background: #ffedd5;
 }
 .gp-btn-delete {
   background: #fef2f2;

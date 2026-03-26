@@ -18,13 +18,13 @@ SesionDispositivo.belongsTo(Usuario, {
 });
 
 Usuario.belongsToMany(Materia, {
-  through: Inscripcion,
+  through: { model: Inscripcion, unique: false },
   foreignKey: "id_usuario",
   otherKey: "id_materia",
   as: "materias_inscritas",
 });
 Materia.belongsToMany(Usuario, {
-  through: Inscripcion,
+  through: { model: Inscripcion, unique: false },
   foreignKey: "id_materia",
   otherKey: "id_usuario",
   as: "estudiantes_inscritos",

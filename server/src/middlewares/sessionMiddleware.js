@@ -4,9 +4,7 @@ import { Usuario } from "../models/security.models/usuarioModel.js";
 export class SessionMiddleware {
   static async handle(req, res, next) {
     try {
-      const { id, dispositivoId } = req.user;
-
-      if (!id || !dispositivoId) {
+      if (!req.user?.id || !req.user?.dispositivoId) {
         return res.status(401).json({
           ok: false,
           codigo: "PAYLOAD_INVALIDO",
@@ -14,6 +12,7 @@ export class SessionMiddleware {
             "El token de acceso no contiene la identificación del dispositivo.",
         });
       }
+      const { id, dispositivoId } = req.user;
 
       const sesionActiva = await SesionDispositivo.findOne({
         where: {
@@ -38,7 +37,7 @@ export class SessionMiddleware {
         });
       }
 
-      if (!sesionActiva.propietario.activo) {
+      if (sesionActiva.propietario?.activo === false) {
         return res.status(401).json({
           ok: false,
           codigo: "USUARIO_INACTIVO",
@@ -49,7 +48,7 @@ export class SessionMiddleware {
 
       next();
     } catch (error) {
-      console.error("[SessionMiddleware Error]:", error);
+      console.error("[SessionMiddleware Error]:", error.message);
       return res.status(500).json({
         ok: false,
         codigo: "ERROR_INTERNO",

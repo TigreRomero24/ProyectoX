@@ -1,18 +1,46 @@
 import { EvaluacionService } from "../services/evaluacion.service.js";
 
 export class EvaluacionController {
+  static #extraerCodigoDetalle(msg = "") {
+    const match = String(msg).match(/^(VALIDACION|ESTADO_INVALIDO|RESTRICCION|NO_ENCONTRADO):\s*([A-Z0-9_]+):\s*(.*)$/);
+    if (!match) return null;
+    return { prefijo: match[1], codigo: match[2], detalle: match[3] };
+  }
+
   static #manejarError(res, error, mensajeServidor) {
     console.error("[EvaluacionController]:", error.message);
     const msg = error.message;
+    const detalleError = EvaluacionController.#extraerCodigoDetalle(msg);
+
+    if (detalleError?.codigo?.startsWith("COMPLETAR_")) {
+      console.info("[completar.validation.error]", {
+        pregunta_id: null,
+        modo_interaccion: null,
+        codigo_error: detalleError.codigo,
+        actor: "runtime",
+      });
+    }
 
     if (msg.startsWith("VALIDACION") || msg.startsWith("ESTADO_INVALIDO")) {
-      return res.status(400).json({ ok: false, error: msg });
+      return res.status(400).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
     if (msg.startsWith("NO_ENCONTRADO")) {
-      return res.status(404).json({ ok: false, error: msg });
+      return res.status(404).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
     if (msg.startsWith("RESTRICCION")) {
-      return res.status(409).json({ ok: false, error: msg });
+      return res.status(409).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
 
     return res.status(500).json({ ok: false, error: mensajeServidor });
@@ -23,14 +51,29 @@ export class EvaluacionController {
     return isNaN(id) || id <= 0 ? null : id;
   }
 
-  /**
-   * Valida que cada elemento del arreglo de respuestas tenga
-   * la estructura mínima requerida: { id_pregunta, id_opcion }.
-   * Retorna el primer error encontrado o null si todo es válido.
-   */
+  static #parsearEnteroOpcional(valor) {
+    if (valor === undefined) return undefined;
+    if (valor === null) return null;
+    if (typeof valor === "string" && valor.trim() === "") return null;
+
+    const numero = Number(valor);
+    if (!Number.isInteger(numero)) return Number.NaN;
+    return numero;
+  }
+
+  static #parsearBooleano(valor) {
+    if (typeof valor === "boolean") return valor;
+    if (typeof valor === "number") return valor === 1;
+    if (typeof valor === "string") {
+      const normalizado = valor.trim().toLowerCase();
+      return ["true", "1", "si", "sí"].includes(normalizado);
+    }
+    return false;
+  }
+
   static #validarEstructuraRespuestas(respuestas) {
-    if (!Array.isArray(respuestas) || respuestas.length === 0) {
-      return "VALIDACION: Se requiere un arreglo no vacío de respuestas.";
+    if (!Array.isArray(respuestas)) {
+      return "VALIDACION: Se requiere un arreglo de respuestas.";
     }
 
     for (let i = 0; i < respuestas.length; i++) {
@@ -41,26 +84,34 @@ export class EvaluacionController {
       }
 
       const idPregunta = parseInt(r.id_pregunta, 10);
-      const idOpcion = parseInt(r.id_opcion, 10);
 
       if (isNaN(idPregunta) || idPregunta <= 0) {
         return `VALIDACION: La respuesta en posición ${i} tiene un id_pregunta inválido.`;
       }
-      if (isNaN(idOpcion) || idOpcion <= 0) {
-        return `VALIDACION: La respuesta en posición ${i} tiene un id_opcion inválido.`;
+
+      const tieneIdOpcion = r.id_opcion !== undefined && r.id_opcion !== null;
+      const tieneRespuestaJson =
+        r.respuesta_json !== undefined && r.respuesta_json !== null;
+
+      if (!tieneIdOpcion && !tieneRespuestaJson) {
+        return `VALIDACION: La respuesta en posición ${i} debe incluir id_opcion o respuesta_json.`;
+      }
+
+      if (tieneIdOpcion) {
+        const idOpcion = parseInt(r.id_opcion, 10);
+        if (isNaN(idOpcion) || idOpcion <= 0) {
+          return `VALIDACION: La respuesta en posición ${i} tiene un id_opcion inválido.`;
+        }
+      }
+
+      if (tieneRespuestaJson && typeof r.respuesta_json !== "object") {
+        return `VALIDACION: La respuesta en posición ${i} tiene un respuesta_json inválido.`;
       }
     }
 
     return null;
   }
 
-  // ─── Endpoints ───────────────────────────────────────────────────────────────
-
-  /**
-   * POST /evaluaciones/iniciar
-   * Inicia un nuevo intento de examen para el estudiante autenticado.
-   * Valida inscripción, límite de intentos y que no haya uno en progreso.
-   */
   static async iniciarExamen(req, res) {
     try {
       const id_usuario = req.user.id;
@@ -77,14 +128,21 @@ export class EvaluacionController {
         });
       }
 
+      const reiniciar = EvaluacionController.#parsearBooleano(req.body?.reiniciar);
+
       const resultado = await EvaluacionService.iniciarExamen(
         id_usuario,
         id_configuracion,
+        reiniciar,
       );
 
       return res.status(201).json({
         ok: true,
-        mensaje: "Examen iniciado correctamente.",
+        mensaje: resultado.intento_reutilizado
+          ? "Examen en progreso recuperado correctamente."
+          : reiniciar
+            ? "Examen reiniciado correctamente."
+            : "Examen iniciado correctamente.",
         data: resultado,
       });
     } catch (error) {
@@ -104,10 +162,41 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * GET /evaluaciones/retomar/:id_intento
-   * Carga un intento EN_PROGRESO con preguntas y opciones para continuar.
-   */
+  static async guardarProgresoExamen(req, res) {
+    try {
+      const id_usuario = req.user.id;
+      const id_intento = EvaluacionController.#parsearId(req.params.id_intento);
+
+      if (!id_intento) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "VALIDACION: id_intento inválido." });
+      }
+
+      const progreso = req.body?.progreso;
+      if (!progreso || typeof progreso !== "object") {
+        return res.status(400).json({
+          ok: false,
+          error: "VALIDACION: Se requiere un objeto progreso.",
+        });
+      }
+
+      const data = await EvaluacionService.guardarProgresoExamen(
+        id_intento,
+        id_usuario,
+        progreso,
+      );
+
+      return res.status(200).json({ ok: true, data });
+    } catch (error) {
+      return EvaluacionController.#manejarError(
+        res,
+        error,
+        "Error al guardar progreso del examen.",
+      );
+    }
+  }
+
   static async retomarExamen(req, res) {
     try {
       const id_usuario = req.user.id;
@@ -173,10 +262,6 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * GET /evaluaciones/intentos/:id_intento
-   * Obtiene el detalle completo de un intento (retroalimentación post-examen).
-   */
   static async obtenerIntento(req, res) {
     try {
       const id_usuario = req.user.id;
@@ -206,10 +291,6 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * GET /evaluaciones/historial
-   * Retorna todos los intentos FINALIZADOS del estudiante autenticado.
-   */
   static async obtenerHistorial(req, res) {
     try {
       const id_usuario = req.user.id;
@@ -226,10 +307,6 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * GET /evaluaciones/configuraciones/materia/:id_materia
-   * Retorna las configuraciones disponibles (TEST/EXAMEN) para una materia.
-   */
   static async obtenerConfiguracionesPorMateria(req, res) {
     try {
       const id = EvaluacionController.#parsearId(req.params.id_materia);
@@ -253,10 +330,6 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * POST /evaluaciones/configuraciones/materia/:id_materia
-   * Crea o actualiza la configuración de un modo para una materia (upsert).
-   */
   static async upsertConfiguracion(req, res) {
     try {
       const id_materia = EvaluacionController.#parsearId(req.params.id_materia);
@@ -281,15 +354,11 @@ export class EvaluacionController {
       const resultado = await EvaluacionService.upsertConfiguracion(
         id_materia,
         {
-          modo,
+          modo: String(modo).toUpperCase(),
           tiempo_limite_min:
-            tiempo_limite_min !== undefined
-              ? parseInt(tiempo_limite_min, 10) || null
-              : undefined,
+            EvaluacionController.#parsearEnteroOpcional(tiempo_limite_min),
           intentos_permitidos:
-            intentos_permitidos !== undefined
-              ? parseInt(intentos_permitidos, 10)
-              : undefined,
+            EvaluacionController.#parsearEnteroOpcional(intentos_permitidos),
         },
       );
 
@@ -309,10 +378,6 @@ export class EvaluacionController {
     }
   }
 
-  /**
-   * DELETE /evaluaciones/configuraciones/:id_config
-   * Elimina una configuración. Bloqueado si hay intentos EN_PROGRESO.
-   */
   static async eliminarConfiguracion(req, res) {
     try {
       const id = EvaluacionController.#parsearId(req.params.id_config);

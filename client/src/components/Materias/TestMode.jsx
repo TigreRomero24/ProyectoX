@@ -1,70 +1,75 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
   XCircle,
   Circle,
-  List,
-  ToggleLeft,
   BookOpen,
   Trophy,
   RotateCcw,
 } from "lucide-react";
 import "./Evaluacion.css";
-
-const LETRAS = ["A", "B", "C", "D", "E", "F"];
+import {
+  corregirRespuestaTest,
+  getTipoLabel,
+  normalizarPregunta,
+  validateCompletarRuntimeConfig,
+} from "./questionRuntime";
+import CompletarRenderer from "./completar/CompletarRenderer";
+import {
+  buildCompletarStateFromRespuesta,
+  serializeCompletarState,
+  resolveCompletarMode,
+} from "./completar/completarState";
 
 export default function TestMode({ preguntas, nombreMateria, onVolver }) {
+  const preguntasNorm = useMemo(
+    () => (preguntas || []).map(normalizarPregunta),
+    [preguntas],
+  );
+
   const [actual, setActual] = useState(0);
   const [respuestas, setRespuestas] = useState({});
   const [feedback, setFeedback] = useState({});
   const [mostrarResumen, setMostrarResumen] = useState(false);
 
-  const pregunta = preguntas[actual];
-  const total = preguntas.length;
+  const pregunta = preguntasNorm[actual];
+  const total = preguntasNorm.length;
   const respondidas = Object.keys(respuestas).length;
 
-  // ── Seleccionar respuesta con feedback inmediato ───────────────────────────
-  const handleSeleccionar = (opcionId) => {
-    if (feedback[pregunta.id_pregunta]) return;
-
-    const opcionCorrecta = pregunta.opciones.find((o) => o.es_correcta);
-    const esCorrecta = opcionId === opcionCorrecta?.id_opcion;
-
-    setRespuestas((prev) => ({ ...prev, [pregunta.id_pregunta]: opcionId }));
+  const evaluarAhora = (id_pregunta, respuestaActual) => {
+    const p = preguntasNorm.find((x) => x.id_pregunta === id_pregunta);
+    if (!p || !respuestaActual) return;
+    const result = corregirRespuestaTest(p, respuestaActual);
     setFeedback((prev) => ({
       ...prev,
-      [pregunta.id_pregunta]: {
-        correcto: esCorrecta,
-        opcionElegida: opcionId,
-        opcionCorrecta: opcionCorrecta?.id_opcion,
-        textoCorrecta: opcionCorrecta?.texto,
-      },
+      [id_pregunta]: result,
     }));
   };
 
-  const fb = feedback[pregunta?.id_pregunta];
-  const yaRespondio = !!fb;
-
-  const estadoOpcion = (op) => {
-    if (!yaRespondio) return "idle";
-    if (op.id_opcion === fb.opcionCorrecta) return "correcta";
-    if (op.id_opcion === fb.opcionElegida && !fb.correcto) return "incorrecta";
-    return "idle";
+  const setRespuesta = (id_pregunta, payload) => {
+    setRespuestas((prev) => ({
+      ...prev,
+      [id_pregunta]: payload,
+    }));
+    evaluarAhora(id_pregunta, payload);
   };
 
-  const pct = Math.round((respondidas / total) * 100);
+  const handleLegacy = (opcion_id) => {
+    setRespuesta(pregunta.id_pregunta, {
+      respuesta_json: { opcion_id },
+    });
+  };
 
-  // ── Calcular resultados ────────────────────────────────────────────────────
+  const fb = feedback[pregunta?.id_pregunta];
+  const yaRespondio = !!respuestas[pregunta?.id_pregunta];
+  const pct = total > 0 ? Math.round((respondidas / total) * 100) : 0;
+
   const correctas = Object.values(feedback).filter((f) => f.correcto).length;
-  const incorrectas = Object.values(feedback).filter((f) => !f.correcto).length;
   const sinResponder = total - respondidas;
   const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // PANTALLA DE RESUMEN
-  // ══════════════════════════════════════════════════════════════════════════
   if (mostrarResumen) {
     const aprobado = porcentaje >= 70;
     return (
@@ -75,29 +80,16 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
           >
             {aprobado ? <Trophy size={36} /> : <BookOpen size={36} />}
           </div>
-
           <h2 className="ev-resultado-title">
             {aprobado ? "¡Buen trabajo!" : "Evaluación completada"}
           </h2>
-          <p
-            style={{
-              color: "#6b7280",
-              fontSize: "0.9rem",
-              marginBottom: "8px",
-            }}
-          >
-            {nombreMateria} — Modo Evaluación
-          </p>
-
+          <p className="ev-resultado-sub">{nombreMateria} — Modo Test</p>
           <div className="ev-resultado-nota">
-            <span
-              className={`ev-nota-num ${aprobado ? "ev-nota--ok" : "ev-nota--fail"}`}
-            >
+            <span className={`ev-nota-num ${aprobado ? "ev-nota--ok" : "ev-nota--fail"}`}>
               {porcentaje}
             </span>
             <span className="ev-nota-den">%</span>
           </div>
-
           <div className="ev-resultado-stats">
             <div className="ev-stat">
               <span className="ev-stat-val" style={{ color: "#16a34a" }}>
@@ -107,47 +99,14 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
             </div>
             <div className="ev-stat-sep" />
             <div className="ev-stat">
-              <span className="ev-stat-val" style={{ color: "#ef4444" }}>
-                {incorrectas}
-              </span>
-              <span className="ev-stat-label">Incorrectas</span>
-            </div>
-            {sinResponder > 0 && (
-              <>
-                <div className="ev-stat-sep" />
-                <div className="ev-stat">
-                  <span className="ev-stat-val" style={{ color: "#f59e0b" }}>
-                    {sinResponder}
-                  </span>
-                  <span className="ev-stat-label">Sin responder</span>
-                </div>
-              </>
-            )}
-            <div className="ev-stat-sep" />
-            <div className="ev-stat">
-              <span className="ev-stat-val">{total}</span>
-              <span className="ev-stat-label">Total</span>
+              <span className="ev-stat-val">{sinResponder}</span>
+              <span className="ev-stat-label">Sin responder</span>
             </div>
           </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              marginTop: "8px",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{ display: "flex", gap: 12 }}>
             <button
               className="ev-btn-volver"
-              style={{
-                background: "#f3f4f6",
-                color: "#374151",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
+              style={{ background: "#f3f4f6", color: "#374151" }}
               onClick={() => {
                 setMostrarResumen(false);
                 setActual(0);
@@ -166,12 +125,11 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // CUESTIONARIO EN CURSO
-  // ══════════════════════════════════════════════════════════════════════════
+  const estructura = pregunta?.estructura_json || {};
+  const completarIssue = validateCompletarRuntimeConfig(pregunta);
+
   return (
     <div className="ev-root">
-      {/* ── Cabecera ──────────────────────────────────────────────────── */}
       <div className="ev-topbar">
         <div className="ev-topbar-left">
           <div className="ev-mode-icon ev-mode-icon--test">
@@ -187,7 +145,6 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         </button>
       </div>
 
-      {/* ── Barra de progreso ─────────────────────────────────────────── */}
       <div className="ev-progress-bar-wrap">
         <div className="ev-progress-labels">
           <span>Progreso</span>
@@ -196,39 +153,23 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
           </span>
         </div>
         <div className="ev-progress-track">
-          <div
-            className="ev-progress-fill ev-progress-fill--test"
-            style={{ width: `${pct}%` }}
-          />
+          <div className="ev-progress-fill ev-progress-fill--test" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
-      {/* ── Tarjeta pregunta ──────────────────────────────────────────── */}
       <div className="ev-card">
         <div className="ev-badges">
           <span className="ev-badge ev-badge--num">Pregunta {actual + 1}</span>
-          <span className="ev-badge ev-badge--tipo">
-            {pregunta.tipo_pregunta === "MULTIPLE" ? (
-              <>
-                <List size={11} /> Opción Múltiple
-              </>
-            ) : (
-              <>
-                <ToggleLeft size={11} /> Verdadero / Falso
-              </>
-            )}
-          </span>
+          <span className="ev-badge ev-badge--tipo">{getTipoLabel(pregunta.tipo_pregunta)}</span>
           {yaRespondio && (
-            <span
-              className={`ev-badge ${fb.correcto ? "ev-badge--ok" : "ev-badge--fail"}`}
-            >
+            <span className={`ev-badge ${fb.correcto ? "ev-badge--ok" : "ev-badge--fail"}`}>
               {fb.correcto ? (
                 <>
                   <CheckCircle2 size={11} /> Correcta
                 </>
               ) : (
                 <>
-                  <XCircle size={11} /> Incorrecta
+                  <XCircle size={11} /> {fb.puntos > 0 ? "Parcial" : "Incorrecta"}
                 </>
               )}
             </span>
@@ -236,42 +177,170 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         </div>
 
         <p className="ev-enunciado">{pregunta.enunciado}</p>
-        {pregunta.url_imagen && (
-          <img src={pregunta.url_imagen} alt="Imagen" className="ev-imagen" />
+        {pregunta.url_imagen && <img src={pregunta.url_imagen} alt="Imagen" className="ev-imagen" />}
+
+        {(pregunta.tipo_pregunta === "MULTIPLE" || pregunta.tipo_pregunta === "VERDADERO_FALSO") && (
+          <div className="ev-opciones">
+            {(estructura.opciones || []).map((op) => {
+              const seleccion = respuestas[pregunta.id_pregunta]?.respuesta_json?.opcion_id === op.opcion_id;
+              const esCorrecta = fb?.correcta === op.opcion_id;
+              const esIncorrecta = seleccion && yaRespondio && !esCorrecta;
+              return (
+                <button
+                  key={op.opcion_id}
+                  className={`ev-opcion ${esCorrecta ? "ev-opcion--correcta" : esIncorrecta ? "ev-opcion--incorrecta" : "ev-opcion--idle ev-opcion--hover"}`}
+                  onClick={() => handleLegacy(op.opcion_id)}
+                >
+                  <span className={`ev-opcion-radio ${seleccion ? "ev-opcion-radio--seleccionada" : ""}`}>
+                    {seleccion ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                  </span>
+                  <span className="ev-opcion-texto">{op.texto}</span>
+                </button>
+              );
+            })}
+          </div>
         )}
 
-        <div className="ev-opciones">
-          {pregunta.opciones.map((op, i) => {
-            const estado = estadoOpcion(op);
-            return (
-              <button
-                key={op.id_opcion}
-                className={`ev-opcion ev-opcion--${estado}${!yaRespondio ? " ev-opcion--hover" : ""}`}
-                onClick={() => handleSeleccionar(op.id_opcion)}
-                disabled={yaRespondio}
-              >
-                <span className={`ev-opcion-radio ev-opcion-radio--${estado}`}>
-                  {estado === "correcta" ? (
-                    <CheckCircle2 size={20} />
-                  ) : estado === "incorrecta" ? (
-                    <XCircle size={20} />
-                  ) : (
-                    <Circle size={20} />
-                  )}
-                </span>
-                <span className={`ev-opcion-letra ev-opcion-letra--${estado}`}>
-                  {LETRAS[i]}
-                </span>
-                <span className="ev-opcion-texto">{op.texto}</span>
-              </button>
-            );
-          })}
-        </div>
+        {pregunta.tipo_pregunta === "SELECCION_MULTIPLE" && (
+          <div className="ev-opciones">
+            {(estructura.opciones || []).map((op) => {
+              const actualSel =
+                respuestas[pregunta.id_pregunta]?.respuesta_json?.opciones_ids || [];
+              const checked = actualSel.includes(op.opcion_id);
+              return (
+                <button
+                  key={op.opcion_id}
+                  className={`ev-opcion ${checked ? "ev-opcion--seleccionada" : "ev-opcion--idle ev-opcion--hover"}`}
+                  onClick={() => {
+                    const set = new Set(actualSel);
+                    if (set.has(op.opcion_id)) set.delete(op.opcion_id);
+                    else set.add(op.opcion_id);
+                    setRespuesta(pregunta.id_pregunta, {
+                      respuesta_json: { opciones_ids: [...set] },
+                    });
+                  }}
+                >
+                  <span className={`ev-opcion-radio ${checked ? "ev-opcion-radio--seleccionada" : ""}`}>
+                    {checked ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                  </span>
+                  <span className="ev-opcion-texto">{op.texto}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "ORDENAR" && (
+          <div className="ev-opciones">
+            {(respuestas[pregunta.id_pregunta]?.respuesta_json?.orden_ids ||
+              (estructura.items || []).map((i) => i.item_id)
+            ).map((id, idx, arr) => {
+              const item = (estructura.items || []).find((i) => i.item_id === id);
+              return (
+                <div key={id} className="ev-opcion ev-opcion--idle">
+                  <span className="ev-opcion-letra">{idx + 1}</span>
+                  <span className="ev-opcion-texto">{item?.texto || id}</span>
+                  <>
+                    <button
+                      className="ev-salir-btn"
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const copy = [...arr];
+                        [copy[idx - 1], copy[idx]] = [copy[idx], copy[idx - 1]];
+                        setRespuesta(pregunta.id_pregunta, {
+                          respuesta_json: { orden_ids: copy },
+                        });
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="ev-salir-btn"
+                      disabled={idx === arr.length - 1}
+                      onClick={() => {
+                        const copy = [...arr];
+                        [copy[idx + 1], copy[idx]] = [copy[idx], copy[idx + 1]];
+                        setRespuesta(pregunta.id_pregunta, {
+                          respuesta_json: { orden_ids: copy },
+                        });
+                      }}
+                    >
+                      ↓
+                    </button>
+                  </>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "RELACIONAR" && (
+          <div className="ev-opciones">
+            {(estructura.izquierda || []).map((izq) => {
+              const actualPares = respuestas[pregunta.id_pregunta]?.respuesta_json?.pares || [];
+              const actual = actualPares.find((p) => p.izquierda_id === izq.izquierda_id);
+              return (
+                <div key={izq.izquierda_id} className="ev-opcion ev-opcion--idle">
+                  <span className="ev-opcion-texto" style={{ minWidth: 160 }}>
+                    {izq.texto}
+                  </span>
+                  <select
+                    className="ev-salir-btn"
+                    value={actual?.derecha_id || ""}
+                    onChange={(e) => {
+                      const copy = actualPares.filter((p) => p.izquierda_id !== izq.izquierda_id);
+                      copy.push({ izquierda_id: izq.izquierda_id, derecha_id: e.target.value });
+                      setRespuesta(pregunta.id_pregunta, {
+                        respuesta_json: { pares: copy },
+                      });
+                    }}
+                  >
+                    <option value="">Selecciona</option>
+                    {(estructura.derecha || []).map((d) => (
+                      <option key={d.derecha_id} value={d.derecha_id}>
+                        {d.texto}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "COMPLETAR" && (
+          completarIssue ? (
+            <div className="ev-feedback ev-feedback--fail">
+              <XCircle size={16} />
+              <div>
+                <strong>Configuración inválida</strong>
+                <p className="ev-feedback-sub">
+                  [{completarIssue.code}] {completarIssue.message}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <CompletarRenderer
+              estructura={estructura}
+              respuestaMap={buildCompletarStateFromRespuesta(
+                respuestas[pregunta.id_pregunta]?.respuesta_json,
+              )}
+              onChangeMap={(nextMap) => {
+                const slotIds = (estructura.espacios || []).map((esp) => esp.espacio_id);
+                setRespuesta(pregunta.id_pregunta, {
+                  respuesta_json: serializeCompletarState(
+                    nextMap,
+                    slotIds,
+                    resolveCompletarMode(estructura),
+                  ),
+                });
+              }}
+            />
+          )
+        )}
 
         {yaRespondio && (
-          <div
-            className={`ev-feedback ${fb.correcto ? "ev-feedback--ok" : "ev-feedback--fail"}`}
-          >
+          <div className={`ev-feedback ${fb.correcto ? "ev-feedback--ok" : "ev-feedback--fail"}`}>
             {fb.correcto ? (
               <>
                 <CheckCircle2 size={16} /> <strong>¡Correcto!</strong>
@@ -280,10 +349,8 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
               <>
                 <XCircle size={16} />
                 <div>
-                  <strong>Incorrecto</strong>
-                  <p className="ev-feedback-sub">
-                    La respuesta correcta es: {fb.textoCorrecta}
-                  </p>
+                  <strong>{fb.puntos > 0 ? "Respuesta parcial" : "Incorrecto"}</strong>
+                  <p className="ev-feedback-sub">Puntaje: {(fb.puntos * 100).toFixed(0)}%</p>
                 </div>
               </>
             )}
@@ -291,7 +358,6 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         )}
       </div>
 
-      {/* ── Navegación ────────────────────────────────────────────────── */}
       <div className="ev-nav">
         <button
           className="ev-nav-btn ev-nav-btn--prev"
@@ -302,31 +368,21 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         </button>
 
         <div className="ev-dots">
-          {preguntas.map((p, i) => (
+          {preguntasNorm.map((p, i) => (
             <button
               key={p.id_pregunta}
-              className={`ev-dot
-                ${i === actual ? "ev-dot--actual" : ""}
-                ${feedback[p.id_pregunta]?.correcto === true ? "ev-dot--ok" : ""}
-                ${feedback[p.id_pregunta]?.correcto === false ? "ev-dot--fail" : ""}
-              `}
+              className={`ev-dot ${i === actual ? "ev-dot--actual" : ""} ${feedback[p.id_pregunta]?.correcto === true ? "ev-dot--ok" : ""} ${feedback[p.id_pregunta]?.correcto === false ? "ev-dot--fail" : ""}`}
               onClick={() => setActual(i)}
             />
           ))}
         </div>
 
         {actual < total - 1 ? (
-          <button
-            className="ev-nav-btn ev-nav-btn--next"
-            onClick={() => setActual((q) => q + 1)}
-          >
+          <button className="ev-nav-btn ev-nav-btn--next" onClick={() => setActual((q) => q + 1)}>
             Siguiente <ChevronRight size={18} />
           </button>
         ) : (
-          <button
-            className="ev-nav-btn ev-nav-btn--finish"
-            onClick={() => setMostrarResumen(true)}
-          >
+          <button className="ev-nav-btn ev-nav-btn--finish" onClick={() => setMostrarResumen(true)}>
             Ver Resultados
           </button>
         )}

@@ -4,15 +4,22 @@ import { TokenFactory } from "../utils/tokenFactory.js";
 import { env } from "../config/environment.js";
 import { sequelize } from "../config/database.js";
 import argon2 from "argon2";
+import { parseDuration } from "../utils/duration.js";
 
-/**
- * @class AuthService
- */
+const accessFactory = TokenFactory.create("ACCESS", env.jwt);
+const refreshFactory = TokenFactory.create("REFRESH", env.jwt);
+const REFRESH_DURATION_MS = parseDuration(env.jwt.refreshExpiresIn);
+const USUARIO_MIN_ATTRIBUTES = ["id_usuario", "rol", "activo"];
+
 export class AuthService {
+  static refreshLocks = new Map();
+
   static _extraerDatosGoogle(googleProfile) {
-    const correo =
-      googleProfile.email ||
-      (googleProfile.emails && googleProfile.emails[0]?.value);
+    if (!googleProfile || typeof googleProfile !== "object") {
+      throw new Error("VALIDACION: Perfil de Google inválido o no recibido.");
+    }
+
+    const correo = googleProfile.email || googleProfile.emails?.[0]?.value;
     const googleId = googleProfile.sub || googleProfile.id;
 
     if (!correo || !googleId) {
@@ -20,13 +27,15 @@ export class AuthService {
         "VALIDACION: El perfil de Google no contiene correo o ID.",
       );
     }
+
     return { correo: correo.toLowerCase(), googleId };
   }
 
-  /**
-   * @method procesarLoginGoogle
-   */
   static async procesarLoginGoogle(googleProfile, dispositivoId) {
+    if (!dispositivoId || typeof dispositivoId !== "string") {
+      throw new Error("VALIDACION: Identificador de dispositivo inválido.");
+    }
+
     const { correo, googleId } = this._extraerDatosGoogle(googleProfile);
 
     if (!correo.endsWith("@unemi.edu.ec")) {
@@ -45,16 +54,14 @@ export class AuthService {
 
       if (!usuario)
         throw new Error("USUARIO_NO_REGISTRADO: Contacte al administrador.");
-      if (!usuario.activo)
+
+      if (usuario.activo === false)
         throw new Error("USUARIO_INACTIVO: Cuenta deshabilitada.");
 
       if (!usuario.google_id) {
         usuario.google_id = googleId;
         await usuario.save({ transaction: t });
       }
-
-      const accessFactory = TokenFactory.create("ACCESS", env.jwt);
-      const refreshFactory = TokenFactory.create("REFRESH", env.jwt);
 
       const accessToken = accessFactory.generateToken({
         id: usuario.id_usuario,
@@ -72,6 +79,8 @@ export class AuthService {
         type: argon2.argon2id,
       });
 
+      const expiracionRefresh = new Date(Date.now() + REFRESH_DURATION_MS);
+
       let sesion = await SesionDispositivo.findOne({
         where: {
           dispositivo_id: dispositivoId,
@@ -81,38 +90,28 @@ export class AuthService {
       });
 
       if (sesion) {
-        sesion.ultima_actividad = new Date();
-        sesion.expiracion_refresh = new Date(
-          Date.now() + 7 * 24 * 60 * 60 * 1000,
-        );
+        sesion.expiracion_refresh = expiracionRefresh;
         sesion.refresh_token_hash = hashedRefresh;
         await sesion.save({ transaction: t });
       } else {
-        const sesionesPrevias = await SesionDispositivo.findAll({
+        const limite =
+          usuario.limite_dispositivos > 0 ? usuario.limite_dispositivos : 3;
+
+        const sesionesActivas = await SesionDispositivo.count({
           where: { id_usuario: usuario.id_usuario },
-          order: [["ultima_actividad", "ASC"]],
           transaction: t,
         });
 
-        if (sesionesPrevias.length >= usuario.limite_dispositivos) {
-          const sesionesABorrar =
-            sesionesPrevias.length - usuario.limite_dispositivos + 1;
-          const idsABorrar = sesionesPrevias
-            .slice(0, sesionesABorrar)
-            .map((s) => s.id_sesion);
-          await SesionDispositivo.destroy({
-            where: { id_sesion: idsABorrar },
-            transaction: t,
-          });
+        if (sesionesActivas >= limite) {
+          throw new Error("ACCESO_DENEGADO: Límite de dispositivos alcanzado.");
         }
 
         sesion = await SesionDispositivo.create(
           {
             id_usuario: usuario.id_usuario,
             dispositivo_id: dispositivoId,
-            ultima_actividad: new Date(),
             refresh_token_hash: hashedRefresh,
-            expiracion_refresh: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            expiracion_refresh: expiracionRefresh,
           },
           { transaction: t },
         );
@@ -135,58 +134,98 @@ export class AuthService {
     }
   }
 
-  /**
-   * @method cerrarSesion
-   */
   static async cerrarSesion(dispositivoId, id_usuario) {
     if (!dispositivoId || !id_usuario)
       throw new Error("VALIDACION: Datos incompletos para cerrar sesión.");
 
     await SesionDispositivo.destroy({
-      where: { dispositivo_id: dispositivoId, id_usuario: id_usuario },
+      where: { dispositivo_id: dispositivoId, id_usuario },
     });
   }
 
-  /**
-   * @method renovarToken
-   */
   static async renovarToken(refreshTokenCrudo) {
     if (!refreshTokenCrudo)
       throw new Error("VALIDACION: Refresh token no proporcionado.");
 
-    const refreshFactory = TokenFactory.create("REFRESH", env.jwt);
     let payload;
-
     try {
       payload = refreshFactory.verifyToken(refreshTokenCrudo);
     } catch (error) {
+      console.error(
+        "[AuthService renovarToken] verifyToken falló:",
+        error.message,
+      );
       throw new Error(
         "TOKEN_INVALIDO: El refresh token ha expirado o está corrupto.",
       );
     }
 
+    const lockKey = `${payload.id}:${payload.dispositivoId}`;
+
+    if (this.refreshLocks.has(lockKey)) {
+      return this.refreshLocks.get(lockKey);
+    }
+
+    const inFlight = this._renovarTokenConControl(
+      refreshTokenCrudo,
+      payload,
+    ).finally(() => {
+      if (this.refreshLocks.get(lockKey) === inFlight) {
+        this.refreshLocks.delete(lockKey);
+      }
+    });
+
+    this.refreshLocks.set(lockKey, inFlight);
+
+    return inFlight;
+  }
+
+  static async _renovarTokenConControl(refreshTokenCrudo, payload) {
     const t = await sequelize.transaction();
 
     try {
       const sesion = await SesionDispositivo.findOne({
+        attributes: [
+          "id_sesion",
+          "id_usuario",
+          "dispositivo_id",
+          "refresh_token_hash",
+          "expiracion_refresh",
+        ],
         where: {
           id_usuario: payload.id,
           dispositivo_id: payload.dispositivoId,
         },
-        // FIX: "usuario" → "propietario" para coincidir con relacionesModel.js y sessionMiddleware.js
-        include: [{ model: Usuario, as: "propietario" }],
+        include: [
+          {
+            model: Usuario,
+            as: "propietario",
+            attributes: USUARIO_MIN_ATTRIBUTES,
+            required: false,
+          },
+        ],
         transaction: t,
       });
 
       if (!sesion)
         throw new Error("SESION_NO_ENCONTRADA: La sesión ha sido cerrada.");
 
-      // FIX: sesion.usuario → sesion.propietario
+      if (sesion.expiracion_refresh < new Date()) {
+        await SesionDispositivo.destroy({
+          where: { id_sesion: sesion.id_sesion },
+          transaction: t,
+        });
+        throw new Error("SESION_NO_ENCONTRADA: La sesión ha expirado.");
+      }
+
       const usuario =
         sesion.propietario ||
-        (await Usuario.findByPk(sesion.id_usuario, { transaction: t }));
+        (await Usuario.findByPk(sesion.id_usuario, {
+          attributes: USUARIO_MIN_ATTRIBUTES,
+          transaction: t,
+        }));
 
-      if (!usuario || !usuario.activo)
+      if (!usuario || usuario.activo === false)
         throw new Error("USUARIO_INACTIVO: El usuario ha sido desactivado.");
 
       const isValid = await argon2.verify(
@@ -200,11 +239,10 @@ export class AuthService {
           transaction: t,
         });
         throw new Error(
-          "TOKEN_INVALIDO: Intento de reutilización de token detectado. Sesión revocada.",
+          "TOKEN_INVALIDO: Intento de reutilización detectado. Sesión revocada.",
         );
       }
 
-      const accessFactory = TokenFactory.create("ACCESS", env.jwt);
       const newAccessToken = accessFactory.generateToken({
         id: usuario.id_usuario,
         rol: usuario.rol,
@@ -222,10 +260,7 @@ export class AuthService {
       });
 
       sesion.refresh_token_hash = hashedRefresh;
-      sesion.ultima_actividad = new Date();
-      sesion.expiracion_refresh = new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000,
-      );
+      sesion.expiracion_refresh = new Date(Date.now() + REFRESH_DURATION_MS);
       await sesion.save({ transaction: t });
 
       await t.commit();

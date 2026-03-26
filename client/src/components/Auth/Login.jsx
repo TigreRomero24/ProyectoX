@@ -31,7 +31,8 @@ export default function Login() {
   }, []);
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/v1/auth/google";
+    const frontend = encodeURIComponent(window.location.origin);
+    window.location.href = `/api/v1/auth/google?frontend=${frontend}`;
   };
 
   const handleLoginDirecto = async (rol) => {

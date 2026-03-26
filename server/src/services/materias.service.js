@@ -1,5 +1,10 @@
-import { Op } from "sequelize";
+import { Op, UniqueConstraintError } from "sequelize";
 import { sequelize } from "../config/database.js";
+import {
+  buildMateriaPublicUrl,
+  deleteFileIfExists,
+  deleteMateriaImageByUrl,
+} from "../utils/mediaUpload.js";
 // Importar desde index.js garantiza que sean las mismas instancias
 // que usaron relacionesModel.js para definir las asociaciones.
 // Si se importan desde rutas individuales Sequelize no reconoce los joins.
@@ -46,7 +51,7 @@ export class MateriaService {
   // ─── Listar todas ────────────────────────────────────────────────────────────
   static async obtenerMaterias() {
     return Materia.findAll({
-      attributes: ["id_materia", "nombre", "createdAt"],
+      attributes: ["id_materia", "nombre", "imagen_url", "createdAt"],
       order: [["nombre", "ASC"]],
       raw: true,
     });
@@ -61,7 +66,9 @@ export class MateriaService {
   static async obtenerMateriasDeUsuario(id_usuario) {
     const inscripciones = await Inscripcion.findAll({
       where: { id_usuario, activo: true },
-      include: [{ model: Materia, attributes: ["id_materia", "nombre"] }],
+      include: [
+        { model: Materia, attributes: ["id_materia", "nombre", "imagen_url"] },
+      ],
       raw: true,
       nest: true,
     });
@@ -81,6 +88,7 @@ export class MateriaService {
         mapaMateria.set(id, {
           id_materia: mat.id_materia,
           nombre: mat.nombre,
+          imagen_url: mat.imagen_url || null,
           modos_inscritos: [],
         });
       }
@@ -98,7 +106,7 @@ export class MateriaService {
   // ─── Obtener por ID ──────────────────────────────────────────────────────────
   static async obtenerMateriaPorId(id_materia) {
     const materia = await Materia.findByPk(id_materia, {
-      attributes: ["id_materia", "nombre", "createdAt"],
+      attributes: ["id_materia", "nombre", "imagen_url", "createdAt"],
     });
     if (!materia)
       throw new Error("NO_ENCONTRADO: La materia solicitada no existe.");
@@ -152,6 +160,8 @@ export class MateriaService {
       const materia = await Materia.findByPk(id_materia, { transaction: t });
       if (!materia) throw new Error("NO_ENCONTRADO: La materia no existe.");
 
+      const imagenUrlActual = materia.imagen_url;
+
       const cantPreguntas = await BancoPregunta.count({
         where: { id_materia },
         transaction: t,
@@ -174,7 +184,85 @@ export class MateriaService {
 
       await materia.destroy({ transaction: t, force: true });
       await t.commit();
+
+      try {
+        await deleteMateriaImageByUrl(imagenUrlActual);
+      } catch (cleanupError) {
+        console.warn(
+          `[MateriaService] No se pudo eliminar imagen asociada de materia ${id_materia}: ${cleanupError.message}`,
+        );
+      }
+
       return { mensaje: "Materia eliminada permanentemente del sistema." };
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  static async subirImagenMateria(id_materia, archivoImagen) {
+    if (!archivoImagen) {
+      throw new Error("VALIDACION: Debe enviar un archivo en el campo 'imagen'.");
+    }
+
+    const t = await sequelize.transaction();
+    const rutaArchivoNuevo = archivoImagen.path;
+    const imagenUrlNueva = buildMateriaPublicUrl(archivoImagen.filename);
+
+    try {
+      const materia = await Materia.findByPk(id_materia, { transaction: t });
+      if (!materia) throw new Error("NO_ENCONTRADO: La materia no existe.");
+
+      const imagenUrlAnterior = materia.imagen_url;
+      await materia.update({ imagen_url: imagenUrlNueva }, { transaction: t });
+      await t.commit();
+
+      if (imagenUrlAnterior) {
+        try {
+          await deleteMateriaImageByUrl(imagenUrlAnterior);
+        } catch (cleanupError) {
+          console.warn(
+            `[MateriaService] No se pudo eliminar imagen previa de materia ${id_materia}: ${cleanupError.message}`,
+          );
+        }
+      }
+
+      return {
+        id_materia,
+        imagen_url: imagenUrlNueva,
+      };
+    } catch (error) {
+      await t.rollback();
+      await deleteFileIfExists(rutaArchivoNuevo);
+      throw error;
+    }
+  }
+
+  static async eliminarImagenMateria(id_materia) {
+    const t = await sequelize.transaction();
+
+    try {
+      const materia = await Materia.findByPk(id_materia, { transaction: t });
+      if (!materia) throw new Error("NO_ENCONTRADO: La materia no existe.");
+
+      const imagenUrlAnterior = materia.imagen_url;
+      await materia.update({ imagen_url: null }, { transaction: t });
+      await t.commit();
+
+      if (imagenUrlAnterior) {
+        try {
+          await deleteMateriaImageByUrl(imagenUrlAnterior);
+        } catch (cleanupError) {
+          console.warn(
+            `[MateriaService] No se pudo eliminar imagen de materia ${id_materia}: ${cleanupError.message}`,
+          );
+        }
+      }
+
+      return {
+        id_materia,
+        imagen_url: null,
+      };
     } catch (error) {
       await t.rollback();
       throw error;
@@ -205,6 +293,9 @@ const WITH_ASSOCIATIONS = {
     { model: Materia, attributes: ["id_materia", "nombre"] },
   ],
 };
+
+const MODOS_EVALUACION_VALIDOS = ["TEST", "EXAMEN"];
+const MODOS_EVALUACION_DEFAULT = ["TEST", "EXAMEN"];
 
 export class InscripcionService {
   // ─── Listar con búsqueda opcional ────────────────────────────────────────────
@@ -256,14 +347,26 @@ export class InscripcionService {
 
   // ─── Crear inscripción ───────────────────────────────────────────────────────
   static async crear({ id_usuario, id_materia, modo_evaluacion }) {
-    if (!id_usuario || !id_materia || !modo_evaluacion) {
-      throw new Error(
-        "VALIDACION: id_usuario, id_materia y modo_evaluacion son requeridos.",
-      );
+    if (!id_usuario || !id_materia) {
+      throw new Error("VALIDACION: id_usuario e id_materia son requeridos.");
     }
-    if (!["TEST", "EXAMEN"].includes(modo_evaluacion)) {
+
+    const modoNormalizado =
+      typeof modo_evaluacion === "string"
+        ? modo_evaluacion.trim().toUpperCase()
+        : "";
+    const modoFueEnviado =
+      modo_evaluacion !== undefined &&
+      modo_evaluacion !== null &&
+      `${modo_evaluacion}`.trim() !== "";
+
+    if (modoFueEnviado && !MODOS_EVALUACION_VALIDOS.includes(modoNormalizado)) {
       throw new Error("VALIDACION: modo_evaluacion debe ser TEST o EXAMEN.");
     }
+
+    const modosObjetivo = modoFueEnviado
+      ? [modoNormalizado]
+      : [...MODOS_EVALUACION_DEFAULT];
 
     const usuario = await Usuario.findByPk(id_usuario, {
       attributes: ["id_usuario", "correo_institucional", "rol", "activo"],
@@ -281,7 +384,7 @@ export class InscripcionService {
     const materia = await Materia.findByPk(id_materia);
     if (!materia) throw new Error("NO_ENCONTRADO: La materia no existe.");
 
-    if (modo_evaluacion === "EXAMEN") {
+    if (modosObjetivo.includes("EXAMEN")) {
       const nPreguntas = await BancoPregunta.count({
         where: { id_materia, activo: true },
       });
@@ -292,27 +395,100 @@ export class InscripcionService {
       }
     }
 
-    const existe = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
-    });
-    if (existe) {
-      throw new Error(
-        `DUPLICADO: El estudiante ya está inscrito en esta materia con modo ${modo_evaluacion}.`,
+    const t = await sequelize.transaction();
+    try {
+      const existentes = await Inscripcion.findAll({
+        where: {
+          id_usuario,
+          id_materia,
+          modo_evaluacion: { [Op.in]: modosObjetivo },
+        },
+        attributes: ["modo_evaluacion"],
+        transaction: t,
+      });
+
+      const modosExistentes = new Set(
+        existentes.map((ins) => ins.modo_evaluacion),
       );
+      const modosAInsertar = modosObjetivo.filter(
+        (modo) => !modosExistentes.has(modo),
+      );
+
+      if (modosAInsertar.length === 0) {
+        if (modosObjetivo.length === 1) {
+          throw new Error(
+            `DUPLICADO: El estudiante ya está inscrito en esta materia con modo ${modosObjetivo[0]}.`,
+          );
+        }
+        throw new Error(
+          "DUPLICADO: El estudiante ya está inscrito en esta materia con los modos TEST y EXAMEN.",
+        );
+      }
+
+      await Inscripcion.bulkCreate(
+        modosAInsertar.map((modo) => ({
+          id_usuario,
+          id_materia,
+          modo_evaluacion: modo,
+          activo: true,
+        })),
+        { transaction: t },
+      );
+
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+
+      if (error instanceof UniqueConstraintError) {
+        const existentesTrasConflicto = await Inscripcion.findAll({
+          where: {
+            id_usuario,
+            id_materia,
+            modo_evaluacion: { [Op.in]: modosObjetivo },
+          },
+          attributes: ["modo_evaluacion"],
+        });
+
+        const modosExistentesTrasConflicto = new Set(
+          existentesTrasConflicto.map((ins) => ins.modo_evaluacion),
+        );
+        const estadoObjetivoCumplido = modosObjetivo.every((modo) =>
+          modosExistentesTrasConflicto.has(modo),
+        );
+
+        if (!estadoObjetivoCumplido) {
+          throw new Error(
+            "DUPLICADO: Ya existen inscripciones para uno o más modos solicitados.",
+          );
+        }
+
+        // Estado final idempotente: otro request ya creó los modos objetivo.
+      } else {
+        throw error;
+      }
     }
 
-    await Inscripcion.create({
-      id_usuario,
-      id_materia,
-      modo_evaluacion,
-      activo: true,
-    });
-
-    const nueva = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
+    const inscripciones = await Inscripcion.findAll({
+      where: {
+        id_usuario,
+        id_materia,
+        modo_evaluacion: { [Op.in]: modosObjetivo },
+      },
       ...WITH_ASSOCIATIONS,
     });
-    return toDTO(nueva);
+
+    const dto = inscripciones.map(toDTO);
+
+    if (modosObjetivo.length === 1) {
+      return dto[0] || null;
+    }
+
+    const filaCompat = dto.find((row) => row.modo_evaluacion === "TEST") || dto[0];
+    return {
+      ...filaCompat,
+      modos_inscritos: dto.map((row) => row.modo_evaluacion),
+      inscripciones: dto,
+    };
   }
 
   // ─── Cambiar estado ──────────────────────────────────────────────────────────

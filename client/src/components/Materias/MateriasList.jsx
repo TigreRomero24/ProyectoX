@@ -24,7 +24,7 @@ import { api } from "../../services/api";
 import TestMode from "./TestMode";
 import ExamMode from "./ExamMode";
 import "./Materias.css";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 
 const ICONOS = [
   Atom,
@@ -160,19 +160,37 @@ export default function MateriasList() {
     }
   };
 
-  const iniciarExamen = async (config) => {
+  const iniciarExamen = async (config, { reiniciar = false } = {}) => {
     setIniciando(config.id_config);
     setError("");
-    setIntentoEnProgreso(null);
+    if (reiniciar) {
+      setIntentoEnProgreso(null);
+    }
     try {
-      const res = await api.iniciarExamen(config.id_config);
+      const res = await api.iniciarExamen(config.id_config, { reiniciar });
+
+      if (res.data?.intento_reutilizado && !reiniciar) {
+        setIntentoEnProgreso({ id_intento: res.data.id_intento, config });
+        setError(
+          "Tienes un examen en progreso. Puedes retomarlo o iniciar uno nuevo desde cero.",
+        );
+        return;
+      }
+
       setExamenData({ ...res.data, modo: config.modo });
-      toast("¡Examen iniciado!");
+      toast(
+        reiniciar
+          ? "Se inició un nuevo examen desde cero"
+          : res.data?.intento_reutilizado
+            ? "Retomando examen en progreso"
+            : "¡Examen iniciado!",
+      );
+      setIntentoEnProgreso(null);
       setVista(VISTA.EXAMEN);
     } catch (e) {
       if (e.message === "INTENTO_EN_PROGRESO" && e.id_intento) {
         setIntentoEnProgreso({ id_intento: e.id_intento, config });
-        setError("Tienes un examen en progreso sin finalizar.");
+        setError("Tienes un examen en progreso sin finalizar. Puedes retomarlo.");
       } else {
         setError(
           e.message?.replace("RESTRICCION: ", "") ||
@@ -193,7 +211,7 @@ export default function MateriasList() {
       setExamenData({ ...res.data, modo: intentoEnProgreso.config.modo });
       setIntentoEnProgreso(null);
       setVista(VISTA.EXAMEN);
-    } catch (e) {
+    } catch {
       setError("No se pudo retomar el examen. Intenta de nuevo.");
     } finally {
       setIniciando(null);
@@ -201,7 +219,11 @@ export default function MateriasList() {
   };
 
   const handleIniciar = (config) =>
-    config.modo === "TEST" ? iniciarTest() : iniciarExamen(config);
+    config.modo === "TEST"
+      ? iniciarTest()
+      : iniciarExamen(config, {
+          reiniciar: intentoEnProgreso?.config?.id_config === config.id_config,
+        });
 
   const volverADetalle = () => {
     setVista(VISTA.DETALLE);
@@ -286,12 +308,21 @@ export default function MateriasList() {
                     className="mat-card"
                     style={{ borderTop: `3px solid ${p.color}` }}
                   >
-                    <div
-                      className="mat-card-icon"
-                      style={{ background: p.bg, color: p.color }}
-                    >
-                      <Icono size={26} />
-                    </div>
+                    {m.imagen_url ? (
+                      <img
+                        className="mat-card-image"
+                        src={m.imagen_url}
+                        alt={`Imagen de ${m.nombre}`}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div
+                        className="mat-card-icon"
+                        style={{ background: p.bg, color: p.color }}
+                      >
+                        <Icono size={26} />
+                      </div>
+                    )}
                     <div className="mat-card-body">
                       <h3 className="mat-card-nombre">{m.nombre}</h3>
                       {m.descripcion && (
@@ -402,8 +433,11 @@ export default function MateriasList() {
                       </span>
                       <span>
                         <RotateCcw size={13} />
-                        {config.intentos_permitidos} intento
-                        {config.intentos_permitidos !== 1 ? "s" : ""}
+                        {config.modo === "TEST"
+                          ? "Intentos infinitos"
+                          : config.intentos_permitidos === null
+                            ? "Intentos infinitos"
+                            : `${config.intentos_permitidos} intento${config.intentos_permitidos !== 1 ? "s" : ""}`}
                       </span>
                     </div>
                     <ul className="mat-modo-list">
@@ -427,7 +461,10 @@ export default function MateriasList() {
                           ) : (
                             <BadgeCheck size={18} />
                           )}
-                          {info.btnLabel}
+                          {config.modo === "EXAMEN" &&
+                          intentoEnProgreso?.config?.id_config === config.id_config
+                            ? "Iniciar examen desde cero"
+                            : info.btnLabel}
                         </>
                       )}
                     </button>

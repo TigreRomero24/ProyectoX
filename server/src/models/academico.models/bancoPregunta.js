@@ -25,8 +25,19 @@ export const BancoPregunta = sequelize.define(
       allowNull: true,
     },
     tipo_pregunta: {
-      type: DataTypes.ENUM("MULTIPLE", "VERDADERO_FALSO"),
+      type: DataTypes.ENUM(
+        "MULTIPLE",
+        "SELECCION_MULTIPLE",
+        "ORDENAR",
+        "RELACIONAR",
+        "VERDADERO_FALSO",
+        "COMPLETAR",
+      ),
       allowNull: false,
+    },
+    estructura_json: {
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
     activo: {
       type: DataTypes.BOOLEAN,

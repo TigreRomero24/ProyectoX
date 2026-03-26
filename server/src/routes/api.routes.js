@@ -9,9 +9,12 @@ import usuarioRoutes from "./usuario.routes.js";
 
 const router = Router();
 
-router.get("/health", (_req, res) =>
-  res.json({ ok: true, mensaje: "API funcionando correctamente." }),
-);
+router.get("/health", (_req, res) => {
+  return res.json({
+    ok: true,
+    mensaje: "API funcionando correctamente.",
+  });
+});
 
 router.use("/auth", authRoutes);
 router.use("/materias", materiaRoutes);

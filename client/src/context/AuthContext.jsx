@@ -3,13 +3,11 @@ import {
   useState,
   useEffect,
   useCallback,
-  useContext,
+  useRef,
 } from "react";
 import { api } from "../services/api";
 
-export const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
+export const AuthContext = createContext(null);
 
 const decodeJWT = (token) => {
   try {
@@ -56,6 +54,18 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const refreshInFlightRef = useRef(null);
+  const refreshIntervalRef = useRef(null);
+  const tokenRef = useRef(token);
+  const userRoleRef = useRef(user?.rol);
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  useEffect(() => {
+    userRoleRef.current = user?.rol;
+  }, [user?.rol]);
 
   const logout = useCallback(async () => {
     try {
@@ -150,37 +160,71 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  const renovarSiExpira = useCallback(async () => {
+    const tokenActual = tokenRef.current;
+    if (!tokenActual) return;
+
+    const payload = decodeJWT(tokenActual);
+    if (!payload?.exp) return;
+
+    const ahora = Math.floor(Date.now() / 1000);
+    const segundosRestantes = payload.exp - ahora;
+
+    if (segundosRestantes >= 300) return;
+
+    if (refreshInFlightRef.current) {
+      return refreshInFlightRef.current;
+    }
+
+    const refreshPromise = (async () => {
+      try {
+        const data = await api.refreshToken();
+        const nuevoPayload = decodeJWT(data.accessToken);
+        const usuarioData = {
+          id: nuevoPayload.id,
+          rol: nuevoPayload.rol ?? userRoleRef.current,
+        };
+
+        persistirSesion(data.accessToken, usuarioData);
+        setToken(data.accessToken);
+        setUser(usuarioData);
+      } catch {
+        await logout();
+      }
+    })();
+
+    const trackedPromise = refreshPromise.finally(() => {
+      if (refreshInFlightRef.current === trackedPromise) {
+        refreshInFlightRef.current = null;
+      }
+    });
+
+    refreshInFlightRef.current = trackedPromise;
+
+    return refreshInFlightRef.current;
+  }, [logout]);
+
   useEffect(() => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+
     if (!token) return;
 
-    const renovarSiExpira = async () => {
-      const payload = decodeJWT(token);
-      if (!payload?.exp) return;
+    void renovarSiExpira();
 
-      const ahora = Math.floor(Date.now() / 1000);
-      const segundosRestantes = payload.exp - ahora;
+    refreshIntervalRef.current = setInterval(() => {
+      void renovarSiExpira();
+    }, 4 * 60 * 1000);
 
-      if (segundosRestantes < 300) {
-        try {
-          const data = await api.refreshToken();
-          const nuevoPayload = decodeJWT(data.accessToken);
-          const usuarioData = {
-            id: nuevoPayload.id,
-            rol: nuevoPayload.rol ?? user?.rol,
-          };
-          persistirSesion(data.accessToken, usuarioData);
-          setToken(data.accessToken);
-          setUser(usuarioData);
-        } catch {
-          logout();
-        }
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
       }
     };
-
-    renovarSiExpira();
-    const intervalo = setInterval(renovarSiExpira, 4 * 60 * 1000);
-    return () => clearInterval(intervalo);
-  }, [token, logout, user?.rol]);
+  }, [token, renovarSiExpira]);
 
   // ── Seguridad global ─────────────────────────────────────────────────────────
   useEffect(() => {

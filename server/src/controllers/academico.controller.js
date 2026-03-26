@@ -1,20 +1,46 @@
 import { AcademicoService } from "../services/academico.service.js";
 
 export class AcademicoController {
-  //Manejador de errores, en un futuro sera actualizado por errorMildeware
+  static #extraerCodigoDetalle(msg = "") {
+    const match = String(msg).match(/^(VALIDACION|ESTADO_INVALIDO|RESTRICCION|NO_ENCONTRADO):\s*([A-Z0-9_]+):\s*(.*)$/);
+    if (!match) return null;
+    return { prefijo: match[1], codigo: match[2], detalle: match[3] };
+  }
 
   static #manejarError(res, error, mensajeServidor) {
     console.error("[AcademicoController]:", error.message);
     const msg = error.message;
+    const detalleError = AcademicoController.#extraerCodigoDetalle(msg);
+
+    if (detalleError?.codigo?.startsWith("COMPLETAR_")) {
+      console.info("[completar.validation.error]", {
+        pregunta_id: null,
+        modo_interaccion: null,
+        codigo_error: detalleError.codigo,
+        actor: "autor",
+      });
+    }
 
     if (msg.startsWith("VALIDACION") || msg.startsWith("ESTADO_INVALIDO")) {
-      return res.status(400).json({ ok: false, error: msg });
+      return res.status(400).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
     if (msg.startsWith("NO_ENCONTRADO")) {
-      return res.status(404).json({ ok: false, error: msg });
+      return res.status(404).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
     if (msg.startsWith("RESTRICCION") || msg.startsWith("DUPLICADO")) {
-      return res.status(409).json({ ok: false, error: msg });
+      return res.status(409).json({
+        ok: false,
+        error: msg,
+        ...(detalleError ? { codigo: detalleError.codigo, mensaje: detalleError.detalle } : {}),
+      });
     }
 
     return res.status(500).json({ ok: false, error: mensajeServidor });
@@ -25,19 +51,15 @@ export class AcademicoController {
     return isNaN(id) || id <= 0 ? null : id;
   }
 
-  /**
-   * Deriva el flag soloActivas desde query params según el rol del usuario.
-   */
   static #parsearSoloActivas(req) {
     const esAdmin = req.user?.rol === "ADMINISTRADOR";
     if (!esAdmin) return true;
     return req.query.activas !== "false";
   }
 
-  // ─── Preguntas ───────────────────────────────────────────────────────────────
   static async crearPregunta(req, res) {
     try {
-      const { id_materia, enunciado, url_imagen, tipo_pregunta, opciones } =
+      const { id_materia, enunciado, url_imagen, tipo_pregunta, estructura_json } =
         req.body;
 
       if (!id_materia || !enunciado || !tipo_pregunta) {
@@ -48,18 +70,20 @@ export class AcademicoController {
         });
       }
 
-      if (!Array.isArray(opciones) || opciones.length === 0) {
+      if (!estructura_json || typeof estructura_json !== "object") {
         return res.status(400).json({
           ok: false,
-          error:
-            "VALIDACION: El campo 'opciones' es requerido y debe ser un arreglo no vacío.",
+          error: "VALIDACION: El campo 'estructura_json' es requerido.",
         });
       }
 
-      const resultado = await AcademicoService.crearPreguntaConOpciones(
-        { id_materia, enunciado, url_imagen, tipo_pregunta },
-        opciones,
-      );
+      const resultado = await AcademicoService.crearPregunta({
+        id_materia,
+        enunciado,
+        url_imagen,
+        tipo_pregunta,
+        estructura_json,
+      });
 
       return res.status(201).json({
         ok: true,
@@ -75,12 +99,6 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * GET /academico/preguntas/materia/:id_materia
-   * Lista preguntas de una materia.
-   * - Alumno: solo activas, sin es_correcta.
-   * - Admin: todas (?activas=false), con es_correcta.
-   */
   static async obtenerPreguntas(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_materia);
@@ -111,12 +129,6 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * GET /academico/preguntas/materia/:id_materia/test
-   * Preguntas para Modo TEST — incluye es_correcta para feedback inmediato.
-   * Solo usuarios autenticados (cualquier rol).
-
-   */
   static async obtenerPreguntasTest(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_materia);
@@ -144,10 +156,6 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * GET /academico/preguntas/:id_pregunta
-   * Detalle de una pregunta específica.
-   */
   static async obtenerPregunta(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_pregunta);
@@ -178,12 +186,6 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * PUT /academico/preguntas/:id_pregunta
-   * Actualiza campos y/o opciones de una pregunta existente.
-   * Bloqueado si la pregunta tiene historial de respuestas en DetalleIntento.
-   * Solo ADMINISTRADOR (protegido en routes).
-   */
   static async actualizarPregunta(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_pregunta);
@@ -195,26 +197,16 @@ export class AcademicoController {
         });
       }
 
-      const { enunciado, url_imagen, tipo_pregunta, opciones } = req.body;
-
-      if (opciones !== undefined && !Array.isArray(opciones)) {
-        return res.status(400).json({
-          ok: false,
-          error: "VALIDACION: El campo 'opciones' debe ser un arreglo.",
-        });
-      }
+      const { enunciado, url_imagen, tipo_pregunta, estructura_json } = req.body;
 
       const datosPregunta = {};
       if (enunciado !== undefined) datosPregunta.enunciado = enunciado;
       if (url_imagen !== undefined) datosPregunta.url_imagen = url_imagen;
       if (tipo_pregunta !== undefined)
         datosPregunta.tipo_pregunta = tipo_pregunta;
+      if (estructura_json !== undefined) datosPregunta.estructura_json = estructura_json;
 
-      const resultado = await AcademicoService.actualizarPregunta(
-        id,
-        datosPregunta,
-        opciones ?? [],
-      );
+      const resultado = await AcademicoService.actualizarPregunta(id, datosPregunta);
 
       return res.status(200).json({
         ok: true,
@@ -230,11 +222,7 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * DELETE /academico/preguntas/:id_pregunta
-
-   */
-  static async eliminarPregunta(req, res) {
+  static async desactivarPregunta(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_pregunta);
       if (!id) {
@@ -245,7 +233,7 @@ export class AcademicoController {
         });
       }
 
-      const resultado = await AcademicoService.eliminarPregunta(id);
+      const resultado = await AcademicoService.desactivarPregunta(id);
 
       return res.status(200).json({
         ok: true,
@@ -261,11 +249,7 @@ export class AcademicoController {
     }
   }
 
-  /**
-   * PATCH /academico/preguntas/:id_pregunta/reactivar
-
-   */
-  static async reactivarPregunta(req, res) {
+  static async activarPregunta(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_pregunta);
       if (!id) {
@@ -276,22 +260,51 @@ export class AcademicoController {
         });
       }
 
-      const resultado = await AcademicoService.reactivarPregunta(id);
+      const resultado = await AcademicoService.activarPregunta(id);
 
       return res.status(200).json({ ok: true, mensaje: resultado.mensaje });
     } catch (error) {
       return AcademicoController.#manejarError(
         res,
         error,
-        "Error al reactivar la pregunta.",
+        "Error al activar la pregunta.",
       );
     }
   }
 
-  /**
-   * POST /academico/preguntas/bulk
-   * Carga masiva de preguntas desde Excel (parseado en el frontend).
-   */
+  static async eliminarPreguntaFisica(req, res) {
+    try {
+      const id = AcademicoController.#parsearId(req.params.id_pregunta);
+      if (!id) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "VALIDACION: El ID de la pregunta debe ser un número entero positivo.",
+        });
+      }
+
+      const resultado = await AcademicoService.eliminarPreguntaFisica(id);
+
+      return res.status(200).json({ ok: true, mensaje: resultado.mensaje });
+    } catch (error) {
+      return AcademicoController.#manejarError(
+        res,
+        error,
+        "Error al eliminar físicamente la pregunta.",
+      );
+    }
+  }
+
+  // Compat legacy: DELETE /preguntas/:id (desactivar)
+  static async eliminarPregunta(req, res) {
+    return AcademicoController.desactivarPregunta(req, res);
+  }
+
+  // Compat legacy: PATCH /preguntas/:id/reactivar
+  static async reactivarPregunta(req, res) {
+    return AcademicoController.activarPregunta(req, res);
+  }
+
   static async crearPreguntasBulk(req, res) {
     try {
       const { id_materia, preguntas, forzarDuplicados } = req.body;

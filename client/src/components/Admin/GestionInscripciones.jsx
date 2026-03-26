@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users,
   CheckCircle2,
@@ -21,11 +21,11 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     id_usuario: "",
     id_materia: "",
-    modo_evaluacion: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const submitLockRef = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -43,17 +43,20 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleSubmit = async () => {
-    if (!form.id_usuario || !form.id_materia || !form.modo_evaluacion) {
+    if (guardando || submitLockRef.current) return;
+
+    if (!form.id_usuario || !form.id_materia) {
       setError("Todos los campos son requeridos.");
       return;
     }
+
+    submitLockRef.current = true;
     setGuardando(true);
     setError("");
     try {
       await api.crearInscripcion(
         parseInt(form.id_usuario),
         parseInt(form.id_materia),
-        form.modo_evaluacion,
       );
       onSuccess();
       onClose();
@@ -61,6 +64,7 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
       setError(e.message || "Error al crear la inscripción.");
     } finally {
       setGuardando(false);
+      submitLockRef.current = false;
     }
   };
 
@@ -131,33 +135,11 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
                 </div>
               </div>
 
-              {/* Modo evaluación */}
               <div className="gi-field">
                 <label className="gi-label">Modo de Evaluación</label>
-                <div className="gi-modo-grid">
-                  <button
-                    type="button"
-                    className={`gi-modo-card${form.modo_evaluacion === "TEST" ? " gi-modo-card--active" : ""}`}
-                    onClick={() => set("modo_evaluacion", "TEST")}
-                  >
-                    <span className="gi-modo-emoji">📝</span>
-                    <span className="gi-modo-name">Test</span>
-                    <span className="gi-modo-desc">
-                      Práctica con feedback inmediato
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`gi-modo-card${form.modo_evaluacion === "EXAMEN" ? " gi-modo-card--active" : ""}`}
-                    onClick={() => set("modo_evaluacion", "EXAMEN")}
-                  >
-                    <span className="gi-modo-emoji">📋</span>
-                    <span className="gi-modo-name">Examen</span>
-                    <span className="gi-modo-desc">
-                      Evaluación formal con nota final
-                    </span>
-                  </button>
-                </div>
+                <p className="gi-subtitle">
+                  Se crearán automáticamente las inscripciones en modo Test y Examen.
+                </p>
               </div>
             </>
           )}

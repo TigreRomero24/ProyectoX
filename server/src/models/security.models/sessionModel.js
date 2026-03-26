@@ -26,11 +26,6 @@ export const SesionDispositivo = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    ultima_actividad: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
     expiracion_refresh: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -39,5 +34,11 @@ export const SesionDispositivo = sequelize.define(
   {
     tableName: "sesion_dispositivo",
     timestamps: false, // Manejamos las fechas manualmente según tu análisis
+    indexes: [
+      {
+        name: "idx_sesion_usuario_dispositivo",
+        fields: ["id_usuario", "dispositivo_id"],
+      },
+    ],
   },
 );

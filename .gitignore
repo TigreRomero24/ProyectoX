@@ -3,3 +3,10 @@
 /client/dist
 /server/dist
 .env
+
+/docker-compose.yml
+/client/Dockerfile
+/client/.dockerignore
+/server/Dockerfile
+/server/.dockerignore
+

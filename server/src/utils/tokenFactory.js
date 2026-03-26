@@ -4,32 +4,35 @@ import jwt from "jsonwebtoken";
 class BaseTokenFactory {
   constructor(config) {
     if (this.constructor === BaseTokenFactory) {
-      throw new Error("BaseTokenFactory es abstracta y no puede instanciarse");
+      throw new Error("BaseTokenFactory es abstracta.");
     }
 
-    if (!config.secret)
-      throw new Error(`${this.constructor.name}: secret es obligatorio`);
-    if (!config.expiresIn)
-      throw new Error(`${this.constructor.name}: expiresIn es obligatorio`);
-    if (!config.issuer)
-      throw new Error(`${this.constructor.name}: issuer es obligatorio`);
-    if (!config.audience)
-      throw new Error(`${this.constructor.name}: audience es obligatorio`);
-    if (!config.algorithm)
-      throw new Error(`${this.constructor.name}: algorithm es obligatorio`);
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+      throw new Error(
+        `[${this.constructor.name}] config debe ser un objeto válido.`,
+      );
+    }
+
+    for (const campo of [
+      "secret",
+      "expiresIn",
+      "issuer",
+      "audience",
+      "algorithm",
+    ]) {
+      if (typeof config[campo] !== "string" || config[campo].trim() === "") {
+        throw new Error(
+          `[${this.constructor.name}] "${campo}" debe ser un string no vacío. ` +
+            `Verifica tu .env y environment.js`,
+        );
+      }
+    }
 
     this.secret = config.secret;
     this.expiresIn = config.expiresIn;
     this.issuer = config.issuer;
     this.audience = config.audience;
     this.algorithm = config.algorithm;
-  }
-
-  generateToken(payload) {
-    throw new Error(`${this.constructor.name} debe implementar generateToken`);
-  }
-  verifyToken(token, options = {}) {
-    throw new Error(`${this.constructor.name} debe implementar verifyToken`);
   }
 }
 
@@ -44,14 +47,9 @@ export class AccessTokenFactory extends BaseTokenFactory {
   }
 
   generateToken(payload) {
-    if (!payload || typeof payload !== "object") {
-      throw new Error("AccessTokenFactory: payload debe ser un objeto");
-    }
-
-    // Adaptado a la nueva arquitectura: id + dispositivoId
-    if (!payload.id || !payload.rol || !payload.dispositivoId) {
+    if (!payload?.id || !payload?.rol || !payload?.dispositivoId) {
       throw new Error(
-        "AccessTokenFactory: payload debe contener id, rol y dispositivoId",
+        "[AccessTokenFactory] generateToken requiere: { id, rol, dispositivoId }",
       );
     }
 
@@ -81,27 +79,24 @@ export class AccessTokenFactory extends BaseTokenFactory {
         issuer: this.issuer,
         audience: this.audience,
         algorithms: [this.algorithm],
-        ignoreExpiration: options.ignoreExpiration || false, // Permite decodificar tokens vencidos si se requiere (ej. Logout)
+        ignoreExpiration: options.ignoreExpiration ?? false,
       });
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
+    } catch (err) {
+      if (err instanceof jwt.TokenExpiredError)
         throw new Error("ACCESS_TOKEN_EXPIRED");
-      }
-      if (
-        error instanceof jwt.JsonWebTokenError ||
-        error instanceof jwt.NotBeforeError
-      ) {
-        console.error(
-          `[ALERTA SEGURIDAD] Manipulación de Access Token: ${error.message}`,
-        );
+      if (err instanceof jwt.JsonWebTokenError)
         throw new Error("ACCESS_TOKEN_INVALID");
-      }
+      if (err instanceof jwt.NotBeforeError)
+        throw new Error("ACCESS_TOKEN_INVALID");
       throw new Error("ACCESS_TOKEN_VERIFICATION_FAILED");
     }
 
-    // Validación fuera del try/catch de jsonwebtoken para no enmascarar errores
     if (!decoded.id || !decoded.rol || !decoded.dispositivoId) {
       throw new Error("ACCESS_TOKEN_MALFORMED");
+    }
+
+    if (decoded.tipo !== "access") {
+      throw new Error("ACCESS_TOKEN_INVALID");
     }
 
     return decoded;
@@ -119,17 +114,16 @@ export class RefreshTokenFactory extends BaseTokenFactory {
   }
 
   generateToken(payload) {
-    // Adaptado a la nueva arquitectura
-    if (!payload || !payload.id || !payload.dispositivoId) {
+    if (!payload?.id || !payload?.dispositivoId) {
       throw new Error(
-        "RefreshTokenFactory: payload debe contener id y dispositivoId",
+        "[RefreshTokenFactory] generateToken requiere: { id, dispositivoId }",
       );
     }
 
     const cleanPayload = {
       id: payload.id,
       dispositivoId: payload.dispositivoId,
-      version: payload.version || 1,
+      version: payload.version ?? 1,
       tipo: "refresh",
     };
 
@@ -152,53 +146,38 @@ export class RefreshTokenFactory extends BaseTokenFactory {
         issuer: this.issuer,
         audience: this.audience,
         algorithms: [this.algorithm],
-        ignoreExpiration: options.ignoreExpiration || false,
+        ignoreExpiration: options.ignoreExpiration ?? false,
       });
-    } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
+    } catch (err) {
+      if (err instanceof jwt.TokenExpiredError)
         throw new Error("REFRESH_TOKEN_EXPIRED");
-      }
-      if (error instanceof jwt.JsonWebTokenError) {
-        console.error(
-          `[ALERTA SEGURIDAD] Manipulación de Refresh Token: ${error.message}`,
-        );
+      if (err instanceof jwt.JsonWebTokenError)
         throw new Error("REFRESH_TOKEN_INVALID");
-      }
       throw new Error("REFRESH_TOKEN_VERIFICATION_FAILED");
     }
 
-    // Validación fuera del try/catch
     if (!decoded.id || !decoded.dispositivoId) {
       throw new Error("REFRESH_TOKEN_MALFORMED");
+    }
+
+    if (decoded.tipo !== "refresh") {
+      throw new Error("REFRESH_TOKEN_INVALID");
     }
 
     return decoded;
   }
 }
 
-/**
- * ====================================================================
- * TOKEN FACTORY PRINCIPAL (PUNTO DE ENTRADA)
- * ====================================================================
- */
 export class TokenFactory {
-  static TYPES = {
-    ACCESS: "ACCESS",
-    REFRESH: "REFRESH",
-  };
-
   static create(type, jwtConfig) {
-    const tokenType = type.toUpperCase();
-    if (!Object.values(this.TYPES).includes(tokenType)) {
-      throw new Error(`Tipo de token no soportado: ${type}`);
-    }
-
     if (!jwtConfig) {
-      throw new Error("TokenFactory: jwtConfig es obligatorio");
+      throw new Error(
+        "[TokenFactory] jwtConfig es obligatorio. Verifica env.jwt en environment.js",
+      );
     }
 
-    switch (tokenType) {
-      case this.TYPES.ACCESS:
+    switch (type?.toUpperCase()) {
+      case "ACCESS":
         return new AccessTokenFactory({
           secret: jwtConfig.accessSecret,
           expiresIn: jwtConfig.accessExpiresIn,
@@ -207,7 +186,7 @@ export class TokenFactory {
           algorithm: jwtConfig.algorithm,
         });
 
-      case this.TYPES.REFRESH:
+      case "REFRESH":
         return new RefreshTokenFactory({
           secret: jwtConfig.refreshSecret,
           expiresIn: jwtConfig.refreshExpiresIn,
@@ -217,7 +196,9 @@ export class TokenFactory {
         });
 
       default:
-        throw new Error(`TokenFactory: ${tokenType} no implementado`);
+        throw new Error(
+          `[TokenFactory] Tipo no soportado: "${type}". Usa "ACCESS" o "REFRESH"`,
+        );
     }
   }
 }

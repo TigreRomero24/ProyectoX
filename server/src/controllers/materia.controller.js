@@ -2,6 +2,7 @@ import {
   MateriaService,
   InscripcionService,
 } from "../services/materias.service.js";
+import { deleteFileIfExists } from "../utils/mediaUpload.js";
 
 // ════════════════════════════════════════════════════════════════════════════════
 //  Logica de Inscripciones y Materias
@@ -23,10 +24,6 @@ const manejarError = (res, error, mensajeServidor) => {
   return res.status(500).json({ ok: false, error: mensajeServidor });
 };
 
-/**
- * Parsea y valida un ID entero positivo desde req.params.
- * Retorna null si el valor no es válido.
- */
 const parsearId = (valor) => {
   const id = parseInt(valor, 10);
   return isNaN(id) || id <= 0 ? null : id;
@@ -36,14 +33,8 @@ const parsearId = (valor) => {
 //  MateriaController  —  Endpoints del catálogo de materias
 // ════════════════════════════════════════════════════════════════════════════════
 export class MateriaController {
-  /**
-   * GET /api/v1/materias/mis-materias
-   * Solo las materias con inscripción activa del usuario autenticado.
-   * Incluye modos_inscritos: ["TEST"] | ["EXAMEN"] | ["TEST","EXAMEN"]
-   */
   static async obtenerMisMaterias(req, res) {
     try {
-      // Sin caché — la lista cambia cuando el admin inscribe/desinscribe al estudiante
       res.setHeader("Cache-Control", "no-store");
       const id_usuario = req.user.id;
       const data = await MateriaService.obtenerMateriasDeUsuario(id_usuario);
@@ -53,11 +44,6 @@ export class MateriaController {
     }
   }
 
-  /**
-   * POST /api/v1/materias
-   * Crea una nueva materia en el catálogo.
-   * Solo ADMINISTRADOR (protegido en materia.routes.js).
-   */
   static async crearMateria(req, res) {
     try {
       const { nombre } = req.body;
@@ -76,11 +62,6 @@ export class MateriaController {
     }
   }
 
-  /**
-   * GET /api/v1/materias
-   * Lista todas las materias ordenadas alfabéticamente.
-   * Accesible para cualquier usuario autenticado.
-   */
   static async obtenerMaterias(req, res) {
     try {
       const data = await MateriaService.obtenerMaterias();
@@ -90,11 +71,6 @@ export class MateriaController {
     }
   }
 
-  /**
-   * GET /api/v1/materias/:id_materia
-   * Obtiene el detalle de una materia por su ID.
-   * Accesible para cualquier usuario autenticado.
-   */
   static async obtenerMateriaPorId(req, res) {
     try {
       const id = parsearId(req.params.id_materia);
@@ -112,11 +88,6 @@ export class MateriaController {
     }
   }
 
-  /**
-   * PUT /api/v1/materias/:id_materia
-   * Actualiza el nombre de una materia.
-   * Solo ADMINISTRADOR.
-   */
   static async actualizarMateria(req, res) {
     try {
       const id = parsearId(req.params.id_materia);
@@ -145,11 +116,6 @@ export class MateriaController {
     }
   }
 
-  /**
-   * DELETE /api/v1/materias/:id_materia
-   * Eliminación física. Bloqueada si tiene preguntas o inscripciones.
-   * Solo ADMINISTRADOR.
-   */
   static async eliminarMateria(req, res) {
     try {
       const id = parsearId(req.params.id_materia);
@@ -166,16 +132,65 @@ export class MateriaController {
       return manejarError(res, e, "Error al eliminar la materia.");
     }
   }
+
+  static async subirImagenMateria(req, res) {
+    try {
+      const id = parsearId(req.params.id_materia);
+      if (!id) {
+        await deleteFileIfExists(req.file?.path);
+        return res.status(400).json({
+          ok: false,
+          error:
+            "VALIDACION: El ID de la materia debe ser un número entero positivo.",
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          ok: false,
+          error: "VALIDACION: Debe enviar un archivo en el campo 'imagen'.",
+        });
+      }
+
+      const data = await MateriaService.subirImagenMateria(id, req.file);
+      return res.status(200).json({
+        ok: true,
+        mensaje: "Imagen de materia actualizada correctamente.",
+        data,
+      });
+    } catch (e) {
+      await deleteFileIfExists(req.file?.path);
+      return manejarError(res, e, "Error al subir imagen de la materia.");
+    }
+  }
+
+  static async eliminarImagenMateria(req, res) {
+    try {
+      const id = parsearId(req.params.id_materia);
+      if (!id) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "VALIDACION: El ID de la materia debe ser un número entero positivo.",
+        });
+      }
+
+      const data = await MateriaService.eliminarImagenMateria(id);
+      return res.status(200).json({
+        ok: true,
+        mensaje: "Imagen de materia eliminada correctamente.",
+        data,
+      });
+    } catch (e) {
+      return manejarError(res, e, "Error al eliminar imagen de la materia.");
+    }
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
 //  InscripcionController  —  Endpoints de inscripciones estudiante ↔ materia
 // ════════════════════════════════════════════════════════════════════════════════
 export class InscripcionController {
-  /**
-   * GET /api/v1/inscripciones?busqueda=
-   * Lista todas las inscripciones. Acepta búsqueda por nombre/correo/materia.
-   */
   static async listar(req, res) {
     try {
       const data = await InscripcionService.listar({
@@ -187,10 +202,6 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * GET /api/v1/inscripciones/resumen
-   * Devuelve { total, activos, inactivos } para las tarjetas de stats.
-   */
   static async resumen(req, res) {
     try {
       const data = await InscripcionService.resumen();
@@ -200,11 +211,6 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * GET /api/v1/inscripciones/estudiantes
-   * Lista estudiantes activos para el selector del modal.
-   * Solo ADMINISTRADOR.
-   */
   static async listarEstudiantes(req, res) {
     try {
       const data = await InscripcionService.listarEstudiantes();
@@ -214,11 +220,6 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * GET /api/v1/inscripciones/materias
-   * Lista materias para el selector del modal.
-   * Solo ADMINISTRADOR.
-   */
   static async listarMaterias(req, res) {
     try {
       const data = await InscripcionService.listarMaterias();
@@ -228,13 +229,19 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * POST /api/v1/inscripciones
-   * Crea una nueva inscripción (estudiante + materia + modo).
-   */
   static async crear(req, res) {
     try {
-      const { id_usuario, id_materia, modo_evaluacion } = req.body;
+      const id_usuario = parsearId(req.body?.id_usuario);
+      const id_materia = parsearId(req.body?.id_materia);
+      const { modo_evaluacion } = req.body || {};
+
+      if (!id_usuario || !id_materia) {
+        return res.status(400).json({
+          ok: false,
+          error: "VALIDACION: id_usuario e id_materia son requeridos.",
+        });
+      }
+
       const data = await InscripcionService.crear({
         id_usuario,
         id_materia,
@@ -246,11 +253,6 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * PATCH /api/v1/inscripciones/estado
-   * Activa o desactiva una inscripción identificada por PK compuesta.
-   * Solo ADMINISTRADOR.
-   */
   static async cambiarEstado(req, res) {
     try {
       const { id_usuario, id_materia, modo_evaluacion, activo } = req.body;
@@ -281,11 +283,6 @@ export class InscripcionController {
     }
   }
 
-  /**
-   * DELETE /api/v1/inscripciones
-   * Eliminación física identificada por PK compuesta.
-   * Solo ADMINISTRADOR.
-   */
   static async eliminar(req, res) {
     try {
       const { id_usuario, id_materia, modo_evaluacion } = req.body;

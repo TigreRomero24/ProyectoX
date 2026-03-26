@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import { env } from "./src/config/environment.js";
 import passport from "./src/config/passport.js";
@@ -13,6 +14,7 @@ import apiRoutes from "./src/routes/api.routes.js";
 import { ErrorMiddleware } from "./src/middlewares/errorMiddleware.js";
 
 const app = express();
+const mediaRoot = path.resolve(process.cwd(), "storage");
 
 app.use(
   cors({
@@ -41,6 +43,8 @@ app.get("/", (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use("/media", express.static(mediaRoot));
 
 app.use("/api/v1", apiRoutes);
 

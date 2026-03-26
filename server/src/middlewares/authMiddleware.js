@@ -1,11 +1,12 @@
 import { env } from "../config/environment.js";
 import { TokenFactory } from "../utils/tokenFactory.js";
 
+const accessFactory = TokenFactory.create("ACCESS", env.jwt);
+
 export class AuthMiddleware {
   static handle(req, res, next) {
     try {
       const authHeader = req.headers.authorization;
-
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
           ok: false,
@@ -16,7 +17,6 @@ export class AuthMiddleware {
       }
 
       const token = authHeader.split(" ")[1];
-      const accessFactory = TokenFactory.create("ACCESS", env.jwt);
 
       const decoded = accessFactory.verifyToken(token);
 
@@ -24,28 +24,24 @@ export class AuthMiddleware {
 
       next();
     } catch (error) {
-      if (
-        error.message === "ACCESS_TOKEN_EXPIRED" ||
-        error.name === "TokenExpiredError"
-      ) {
+      if (error.message === "ACCESS_TOKEN_EXPIRED")
         return res.status(401).json({
           ok: false,
           codigo: "TOKEN_EXPIRADO",
-          mensaje: "Su sesión ha expirado.",
+          mensaje: "Su sesión ha expirado. Por favor inicie sesión nuevamente.",
         });
-      }
 
       return res.status(401).json({
         ok: false,
         codigo: "TOKEN_INVALIDO",
-        mensaje: "Token inválido o corrupto.",
+        mensaje: "Token inválido o corructo.",
       });
     }
   }
 
   static authorize(rolesPermitidos = []) {
     return (req, res, next) => {
-      if (!req.user || !req.user.rol) {
+      if (!req.user?.rol) {
         return res.status(403).json({
           ok: false,
           codigo: "IDENTIDAD_DESCONOCIDA",

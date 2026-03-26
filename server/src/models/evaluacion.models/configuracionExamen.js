@@ -23,7 +23,8 @@ export const ConfiguracionExamen = sequelize.define(
     },
     intentos_permitidos: {
       type: DataTypes.INTEGER,
-      defaultValue: 1,
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {

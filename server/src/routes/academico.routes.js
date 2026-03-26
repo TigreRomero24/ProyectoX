@@ -2,7 +2,6 @@ import { Router } from "express";
 import { AcademicoController } from "../controllers/academico.controller.js";
 import { AuthMiddleware } from "../middlewares/authMiddleware.js";
 import { SessionMiddleware } from "../middlewares/sessionMiddleware.js";
-import { RoleMiddleware } from "../middlewares/roleMiddleware.js";
 
 const router = Router();
 
@@ -11,7 +10,7 @@ const soloAuth = [AuthMiddleware.handle, SessionMiddleware.handle];
 const soloAdmin = [
   AuthMiddleware.handle,
   SessionMiddleware.handle,
-  RoleMiddleware.require(["ADMINISTRADOR"]),
+  AuthMiddleware.authorize(["ADMINISTRADOR"]),
 ];
 
 router.get(
@@ -47,9 +46,27 @@ router.put(
 );
 
 router.patch(
+  "/preguntas/:id_pregunta/desactivar",
+  soloAdmin,
+  AcademicoController.desactivarPregunta,
+);
+
+router.patch(
+  "/preguntas/:id_pregunta/activar",
+  soloAdmin,
+  AcademicoController.activarPregunta,
+);
+
+router.patch(
   "/preguntas/:id_pregunta/reactivar",
   soloAdmin,
   AcademicoController.reactivarPregunta,
+);
+
+router.delete(
+  "/preguntas/:id_pregunta/fisica",
+  soloAdmin,
+  AcademicoController.eliminarPreguntaFisica,
 );
 
 router.delete(
