@@ -11,9 +11,27 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Construye el frontend y deja el /dist listo en un volumen compartido
+  client-build:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: frontend_build
+    volumes:
+      - frontend_dist:/app/dist
+    # Solo construye y termina, no queda corriendo
+    command: sh -c "npm run build && echo 'Build OK'"
 
   server:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: backend_app
     restart: always
     env_file:
@@ -21,24 +39,15 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      client-build:
+        condition: service_completed_successfully
     volumes:
-      - ./server:/app
-      - /app/node_modules
+      - frontend_dist:/app/public   # El dist del cliente queda en server/public
       - server_media_data:/app/storage
-
-  client:
-    build: ./client
-    container_name: frontend_app
-    restart: always
-    ports:
-      - "5173:5173"
-    depends_on:
-      - server
-    volumes:
-      - ./client:/app
-      - /app/node_modules
 
 volumes:
   postgres_data:
   server_media_data:
+  frontend_dist:       # Volumen compartido entre client-build y server

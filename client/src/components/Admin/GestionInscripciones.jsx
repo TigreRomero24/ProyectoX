@@ -12,7 +12,6 @@ import {
   BookOpen,
 } from "lucide-react";
 import { api } from "../../services/api";
-import "./AdminEstilos/Gestioninscripciones.css";
 
 // ─── Modal Nueva Inscripción ──────────────────────────────────────────────────
 function ModalNuevaInscripcion({ onClose, onSuccess }) {

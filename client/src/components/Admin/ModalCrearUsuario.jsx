@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import "./AdminEstilos/Modal.css";
 
 export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({

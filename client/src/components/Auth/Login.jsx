@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { BookOpen, AlertCircle, X } from "lucide-react";
-import "../../styles/design-system.css";
-import "./Auth.css";
 
 const MENSAJES_ERROR = {
   correo_no_institucional: "Solo se permiten cuentas institucionales (@unemi.edu.ec).",

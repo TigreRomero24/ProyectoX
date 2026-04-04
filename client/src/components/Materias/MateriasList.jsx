@@ -23,8 +23,8 @@ import {
 import { api } from "../../services/api";
 import TestMode from "./TestMode";
 import ExamMode from "./ExamMode";
-import "./Materias.css";
-import { useAuth } from "../../context/AuthContext";
+
+import { useAuth } from "../../hooks/useAuth";
 
 const ICONOS = [
   Atom,

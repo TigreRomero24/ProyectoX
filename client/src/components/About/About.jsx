@@ -3,7 +3,6 @@ import {
   ClipboardList, BookOpen, MessageSquare, Settings,
   Mail, Phone, LifeBuoy, CheckCircle2, Zap, Lock,
 } from "lucide-react";
-import "./About.css";
 
 const FEATURES = [
   { Icon: BookOpen,     color: "#2563eb", bg: "#eff6ff", title: "Banco de preguntas",   desc: "Gestión completa de preguntas con múltiples tipos y configuraciones." },

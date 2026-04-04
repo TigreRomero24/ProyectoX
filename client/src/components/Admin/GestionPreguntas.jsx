@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { api } from "../../services/api";
 import CargaExcel from "./Cargaexcel";
-import "./AdminEstilos/GesPreguntas.css";
 
 const VISTA = {
   LISTA: "lista",

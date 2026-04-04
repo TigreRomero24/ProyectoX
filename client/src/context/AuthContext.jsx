@@ -3,13 +3,10 @@ import {
   useState,
   useEffect,
   useCallback,
-  useContext,
 } from "react";
 import { api } from "../services/api";
 
 export const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
 
 const decodeJWT = (token) => {
   try {

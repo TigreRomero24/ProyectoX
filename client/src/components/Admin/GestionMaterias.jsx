@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { api } from "../../services/api";
-import "./AdminEstilos/GestionMaterias.css";
 
 // ─── Íconos ───────────────────────────────────────────────────────────────────
 const IconFolderPlus = () => (

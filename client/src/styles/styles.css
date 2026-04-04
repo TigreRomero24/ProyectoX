@@ -1,0 +1,33 @@
+/* ============================================================
+   styles.css — punto de entrada único para todos los CSS
+   Importado desde main.jsx para garantizar que el build de
+   Vite los incluya todos en el bundle, sin lazy loading.
+   ============================================================ */
+
+/* ── Sistema de diseño (debe ir primero — define las variables) */
+@import './design-system.css';
+@import './global.css';
+
+/* ── Auth */
+@import '../components/Auth/Auth.css';
+
+/* ── Dashboard */
+
+/* ── Materias */
+@import '../components/Materias/Materias.css';
+@import '../components/Materias/Evaluacion.css';
+@import '../components/Materias/Historial.css';
+
+/* ── Foro */
+@import '../components/Forum/Forum.css';
+
+/* ── About */
+@import '../components/About/About.css';
+
+/* ── Admin */
+@import '../components/Admin/AdminEstilos/GestionMaterias.css';
+@import '../components/Admin/AdminEstilos/GesPreguntas.css';
+@import '../components/Admin/AdminEstilos/Gestionusuarios.css';
+@import '../components/Admin/AdminEstilos/Gestioninscripciones.css';
+@import '../components/Admin/AdminEstilos/Cargaexcel.css';
+@import '../components/Admin/AdminEstilos/Modal.css';

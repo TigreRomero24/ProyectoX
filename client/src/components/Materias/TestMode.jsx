@@ -11,7 +11,6 @@ import {
   Trophy,
   RotateCcw,
 } from "lucide-react";
-import "./Evaluacion.css";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 

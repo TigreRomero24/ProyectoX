@@ -13,7 +13,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { api } from "../../services/api";
-import "./Evaluacion.css";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 

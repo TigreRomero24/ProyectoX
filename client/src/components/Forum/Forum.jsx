@@ -9,7 +9,6 @@ import {
   Send,
   User,
 } from "lucide-react";
-import "./Forum.css";
 
 const CATEGORIAS = [
   "Matemáticas",

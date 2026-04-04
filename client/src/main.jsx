@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './styles/design-system.css'
+import './styles/styles.css'
 import App from './App.jsx'
 
-// Apply saved theme on first render
+// Aplica el tema guardado antes del primer render
 const savedTheme = localStorage.getItem('eq-theme') || 'light';
 document.documentElement.setAttribute('data-theme', savedTheme);
 

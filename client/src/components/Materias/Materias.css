@@ -390,3 +390,11 @@
   .mat-grid { grid-template-columns: 1fr; }
   .mat-modos-grid { grid-template-columns: 1fr; }
 }
+
+
+/* ── Root wrapper (faltaba) ─── */
+.mat-root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}

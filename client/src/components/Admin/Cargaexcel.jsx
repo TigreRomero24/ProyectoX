@@ -18,7 +18,6 @@ import {
   Info,
 } from "lucide-react";
 import { api } from "../../services/api";
-import "./AdminEstilos/Cargaexcel.css";
 
 // ─── Constantes del formato ────────────────────────────────────────────────────
 const COLUMNAS = [
