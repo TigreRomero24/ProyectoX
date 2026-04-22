@@ -7,10 +7,22 @@ import {
   Circle,
   List,
   ToggleLeft,
+  CheckCheck,
   BookOpen,
   Trophy,
   RotateCcw,
+  MoveUp,
+  MoveDown,
 } from "lucide-react";
+import OrdenarRenderer from "./OrdenarRenderer";
+import CompletarRenderer from "./completar/CompletarRenderer";
+import { parseCompletarText } from "./completar/completarParser";
+import { 
+  buildCompletarStateFromRespuesta, 
+  serializeCompletarState, 
+  resolveCompletarMode 
+} from "./completar/completarState";
+import { corregirRespuestaTest } from "./questionRuntime";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 
@@ -28,6 +40,18 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
   const handleSeleccionar = (opcionId) => {
     if (feedback[pregunta.id_pregunta]) return;
 
+    if (pregunta.tipo_pregunta === "SELECCION_MULTIPLE") {
+      setRespuestas((prev) => {
+        const actual = prev[pregunta.id_pregunta] || [];
+        if (actual.includes(opcionId)) {
+          return { ...prev, [pregunta.id_pregunta]: actual.filter(id => id !== opcionId) };
+        } else {
+          return { ...prev, [pregunta.id_pregunta]: [...actual, opcionId] };
+        }
+      });
+      return;
+    }
+
     const opcionCorrecta = pregunta.opciones.find((o) => o.es_correcta);
     const esCorrecta = opcionId === opcionCorrecta?.id_opcion;
 
@@ -43,11 +67,63 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
     }));
   };
 
+  const confirmarSeleccionMultiple = () => {
+    if (feedback[pregunta.id_pregunta]) return;
+    
+    const seleccionados = respuestas[pregunta.id_pregunta] || [];
+    const fb = corregirRespuestaTest(pregunta, { respuesta_json: { opciones_ids: seleccionados } });
+    
+    setFeedback((prev) => ({
+      ...prev,
+      [pregunta.id_pregunta]: fb,
+    }));
+  };
+
+  const handleOrdenar = (ordenData) => {
+    setRespuestas(prev => ({ ...prev, [pregunta.id_pregunta]: ordenData }));
+  };
+
+  const confirmarOrdenar = () => {
+    if (feedback[pregunta.id_pregunta]) return;
+    const ordenData = respuestas[pregunta.id_pregunta];
+    const fb = corregirRespuestaTest(pregunta, { respuesta_json: ordenData });
+    setFeedback(prev => ({ ...prev, [pregunta.id_pregunta]: fb }));
+  };
+
+  const handleCompletar = (nuevoMap) => {
+    const mode = resolveCompletarMode(pregunta.estructura_json);
+    const { slotIds } = parseCompletarText(pregunta.estructura_json?.texto);
+    const serialized = serializeCompletarState(nuevoMap, slotIds, mode);
+    setRespuestas(prev => ({ ...prev, [pregunta.id_pregunta]: serialized }));
+  };
+
+  const confirmarCompletar = () => {
+    if (feedback[pregunta.id_pregunta]) return;
+    const completadoData = respuestas[pregunta.id_pregunta];
+    const fb = corregirRespuestaTest(pregunta, { respuesta_json: completadoData });
+    setFeedback(prev => ({ ...prev, [pregunta.id_pregunta]: fb }));
+  };
+
   const fb = feedback[pregunta?.id_pregunta];
   const yaRespondio = !!fb;
 
   const estadoOpcion = (op) => {
-    if (!yaRespondio) return "idle";
+    if (!yaRespondio) {
+      if (pregunta.tipo_pregunta === "SELECCION_MULTIPLE") {
+        const seleccionados = respuestas[pregunta.id_pregunta] || [];
+        return seleccionados.includes(op.id_opcion) ? "seleccionado" : "idle";
+      }
+      return "idle";
+    }
+    
+    if (pregunta.tipo_pregunta === "SELECCION_MULTIPLE") {
+      const correctos = fb.opcionesCorrectas || [];
+      const seleccionados = fb.opcionesElegidas || [];
+      if (correctos.includes(op.id_opcion)) return "correcta";
+      if (seleccionados.includes(op.id_opcion) && !correctos.includes(op.id_opcion)) return "incorrecta";
+      return "idle";
+    }
+
     if (op.id_opcion === fb.opcionCorrecta) return "correcta";
     if (op.id_opcion === fb.opcionElegida && !fb.correcto) return "incorrecta";
     return "idle";
@@ -207,13 +283,29 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         <div className="ev-badges">
           <span className="ev-badge ev-badge--num">Pregunta {actual + 1}</span>
           <span className="ev-badge ev-badge--tipo">
-            {pregunta.tipo_pregunta === "MULTIPLE" ? (
+            {pregunta.tipo_pregunta === "MULTIPLE" && (
               <>
                 <List size={11} /> Opción Múltiple
               </>
-            ) : (
+            )}
+            {pregunta.tipo_pregunta === "SELECCION_MULTIPLE" && (
+              <>
+                <CheckCheck size={11} /> Selección Múltiple
+              </>
+            )}
+            {pregunta.tipo_pregunta === "VERDADERO_FALSO" && (
               <>
                 <ToggleLeft size={11} /> Verdadero / Falso
+              </>
+            )}
+            {pregunta.tipo_pregunta === "ORDENAR" && (
+              <>
+                <MoveUp size={11} /> Ordenar
+              </>
+            )}
+            {pregunta.tipo_pregunta === "COMPLETAR" && (
+              <>
+                <CheckCheck size={11} /> Completar
               </>
             )}
           </span>
@@ -240,32 +332,90 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         )}
 
         <div className="ev-opciones">
-          {pregunta.opciones.map((op, i) => {
-            const estado = estadoOpcion(op);
-            return (
-              <button
-                key={op.id_opcion}
-                className={`ev-opcion ev-opcion--${estado}${!yaRespondio ? " ev-opcion--hover" : ""}`}
-                onClick={() => handleSeleccionar(op.id_opcion)}
-                disabled={yaRespondio}
-              >
-                <span className={`ev-opcion-radio ev-opcion-radio--${estado}`}>
-                  {estado === "correcta" ? (
-                    <CheckCircle2 size={20} />
-                  ) : estado === "incorrecta" ? (
-                    <XCircle size={20} />
-                  ) : (
-                    <Circle size={20} />
-                  )}
-                </span>
-                <span className={`ev-opcion-letra ev-opcion-letra--${estado}`}>
-                  {LETRAS[i]}
-                </span>
-                <span className="ev-opcion-texto">{op.texto}</span>
-              </button>
-            );
-          })}
+          {["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE"].includes(pregunta.tipo_pregunta) && (
+            pregunta.opciones.map((op, i) => {
+              const estado = estadoOpcion(op);
+              return (
+                <button
+                  key={op.id_opcion}
+                  className={`ev-opcion ev-opcion--${estado}${!yaRespondio ? " ev-opcion--hover" : ""}`}
+                  onClick={() => handleSeleccionar(op.id_opcion)}
+                  disabled={yaRespondio}
+                >
+                  <span className={`ev-opcion-radio ev-opcion-radio--${estado}`}>
+                    {estado === "correcta" ? (
+                      <CheckCircle2 size={20} />
+                    ) : estado === "incorrecta" ? (
+                      <XCircle size={20} />
+                    ) : estado === "seleccionado" ? (
+                      <CheckCircle2 size={20} />
+                    ) : (
+                      <Circle size={20} />
+                    )}
+                  </span>
+                  <span className={`ev-opcion-letra ev-opcion-letra--${estado}`}>
+                    {LETRAS[i]}
+                  </span>
+                  <span className="ev-opcion-texto">{op.texto}</span>
+                </button>
+              );
+            })
+          )}
+
+          {pregunta.tipo_pregunta === "ORDENAR" && (
+            <OrdenarRenderer 
+              pregunta={pregunta} 
+              onReorder={handleOrdenar}
+              disabled={yaRespondio}
+              respuestaActual={respuestas[pregunta.id_pregunta]}
+            />
+          )}
+
+          {pregunta.tipo_pregunta === "COMPLETAR" && (
+            <CompletarRenderer 
+              estructura={pregunta.estructura_json}
+              respuestaMap={buildCompletarStateFromRespuesta(respuestas[pregunta.id_pregunta])}
+              onChangeMap={handleCompletar}
+            />
+          )}
         </div>
+
+        {pregunta.tipo_pregunta === "SELECCION_MULTIPLE" && !yaRespondio && (
+          <div style={{ marginTop: "16px", textAlign: "right" }}>
+            <button 
+              className="ev-btn-volver" 
+              style={{ background: "#2563eb", color: "#fff", padding: "8px 16px" }}
+              onClick={confirmarSeleccionMultiple}
+              disabled={(respuestas[pregunta.id_pregunta] || []).length === 0}
+            >
+              Confirmar Respuesta
+            </button>
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "ORDENAR" && !yaRespondio && (
+          <div style={{ marginTop: "16px", textAlign: "right" }}>
+            <button 
+              className="ev-btn-volver" 
+              style={{ background: "#2563eb", color: "#fff", padding: "8px 16px" }}
+              onClick={confirmarOrdenar}
+            >
+              Confirmar Orden
+            </button>
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "COMPLETAR" && !yaRespondio && (
+          <div style={{ marginTop: "16px", textAlign: "right" }}>
+            <button 
+              className="ev-btn-volver" 
+              style={{ background: "#2563eb", color: "#fff", padding: "8px 16px" }}
+              onClick={confirmarCompletar}
+            >
+              Confirmar Respuestas
+            </button>
+          </div>
+        )}
 
         {yaRespondio && (
           <div

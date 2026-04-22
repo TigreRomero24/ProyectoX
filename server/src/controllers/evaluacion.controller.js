@@ -41,13 +41,16 @@ export class EvaluacionController {
       }
 
       const idPregunta = parseInt(r.id_pregunta, 10);
-      const idOpcion = parseInt(r.id_opcion, 10);
-
       if (isNaN(idPregunta) || idPregunta <= 0) {
         return `VALIDACION: La respuesta en posición ${i} tiene un id_pregunta inválido.`;
       }
-      if (isNaN(idOpcion) || idOpcion <= 0) {
-        return `VALIDACION: La respuesta en posición ${i} tiene un id_opcion inválido.`;
+
+      // Si no tiene respuesta_json, debe tener un id_opcion válido (MULTIPLE, VERDADERO_FALSO)
+      if (!r.respuesta_json) {
+        const idOpcion = parseInt(r.id_opcion, 10);
+        if (isNaN(idOpcion) || idOpcion <= 0) {
+          return `VALIDACION: La respuesta en posición ${i} tiene un id_opcion inválido.`;
+        }
       }
     }
 

@@ -1,0 +1,2738 @@
+<securityLogs>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-17T01:42:52.029Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-17T01:42:58.912Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-17T05:00:30.583Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-17T05:30:46.700Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-18T00:12:54.543Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:08:07.212Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:08:07.949Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-18T01:08:11.940Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:08:33.961Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:09:08.709Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:09:20.943Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:09:25.094Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:09:29.654Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:09:33.180Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:10:09.923Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:11:02.961Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:11:25.303Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:11:26.991Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:15:57.734Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:00.473Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:03.813Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:06.640Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:10.102Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:13.328Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:21.282Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:23.905Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:27.728Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:43.304Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:46.182Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:48.696Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:53.241Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:16:57.835Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:01.985Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:21.832Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:25.329Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:28.443Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:31.538Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:35.102Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:17:39.487Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-18T01:18:19.162Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:18:21.249Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:18:21.973Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_UNAUTHORIZED</event>
+    <user>htigrer@unemi.edu.ec</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>CRITICAL</severity>
+    <details>Usuario no registrado</details>
+    <timestamp>2026-04-18T01:18:25.465Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_FAILED</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>CRITICAL</severity>
+    <details>url=http://localhost:3000/login?error=usuario_no_registrado | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0 | code=usuario_no_registrado</details>
+    <timestamp>2026-04-18T01:18:26.032Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:18:28.721Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:20:54.137Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:20:54.601Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_UNAUTHORIZED</event>
+    <user>htigrer@unemi.edu.ec</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>CRITICAL</severity>
+    <details>Usuario no registrado</details>
+    <timestamp>2026-04-18T01:20:57.993Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_FAILED</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>CRITICAL</severity>
+    <details>url=http://localhost:3000/login?error=usuario_no_registrado | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0 | code=usuario_no_registrado</details>
+    <timestamp>2026-04-18T01:20:58.427Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:21:00.555Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:23:04.690Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:23:05.121Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-18T01:23:08.818Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:23:25.786Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:23:58.939Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:24:45.410Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:26:01.933Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:27:42.263Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:28:15.713Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:30:19.060Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:57:12.833Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:57:26.943Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:57:41.680Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:57:49.389Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:58:09.276Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:58:12.098Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:58:21.018Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T01:58:58.088Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:00:03.605Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:00:35.489Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:03:52.287Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:04:52.225Z</timestamp>
+  </log>
+
+  <log>
+    <event>RIGHT_CLICK_BLOCKED</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:05:00.552Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:05:21.579Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:05:32.146Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:06:51.329Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:07:50.845Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:07:53.636Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:07:55.868Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:07:58.852Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:01.974Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:05.736Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:08.135Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:11.641Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:14.635Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:27.933Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:29.154Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:37.369Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:08:39.047Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:40:07.861Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:40:14.695Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:41:22.567Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:54:13.315Z</timestamp>
+  </log>
+
+  <log>
+    <event>RIGHT_CLICK_BLOCKED</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:54:34.574Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:54:45.332Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:55:02.324Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:55:07.118Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:59:30.323Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:59:37.257Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:59:47.159Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:59:54.700Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T02:59:57.119Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:00:00.007Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:00:02.368Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:00:08.063Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:00:12.166Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-18T03:14:10.780Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:14:24.364Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:14:31.726Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:17:53.838Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:18:25.496Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:19:23.413Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:26:44.046Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:26:49.087Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:27:40.793Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:39:05.303Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:39:14.155Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:39:23.646Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T03:39:29.350Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:16:45.866Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:16:56.610Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:22:15.967Z</timestamp>
+  </log>
+
+  <log>
+    <event>RIGHT_CLICK_BLOCKED</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:23:36.263Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:23:39.233Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/login | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:28:29.724Z</timestamp>
+  </log>
+
+  <log>
+    <event>TOKEN_REUSE_ATTACK</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>CRITICAL</severity>
+    <details>Intento de reutilización de refresh token</details>
+    <timestamp>2026-04-18T04:28:30.706Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-18T04:28:30.739Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:28:32.317Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-18T04:28:33.011Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-18T04:28:37.006Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:04:06.137Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:04:07.195Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T00:04:14.005Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:04:51.559Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:07:48.532Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:08:24.579Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:08:51.634Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:09:07.209Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:10:20.421Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:10:26.583Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:11:04.590Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:11:14.927Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:11:26.346Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:11:36.645Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:18:19.700Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:18:51.201Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:19:03.500Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:19:16.667Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:19:34.995Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:19:50.278Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:20:03.616Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:30:11.694Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:30:31.994Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:30:45.471Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:31:09.586Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:31:17.869Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:31:20.482Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:31:23.814Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:31:26.409Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:32:27.734Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:32:43.621Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:33:24.345Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:33:28.319Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:33:47.985Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:34:08.848Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:34:38.227Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:35:47.732Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:36:14.222Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:36:27.721Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:37:44.865Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:38:21.715Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:38:39.915Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:39:56.048Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:40:47.728Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T00:41:27.690Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:21:35.755Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:22:17.822Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:38:52.362Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:39:58.697Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:41:45.617Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:42:18.881Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:42:32.263Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:42:45.813Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:43:29.460Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:44:15.174Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:46:53.281Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:47:27.050Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:47:38.336Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:48:09.158Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:48:15.578Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:48:39.168Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:49:35.807Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:49:41.969Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:49:49.557Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:50:12.788Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:50:33.905Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:50:49.662Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:15.048Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:18.631Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:32.525Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:36.205Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:41.290Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:51:53.306Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:52:00.437Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:52:03.108Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:52:37.981Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:52:54.674Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:53:14.179Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:54:35.982Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:54:59.325Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:55:23.705Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:56:05.868Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:56:14.572Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:56:16.289Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:57:11.176Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T01:57:25.942Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-22T01:57:36.080Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:10:38.766Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:10:39.707Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T02:10:43.373Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:11:06.854Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:11:08.412Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:11:19.283Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:11:38.832Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:14:00.738Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:14:13.765Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:15:08.596Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:15:45.235Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:16:23.371Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:16:34.751Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:16:42.520Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:17:12.529Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:17:38.788Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:17:49.331Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:18:25.863Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:34:12.028Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:34:12.568Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T02:34:17.076Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:34:26.147Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:37:25.452Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T02:37:45.380Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:27:08.332Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:28:12.067Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:28:51.355Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:30:07.264Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:30:47.116Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:31:35.872Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:31:48.396Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:32:56.115Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:33:59.037Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:37:05.381Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:37:10.400Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:37:51.977Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:38:04.558Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:38:59.320Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:38:59.838Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T03:39:04.137Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:39:30.999Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:39:34.931Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:40:47.702Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:40:59.673Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:41:28.506Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:41:50.167Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:43:08.412Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:43:34.077Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:44:37.425Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:44:47.717Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:45:01.949Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:47:24.235Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:58:53.409Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:58:55.063Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T03:59:13.580Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:00:32.331Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:00:37.038Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:03:43.653Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:03:49.213Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:04:35.210Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:04:43.175Z</timestamp>
+  </log>
+
+  <log>
+    <event>PRINT_SCREEN</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>HIGH</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:07:48.320Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:13:55.792Z</timestamp>
+  </log>
+
+  <log>
+    <event>TOKEN_REUSE_ATTACK</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>CRITICAL</severity>
+    <details>Intento de reutilización de refresh token</details>
+    <timestamp>2026-04-22T04:13:57.168Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-22T04:13:57.258Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:13:58.554Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:13:59.240Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T04:14:03.625Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:15:22.974Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:15:35.633Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGOUT</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details></details>
+    <timestamp>2026-04-22T04:15:51.476Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_ATTEMPT</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>LOW</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:15:53.236Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>ANONIMO</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/ | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:15:53.722Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T04:15:57.674Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:16:30.471Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:18:00.518Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:21:32.097Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:21:35.337Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:22:13.309Z</timestamp>
+  </log>
+
+  <log>
+    <event>LOGIN_SUCCESS</event>
+    <user>1</user>
+    <ip>::ffff:172.18.0.1</ip>
+    <severity>LOW</severity>
+    <details>Inicio de sesión exitoso</details>
+    <timestamp>2026-04-22T04:24:08.040Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:24:26.129Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:26:30.052Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:27:41.207Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:27:42.654Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:42:58.720Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:43:26.905Z</timestamp>
+  </log>
+
+  <log>
+    <event>WINDOW_BLUR</event>
+    <user>1</user>
+    <ip>UNKNOWN</ip>
+    <severity>MEDIUM</severity>
+    <details>url=http://localhost:3000/dashboard | ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0</details>
+    <timestamp>2026-04-22T04:44:03.829Z</timestamp>
+  </log>
+</securityLogs>

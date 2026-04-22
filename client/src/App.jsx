@@ -1,4 +1,6 @@
 import { AuthProvider } from './context/AuthContext.jsx';
+import { SecurityProvider } from './context/SecurityContext.jsx';
+import SecurityListener from './components/SecurityListener.jsx';
 import { useAuth } from './hooks/useAuth.js';
 import Login from './components/Auth/Login.jsx';
 import Dashboard from './components/Dashboard/Dashboard.jsx';
@@ -16,7 +18,10 @@ function AppContent() {
 export default function App() {
     return (
         <AuthProvider>
-            <AppContent />
+            <SecurityProvider>
+                <SecurityListener /> 
+                <AppContent />
+            </SecurityProvider>
         </AuthProvider>
     );
 }

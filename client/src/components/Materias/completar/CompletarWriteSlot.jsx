@@ -2,8 +2,8 @@ export default function CompletarWriteSlot({ value, onChange, inputRef, onEnter 
   return (
     <input
       ref={inputRef}
-      className="ev-salir-btn"
-      style={{ minWidth: 120, textAlign: "left", background: "#fff" }}
+      className="ev-completar-input"
+      placeholder="..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {

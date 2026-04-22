@@ -76,6 +76,7 @@ export const env = Object.freeze({
   isProduction: NODE_ENV === "production",
   isDevelopment: NODE_ENV === "development",
   port: parseInt(process.env.PORT, 10) || 3000,
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 
   db: Object.freeze({
     name: process.env.DB_NAME,

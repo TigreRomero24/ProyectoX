@@ -106,6 +106,7 @@ export default function GestionMaterias() {
   const [success, setSuccess] = useState("");
   const [modal, setModal] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [imgMateria, setImgMateria] = useState(null);
   const [nombreInput, setNombreInput] = useState("");
   const [errModal, setErrModal] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -138,6 +139,7 @@ export default function GestionMaterias() {
   // ── Modal ────────────────────────────────────────────────────────────────────
   const abrirCrear = () => {
     setEditando(null);
+    setImgMateria(null);
     setNombreInput("");
     setErrModal("");
     setModal(true);
@@ -145,6 +147,7 @@ export default function GestionMaterias() {
 
   const abrirEditar = (m) => {
     setEditando(m);
+    setImgMateria(null);
     setNombreInput(m.nombre);
     setErrModal("");
     setModal(true);
@@ -153,6 +156,7 @@ export default function GestionMaterias() {
   const cerrar = () => {
     setModal(false);
     setEditando(null);
+    setImgMateria(null);
     setNombreInput("");
     setErrModal("");
   };
@@ -160,14 +164,17 @@ export default function GestionMaterias() {
   // ── Guardar ──────────────────────────────────────────────────────────────────
   const handleGuardar = async () => {
     if (!nombreInput.trim()) return setErrModal("El nombre es obligatorio.");
+    if (imgMateria && !/^image\/(jpeg|png|webp)$/.test(imgMateria.type)) {
+      return setErrModal("La imagen debe ser JPEG, PNG o WebP.");
+    }
     setGuardando(true);
     setErrModal("");
     try {
       if (editando) {
-        await api.actualizarMateria(editando.id_materia, nombreInput.trim());
+        await api.actualizarMateria(editando.id_materia, nombreInput.trim(), imgMateria);
         toast("Materia actualizada correctamente.");
       } else {
-        await api.crearMateria(nombreInput.trim());
+        await api.crearMateria(nombreInput.trim(), imgMateria);
         toast("Materia creada correctamente.");
       }
       await cargar();
@@ -313,7 +320,11 @@ export default function GestionMaterias() {
                     className="gm-card-icon"
                     style={{ background: p.bg, color: p.color }}
                   >
-                    <IconBook />
+                    {m.img ? (
+                      <img src={m.img} alt={m.nombre} className="gm-card-img" />
+                    ) : (
+                      <IconBook />
+                    )}
                   </div>
                   <div className="gm-card-body">
                     <span className="gm-card-nombre">{m.nombre}</span>
@@ -370,6 +381,25 @@ export default function GestionMaterias() {
                 autoFocus
               />
               {errModal && <p className="gm-input-error">{errModal}</p>}
+
+              <label className="gm-label" style={{ marginTop: "16px" }}>
+                Imagen de la Materia
+              </label>
+              <div className="gm-file-input-wrapper">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setImgMateria(e.target.files?.[0] || null)}
+                  className="gm-file-input"
+                  id="imagen-input"
+                />
+                <label htmlFor="imagen-input" className="gm-file-label">
+                  {imgMateria ? `📎 ${imgMateria.name}` : "Seleccionar imagen"}
+                </label>
+              </div>
+              <p className="gm-file-hint">
+                Formatos: JPEG, PNG, WebP. Máximo 2MB.
+              </p>
             </div>
             <div className="gm-modal-footer">
               <button className="gm-btn-secondary" onClick={cerrar}>

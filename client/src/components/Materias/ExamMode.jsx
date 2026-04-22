@@ -11,7 +11,18 @@ import {
   AlertCircle,
   Trophy,
   XCircle,
+  MoveUp,
+  CheckCheck,
 } from "lucide-react";
+import OrdenarRenderer from "./OrdenarRenderer";
+import CompletarRenderer from "./completar/CompletarRenderer";
+import { parseCompletarText } from "./completar/completarParser";
+import { 
+  buildCompletarStateFromRespuesta, 
+  serializeCompletarState, 
+  resolveCompletarMode 
+} from "./completar/completarState";
+import { buildExamPayloadEntry } from "./questionRuntime";
 import { api } from "../../services/api";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
@@ -99,7 +110,39 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
   const handleSeleccionar = (opcionId) => {
     if (resultado) return;
     const p = preguntas[actual];
+
+    if (p.tipo_pregunta === "SELECCION_MULTIPLE") {
+      setRespuestas((prev) => {
+        const actualRes = prev[p.id_pregunta] || [];
+        if (actualRes.includes(opcionId)) {
+          const newVal = actualRes.filter(id => id !== opcionId);
+          if (newVal.length === 0) {
+            const next = { ...prev };
+            delete next[p.id_pregunta];
+            return next;
+          }
+          return { ...prev, [p.id_pregunta]: newVal };
+        } else {
+          return { ...prev, [p.id_pregunta]: [...actualRes, opcionId] };
+        }
+      });
+      return;
+    }
+
     setRespuestas((prev) => ({ ...prev, [p.id_pregunta]: opcionId }));
+  };
+
+  const handleOrdenar = (ordenData) => {
+    const p = preguntas[actual];
+    setRespuestas(prev => ({ ...prev, [p.id_pregunta]: ordenData }));
+  };
+
+  const handleCompletar = (nuevoMap) => {
+    const p = preguntas[actual];
+    const mode = resolveCompletarMode(p.estructura_json);
+    const { slotIds } = parseCompletarText(p.estructura_json?.texto);
+    const serialized = serializeCompletarState(nuevoMap, slotIds, mode);
+    setRespuestas(prev => ({ ...prev, [p.id_pregunta]: serialized }));
   };
 
   const handleEntregar = useCallback(
@@ -111,13 +154,11 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
       setEntregando(true);
       setError("");
 
-      const respActuales = respuestasRef.current;
-      const payload = Object.entries(respActuales).map(
-        ([id_pregunta, id_opcion]) => ({
-          id_pregunta: parseInt(id_pregunta),
-          id_opcion,
-        }),
-      );
+      const currentRespuestas = respuestasRef.current;
+      const payload = preguntas.map(p => {
+        const r = currentRespuestas[p.id_pregunta];
+        return buildExamPayloadEntry(p, r ? (typeof r === 'object' ? { respuesta_json: r } : { id_opcion: r }) : null);
+      }).filter(Boolean);
 
       try {
         const res = await api.enviarExamen(id_intento, payload);
@@ -292,13 +333,29 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
             Pregunta {actual + 1}
           </span>
           <span className="ev-badge ev-badge--tipo">
-            {pregunta.tipo_pregunta === "MULTIPLE" ? (
+            {pregunta.tipo_pregunta === "MULTIPLE" && (
               <>
                 <List size={11} /> Opción Múltiple
               </>
-            ) : (
+            )}
+            {pregunta.tipo_pregunta === "SELECCION_MULTIPLE" && (
+              <>
+                <CheckCheck size={11} /> Selección Múltiple
+              </>
+            )}
+            {pregunta.tipo_pregunta === "VERDADERO_FALSO" && (
               <>
                 <ToggleLeft size={11} /> Verdadero / Falso
+              </>
+            )}
+            {pregunta.tipo_pregunta === "ORDENAR" && (
+              <>
+                <MoveUp size={11} /> Ordenar
+              </>
+            )}
+            {pregunta.tipo_pregunta === "COMPLETAR" && (
+              <>
+                <CheckCheck size={11} /> Completar
               </>
             )}
           </span>
@@ -315,33 +372,57 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
         )}
 
         <div className="ev-opciones">
-          {pregunta.opciones.map((op, i) => {
-            const seleccionada =
-              respuestas[pregunta.id_pregunta] === op.id_opcion;
-            return (
-              <button
-                key={op.id_opcion}
-                className={`ev-opcion ${seleccionada ? "ev-opcion--seleccionada" : "ev-opcion--idle ev-opcion--hover"}`}
-                onClick={() => handleSeleccionar(op.id_opcion)}
-              >
-                <span
-                  className={`ev-opcion-radio ${seleccionada ? "ev-opcion-radio--seleccionada" : ""}`}
+          {["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE"].includes(pregunta.tipo_pregunta) && (
+            pregunta.opciones.map((op, i) => {
+              let seleccionada = false;
+              if (pregunta.tipo_pregunta === "SELECCION_MULTIPLE") {
+                seleccionada = (respuestas[pregunta.id_pregunta] || []).includes(op.id_opcion);
+              } else {
+                seleccionada = respuestas[pregunta.id_pregunta] === op.id_opcion;
+              }
+
+              return (
+                <button
+                  key={op.id_opcion}
+                  className={`ev-opcion ${seleccionada ? "ev-opcion--seleccionada" : "ev-opcion--idle ev-opcion--hover"}`}
+                  onClick={() => handleSeleccionar(op.id_opcion)}
                 >
-                  {seleccionada ? (
-                    <CheckCircle2 size={20} />
-                  ) : (
-                    <Circle size={20} />
-                  )}
-                </span>
-                <span
-                  className={`ev-opcion-letra ${seleccionada ? "ev-opcion-letra--seleccionada" : ""}`}
-                >
-                  {LETRAS[i]}
-                </span>
-                <span className="ev-opcion-texto">{op.texto}</span>
-              </button>
-            );
-          })}
+                  <span
+                    className={`ev-opcion-radio ${seleccionada ? "ev-opcion-radio--seleccionada" : ""}`}
+                  >
+                    {seleccionada ? (
+                      <CheckCircle2 size={20} />
+                    ) : (
+                      <Circle size={20} />
+                    )}
+                  </span>
+                  <span
+                    className={`ev-opcion-letra ${seleccionada ? "ev-opcion-letra--seleccionada" : ""}`}
+                  >
+                    {LETRAS[i]}
+                  </span>
+                  <span className="ev-opcion-texto">{op.texto}</span>
+                </button>
+              );
+            })
+          )}
+
+          {pregunta.tipo_pregunta === "ORDENAR" && (
+            <OrdenarRenderer 
+              pregunta={pregunta}
+              onReorder={handleOrdenar}
+              disabled={yaRespondio}
+              respuestaActual={respuestas[pregunta.id_pregunta]}
+            />
+          )}
+
+          {pregunta.tipo_pregunta === "COMPLETAR" && (
+            <CompletarRenderer 
+              estructura={pregunta.estructura_json}
+              respuestaMap={buildCompletarStateFromRespuesta(respuestas[pregunta.id_pregunta])}
+              onChangeMap={handleCompletar}
+            />
+          )}
         </div>
       </div>
 

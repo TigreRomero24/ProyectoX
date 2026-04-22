@@ -21,6 +21,8 @@ export class AcademicoService {
     if (datos.tipo_pregunta !== undefined)
       dto.tipo_pregunta = datos.tipo_pregunta;
     if (datos.url_imagen !== undefined) dto.url_imagen = datos.url_imagen;
+    if (datos.estructura_json !== undefined)
+      dto.estructura_json = datos.estructura_json;
     return dto;
   }
 
@@ -38,7 +40,10 @@ export class AcademicoService {
 
   // ─── Validadores privados ────────────────────────────────────────────────────
 
-  static #validarOpcionesPorTipo(tipo_pregunta, opciones) {
+  /**
+   * Valida opciones para tipos legacy (MULTIPLE, VERDADERO_FALSO, SELECCION_MULTIPLE)
+   */
+  static #validarOpcionesLegacy(tipo_pregunta, opciones) {
     if (!Array.isArray(opciones) || opciones.length < 2) {
       throw new Error(
         "VALIDACION: Una pregunta debe tener al menos 2 opciones.",
@@ -49,7 +54,7 @@ export class AcademicoService {
 
     if (correctas.length === 0) {
       throw new Error(
-        "VALIDACION: Debe existir exactamente una opción correcta.",
+        "VALIDACION: Debe existir al menos una opción correcta.",
       );
     }
 
@@ -76,9 +81,123 @@ export class AcademicoService {
       return;
     }
 
+    if (tipo_pregunta === "SELECCION_MULTIPLE") {
+      // Puede haber múltiples correctas
+      return;
+    }
+
     throw new Error(
       `VALIDACION: Tipo de pregunta no reconocido: '${tipo_pregunta}'.`,
     );
+  }
+
+  /**
+   * Valida estructura_json para tipos complejos
+   */
+  static #validarEstructuraJson(tipo_pregunta, estructura_json) {
+    if (!estructura_json || typeof estructura_json !== "object") {
+      throw new Error(
+        `VALIDACION: estructura_json es requerida para tipo ${tipo_pregunta}.`,
+      );
+    }
+
+    if (tipo_pregunta === "ORDENAR") {
+      if (!Array.isArray(estructura_json.opciones)) {
+        throw new Error(
+          "VALIDACION: ORDENAR requiere opciones en estructura_json.",
+        );
+      }
+      if (estructura_json.opciones.length < 2) {
+        throw new Error(
+          "VALIDACION: ORDENAR debe tener al menos 2 elementos.",
+        );
+      }
+      if (!estructura_json.respuesta?.orden_ids) {
+        throw new Error(
+          "VALIDACION: ORDENAR requiere respuesta.orden_ids en estructura_json.",
+        );
+      }
+      return;
+    }
+
+    if (tipo_pregunta === "RELACIONAR") {
+      if (!Array.isArray(estructura_json.pares)) {
+        throw new Error(
+          "VALIDACION: RELACIONAR requiere pares en estructura_json.",
+        );
+      }
+      if (estructura_json.pares.length < 2) {
+        throw new Error(
+          "VALIDACION: RELACIONAR debe tener al menos 2 pares.",
+        );
+      }
+      if (!Array.isArray(estructura_json.respuesta?.pares)) {
+        throw new Error(
+          "VALIDACION: RELACIONAR requiere respuesta.pares en estructura_json.",
+        );
+      }
+      return;
+    }
+
+    if (tipo_pregunta === "COMPLETAR") {
+      if (!estructura_json.texto || typeof estructura_json.texto !== "string") {
+        throw new Error(
+          "VALIDACION: COMPLETAR requiere texto en estructura_json.",
+        );
+      }
+      const slots = (estructura_json.texto || "").match(/\[\[([^\]]+)\]\]/g) || [];
+      if (slots.length === 0) {
+        throw new Error(
+          "VALIDACION: COMPLETAR debe tener al menos 1 espacio [[nombre]].",
+        );
+      }
+      if (!Array.isArray(estructura_json.espacios)) {
+        throw new Error(
+          "VALIDACION: COMPLETAR requiere espacios en estructura_json.",
+        );
+      }
+      if (estructura_json.espacios.length !== slots.length) {
+        throw new Error(
+          `VALIDACION: Hay ${slots.length} espacios pero ${estructura_json.espacios.length} configurados.`,
+        );
+      }
+      if (
+        estructura_json.modo_interaccion === "ARRASTRAR" &&
+        Array.isArray(estructura_json.opciones_arrastrar)
+      ) {
+        if (
+          estructura_json.opciones_arrastrar.length <
+          estructura_json.espacios.length
+        ) {
+          throw new Error(
+            "VALIDACION: COMPLETAR modo ARRASTRAR requiere opciones_arrastrar >= espacios.",
+          );
+        }
+      }
+      return;
+    }
+
+    throw new Error(
+      `VALIDACION: Tipo complejo no reconocido: '${tipo_pregunta}'.`,
+    );
+  }
+
+  /**
+   * Valida opciones o estructura según el tipo
+   */
+  static #validarPorTipo(tipo_pregunta, opciones, estructura_json) {
+    const tiposLegacy = ["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE"];
+    const tiposComplejos = ["ORDENAR", "RELACIONAR", "COMPLETAR"];
+
+    if (tiposLegacy.includes(tipo_pregunta)) {
+      this.#validarOpcionesLegacy(tipo_pregunta, opciones || []);
+    } else if (tiposComplejos.includes(tipo_pregunta)) {
+      this.#validarEstructuraJson(tipo_pregunta, estructura_json);
+    } else {
+      throw new Error(
+        `VALIDACION: Tipo de pregunta no reconocido: '${tipo_pregunta}'.`,
+      );
+    }
   }
 
   static async #verificarMateria(id_materia, transaction) {
@@ -117,6 +236,7 @@ export class AcademicoService {
       enunciado: data.enunciado,
       tipo_pregunta: data.tipo_pregunta,
       url_imagen: data.url_imagen ?? null,
+      estructura_json: data.estructura_json ?? null,
       activo: data.activo,
       createdAt: data.createdAt,
       opciones: Array.isArray(data.opciones)
@@ -150,10 +270,12 @@ export class AcademicoService {
 
   // ─── Crear ──────────────────────────────────────────────────────────────────
 
-  static async crearPreguntaConOpciones(datosPregunta, opciones) {
-    AcademicoService.#validarOpcionesPorTipo(
+  static async crearPreguntaConOpciones(datosPregunta, opciones, estructura_json) {
+    // Validar según el tipo
+    AcademicoService.#validarPorTipo(
       datosPregunta.tipo_pregunta,
       opciones,
+      estructura_json,
     );
 
     const dto = AcademicoService.#buildPreguntaDTO(datosPregunta);
@@ -173,29 +295,39 @@ export class AcademicoService {
     try {
       await AcademicoService.#verificarMateria(dto.id_materia, t);
 
+      // Para tipos complejos, incluir estructura_json
+      if (estructura_json) {
+        dto.estructura_json = estructura_json;
+      }
+
       const pregunta = await BancoPregunta.create(dto, { transaction: t });
 
-      const opcionesAInsertar = opciones.map((opcion) =>
-        AcademicoService.#buildOpcionDTO(opcion, pregunta.id_pregunta),
-      );
+      // Crear opciones solo para tipos legacy
+      let opcionesCreadas = [];
+      if (opciones && opciones.length > 0) {
+        const opcionesAInsertar = opciones.map((opcion) =>
+          AcademicoService.#buildOpcionDTO(opcion, pregunta.id_pregunta),
+        );
 
-      const opcionesCreadas = await OpcionRespuesta.bulkCreate(
-        opcionesAInsertar,
-        {
-          transaction: t,
-          returning: true, // PostgreSQL: retorna los registros insertados
-        },
-      );
+        opcionesCreadas = await OpcionRespuesta.bulkCreate(
+          opcionesAInsertar,
+          {
+            transaction: t,
+            returning: true,
+          },
+        );
+      }
 
       await t.commit();
 
-      // DTO de salida manual post-create (sin segundo query a BD)
+      // DTO de salida manual post-create
       return {
         id_pregunta: pregunta.id_pregunta,
         id_materia: pregunta.id_materia,
         enunciado: pregunta.enunciado,
         tipo_pregunta: pregunta.tipo_pregunta,
         url_imagen: pregunta.url_imagen ?? null,
+        estructura_json: pregunta.estructura_json ?? null,
         activo: pregunta.activo,
         createdAt: pregunta.createdAt,
         opciones: opcionesCreadas.map((o) => ({
@@ -275,18 +407,24 @@ export class AcademicoService {
    * Actualiza campos de una pregunta y/o reemplaza sus opciones.
    *
    * Reglas de negocio:
-   * 1. Si se envían nuevasOpciones, se validan contra el tipo FINAL de la pregunta.
+   * 1. Si se envían nuevasOpciones o estructura_json, se validan contra el tipo FINAL.
    * 2. Si la pregunta tiene historial en DetalleIntento, no se permite
    *    modificar opciones (blindaje de integridad histórica).
    * 3. Orden de operación: primero padre (BancoPregunta), luego hijos (OpcionRespuesta).
    * 4. DTO filtra campos fantasma — activo solo cambia vía eliminarPregunta.
    */
-  static async actualizarPregunta(id_pregunta, datosPregunta, nuevasOpciones) {
+  static async actualizarPregunta(
+    id_pregunta,
+    datosPregunta,
+    nuevasOpciones,
+    estructura_json,
+  ) {
     const dto = AcademicoService.#buildPreguntaDTO(datosPregunta);
 
     if (
       Object.keys(dto).length === 0 &&
-      (!nuevasOpciones || nuevasOpciones.length === 0)
+      (!nuevasOpciones || nuevasOpciones.length === 0) &&
+      !estructura_json
     ) {
       throw new Error(
         "VALIDACION: No se enviaron campos válidos para actualizar.",
@@ -308,11 +446,12 @@ export class AcademicoService {
         await AcademicoService.#verificarMateria(dto.id_materia, t);
       }
 
-      // Validación y reemplazo de opciones
+      // Tipo final = el que venga en el DTO o el que ya tiene la pregunta
+      const tipoFinal = dto.tipo_pregunta ?? pregunta.tipo_pregunta;
+
+      // Validación y reemplazo de opciones (tipos legacy)
       if (nuevasOpciones && nuevasOpciones.length > 0) {
-        // Tipo final = el que venga en el DTO o el que ya tiene la pregunta
-        const tipoFinal = dto.tipo_pregunta ?? pregunta.tipo_pregunta;
-        AcademicoService.#validarOpcionesPorTipo(tipoFinal, nuevasOpciones);
+        AcademicoService.#validarPorTipo(tipoFinal, nuevasOpciones, null);
 
         // Guard de historial: no se pueden cambiar opciones si hay intentos previos
         const historial = await AcademicoService.#contarHistorialPorPregunta(
@@ -326,11 +465,12 @@ export class AcademicoService {
           );
         }
 
-        // Orden correcto: primero padre, luego destruir y recrear hijos
+        // Primero actualizar padre si es necesario
         if (Object.keys(dto).length > 0) {
           await pregunta.update(dto, { transaction: t });
         }
 
+        // Luego destruir y recrear hijos
         await OpcionRespuesta.destroy({
           where: { id_pregunta },
           transaction: t,
@@ -344,8 +484,26 @@ export class AcademicoService {
           transaction: t,
           returning: true,
         });
+      } else if (estructura_json) {
+        // Para tipos complejos
+        AcademicoService.#validarPorTipo(tipoFinal, [], estructura_json);
+
+        // Guard de historial
+        const historial = await AcademicoService.#contarHistorialPorPregunta(
+          id_pregunta,
+          t,
+        );
+
+        if (historial > 0) {
+          throw new Error(
+            `RESTRICCION: No se puede modificar la estructura porque ${historial} respuesta(s) de estudiantes ya referencian esta pregunta.`,
+          );
+        }
+
+        dto.estructura_json = estructura_json;
+        await pregunta.update(dto, { transaction: t });
       } else if (Object.keys(dto).length > 0) {
-        // Solo actualizar campos de la pregunta, sin tocar opciones
+        // Solo actualizar campos de la pregunta, sin tocar opciones ni estructura
         await pregunta.update(dto, { transaction: t });
       }
 
@@ -505,19 +663,20 @@ export class AcademicoService {
       }
       if (
         !item.tipo_pregunta ||
-        !["MULTIPLE", "VERDADERO_FALSO"].includes(item.tipo_pregunta)
+        !["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE", "ORDENAR", "RELACIONAR", "COMPLETAR"].includes(item.tipo_pregunta)
       ) {
         errores.push({
           fila,
           enunciado: item.enunciado,
-          motivo: "Tipo de pregunta inválido.",
+          motivo: "Tipo de pregunta inválido. Tipos válidos: MULTIPLE, VERDADERO_FALSO, SELECCION_MULTIPLE, ORDENAR, RELACIONAR, COMPLETAR.",
         });
         return;
       }
       try {
-        AcademicoService.#validarOpcionesPorTipo(
+        AcademicoService.#validarPorTipo(
           item.tipo_pregunta,
           item.opciones || [],
+          item.estructura_json,
         );
       } catch (e) {
         errores.push({
@@ -556,19 +715,27 @@ export class AcademicoService {
 
     try {
       for (const item of aInsertar) {
-        const pregunta = await BancoPregunta.create(
-          AcademicoService.#buildPreguntaDTO(item),
-          { transaction: t },
-        );
+        const dto = AcademicoService.#buildPreguntaDTO(item);
 
-        const opcionesDTO = item.opciones.map((o) =>
-          AcademicoService.#buildOpcionDTO(o, pregunta.id_pregunta),
-        );
+        // Para tipos complejos, incluir estructura_json
+        if (item.estructura_json) {
+          dto.estructura_json = item.estructura_json;
+        }
 
-        await OpcionRespuesta.bulkCreate(opcionesDTO, {
-          transaction: t,
-          returning: false,
-        });
+        const pregunta = await BancoPregunta.create(dto, { transaction: t });
+
+        // Crear opciones solo para tipos legacy
+        const tiposLegacy = ["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE"];
+        if (tiposLegacy.includes(item.tipo_pregunta) && Array.isArray(item.opciones) && item.opciones.length > 0) {
+          const opcionesDTO = item.opciones.map((o) =>
+            AcademicoService.#buildOpcionDTO(o, pregunta.id_pregunta),
+          );
+
+          await OpcionRespuesta.bulkCreate(opcionesDTO, {
+            transaction: t,
+            returning: false,
+          });
+        }
 
         insertadas++;
       }

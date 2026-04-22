@@ -7,8 +7,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: unemi123567
       POSTGRES_DB: EduQuery
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,7 +17,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Construye el frontend y deja el /dist listo en un volumen compartido
   client-build:
     build:
       context: ./client
@@ -25,7 +24,6 @@ services:
     container_name: frontend_build
     volumes:
       - frontend_dist:/app/dist
-    # Solo construye y termina, no queda corriendo
     command: sh -c "npm run build && echo 'Build OK'"
 
   server:
@@ -44,10 +42,11 @@ services:
       client-build:
         condition: service_completed_successfully
     volumes:
-      - frontend_dist:/app/public   # El dist del cliente queda en server/public
+      - frontend_dist:/app/public 
       - server_media_data:/app/storage
+      - ./logs:/app/logs
 
 volumes:
   postgres_data:
   server_media_data:
-  frontend_dist:       # Volumen compartido entre client-build y server
+  frontend_dist:

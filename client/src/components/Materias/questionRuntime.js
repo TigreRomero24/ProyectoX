@@ -4,7 +4,6 @@ export const TIPO_LABEL = {
   MULTIPLE: "Opción Múltiple",
   SELECCION_MULTIPLE: "Selección múltiple",
   ORDENAR: "Ordenar",
-  RELACIONAR: "Relacionar",
   VERDADERO_FALSO: "Verdadero / Falso",
   COMPLETAR: "Completar",
 };
@@ -123,7 +122,9 @@ export const corregirRespuestaTest = (pregunta, respuesta) => {
   }
 
   if (tipo === "SELECCION_MULTIPLE") {
-    const user = new Set(respuesta?.respuesta_json?.opciones_ids || []);
+    const raw = respuesta?.respuesta_json;
+    const userArr = Array.isArray(raw) ? raw : (raw?.opciones_ids || []);
+    const user = new Set(userArr);
     const correct = new Set(estructura.respuesta.opciones_ids || []);
     const inter = [...user].filter((i) => correct.has(i)).length;
     const union = new Set([...user, ...correct]).size;
@@ -137,7 +138,8 @@ export const corregirRespuestaTest = (pregunta, respuesta) => {
   }
 
   if (tipo === "ORDENAR") {
-    const user = respuesta?.respuesta_json?.orden_ids || [];
+    const raw = respuesta?.respuesta_json;
+    const user = Array.isArray(raw) ? raw : (raw?.orden_ids || []);
     const correct = estructura.respuesta.orden_ids || [];
     let hits = 0;
     for (let i = 0; i < correct.length; i++) {
@@ -151,25 +153,6 @@ export const corregirRespuestaTest = (pregunta, respuesta) => {
       correcta: correct,
     };
   }
-
-  if (tipo === "RELACIONAR") {
-    const mapOk = new Map(
-      (estructura.respuesta.pares || []).map((p) => [p.izquierda_id, p.derecha_id]),
-    );
-    const pares = respuesta?.respuesta_json?.pares || [];
-    let hits = 0;
-    for (const p of pares) {
-      if (mapOk.get(p.izquierda_id) === p.derecha_id) hits++;
-    }
-    const puntos = mapOk.size ? hits / mapOk.size : 0;
-    return {
-      correcto: puntos === 1,
-      puntos,
-      detalle: puntos === 1 ? "Correcta" : "Parcial",
-      correcta: estructura.respuesta.pares,
-    };
-  }
-
   const modo = resolveCompletarInteractionMode(estructura.modo_interaccion).resolved;
 
   const aceptadas = new Map(
@@ -179,9 +162,10 @@ export const corregirRespuestaTest = (pregunta, respuesta) => {
     ]),
   );
 
-  const espacios = Array.isArray(respuesta?.respuesta_json?.espacios)
-    ? respuesta.respuesta_json.espacios
-    : [];
+  const rawRes = respuesta?.respuesta_json;
+  const espacios = Array.isArray(rawRes?.espacios)
+    ? rawRes.espacios
+    : (Array.isArray(rawRes) ? rawRes : []);
   const dedup = new Map();
   espacios.forEach((e) => {
     const espacio_id = String(e?.espacio_id || "").trim();

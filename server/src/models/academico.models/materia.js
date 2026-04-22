@@ -9,6 +9,10 @@ export const Materia = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    img: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     nombre: {
       type: DataTypes.STRING(100),
       allowNull: false,
@@ -23,10 +27,13 @@ export const Materia = sequelize.define(
     },
   },
   {
-    tableName: "Materia",
+    tableName: "materia",
     timestamps: true,
     hooks: {
       beforeSave: (materia) => {
+        if (materia.img) {
+          materia.img = materia.img.trim();
+        }
         if (materia.nombre) {
           materia.nombre = materia.nombre.trim();
         }

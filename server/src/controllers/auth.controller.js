@@ -58,7 +58,7 @@ export class AuthController {
         .substring(0, 50);
 
       const { accessToken, refreshToken } =
-        await AuthService.procesarLoginGoogle(googleProfile, dispositivoId);
+        await AuthService.procesarLoginGoogle(googleProfile, dispositivoId, ip);
 
       res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
       return res.redirect(`${frontendUrl}/dashboard?token=${accessToken}`);
@@ -121,7 +121,8 @@ export class AuthController {
       }
 
       if (payload?.dispositivoId && payload?.id) {
-        await AuthService.cerrarSesion(payload.dispositivoId, payload.id);
+        const ip = req.headers["x-forwarded-for"] || req.socket?.remoteAddress || req.ip;
+        await AuthService.cerrarSesion(payload.dispositivoId, payload.id, ip);
       }
 
       res.clearCookie("refreshToken", { path: "/api/v1/auth/refresh" });
@@ -141,4 +142,5 @@ export class AuthController {
         .json({ ok: true, mensaje: "Sesión cerrada localmente." });
     }
   }
+
 }

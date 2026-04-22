@@ -2,109 +2,284 @@
    Gestionusuarios.css — clases gu-* para GestionUsuarios.jsx
    ═══════════════════════════════════════════════════════════════ */
 
-.gu-root { max-width: 1000px; margin: 0 auto; padding-bottom: 40px; }
+.gu-root {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
 
 /* Error banner */
 .gu-error-banner {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; padding: 12px 16px; margin-bottom: 20px;
-  background: var(--c-error-bg); border: 1px solid var(--c-error-bdr);
-  color: var(--c-error-txt); border-radius: var(--radius-md); font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: var(--c-error-bg);
+  border: 1px solid var(--c-error-bdr);
+  color: var(--c-error-txt);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
 }
+
 .gu-error-close {
-  background: none; border: none; cursor: pointer;
-  color: var(--c-error-txt); padding: 2px; opacity: .7; flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--c-error-bdr);
+  cursor: pointer;
+  color: var(--c-error-txt);
+  padding: 2px;
+  opacity: .7;
+  flex-shrink: 0;
 }
-.gu-error-close:hover { opacity: 1; }
+
+.gu-error-close:hover {
+  opacity: 1;
+}
 
 /* Botones */
 .gu-btn-add {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 18px; background: var(--c-brand-600); color: #fff;
-  border: none; border-radius: var(--radius-md);
-  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
-  cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--c-brand-600);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s, box-shadow .15s;
 }
-.gu-btn-add:hover { background: var(--c-brand-700); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.gu-btn-add:hover {
+  background: var(--c-brand-700);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
 
 .gu-btn-delete {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 10px; background: var(--c-error-bg); color: var(--c-error-txt);
-  border: 1px solid var(--c-error-bdr); border-radius: var(--radius-md);
-  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 700;
-  cursor: pointer; transition: background .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--c-error-bg);
+  color: var(--c-error-txt);
+  border: 1px solid var(--c-error-bdr);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
 }
-.gu-btn-delete:hover { background: #fee2e2; }
+
+.gu-btn-delete:hover {
+  background: #fee2e2;
+}
 
 /* Tabla */
 .gu-tabla {
-  background: var(--bg-surface); border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
 }
+
 .gu-thead {
   display: grid;
   grid-template-columns: 60px 1fr 180px 110px 80px 80px;
-  padding: 10px 20px; background: var(--bg-muted);
+  padding: 10px 20px;
+  background: var(--bg-muted);
   border-bottom: 1px solid var(--border-color);
 }
+
 .gu-thead span {
-  font-size: 11px; font-weight: 700; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: .06em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
 }
+
 .gu-fila {
   display: grid;
   grid-template-columns: 60px 1fr 180px 110px 80px 80px;
-  align-items: center; padding: 12px 20px;
+  align-items: center;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border-color);
   transition: background .12s;
 }
-.gu-fila:last-child { border-bottom: none; }
-.gu-fila:hover { background: var(--bg-subtle); }
 
-.gu-td-id    { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; }
-.gu-td-email { font-size: var(--text-sm); color: var(--text-secondary); }
-.gu-td-state { display: flex; align-items: center; }
+.gu-fila:last-child {
+  border-bottom: none;
+}
+
+.gu-fila:hover {
+  background: var(--bg-subtle);
+}
+
+.gu-td-id {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-left: 10px;
+}
+
+.gu-td-email {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.gu-td-state {
+  display: flex;
+  align-items: center;
+}
 
 /* Role badge */
 .gu-badge--ADMINISTRADOR {
-  display: inline-flex; padding: 3px 10px; border-radius: 20px;
-  font-size: var(--text-xs); font-weight: 700;
-  background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
 }
+
 .gu-badge--ESTUDIANTE {
-  display: inline-flex; padding: 3px 10px; border-radius: 20px;
-  font-size: var(--text-xs); font-weight: 700;
-  background: var(--c-info-bg); color: var(--c-info-txt); border: 1px solid var(--c-info-bdr);
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: var(--c-info-bg);
+  color: var(--c-info-txt);
+  border: 1px solid var(--c-info-bdr);
 }
-[data-theme="dark"] .gu-badge--ADMINISTRADOR { background: rgba(167,139,250,.12); color: #a78bfa; border-color: rgba(167,139,250,.2); }
+
+[data-theme="dark"] .gu-badge--ADMINISTRADOR {
+  background: rgba(167, 139, 250, .12);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, .2);
+}
 
 /* Toggle switch */
 .gu-switch {
-  position: relative; display: inline-flex; cursor: pointer;
-  width: 40px; height: 22px;
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  width: 40px;
+  height: 22px;
 }
-.gu-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+.gu-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
 .gu-switch-track {
-  width: 40px; height: 22px; border-radius: 11px;
-  background: var(--border-color); transition: background .2s;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--border-color);
+  transition: background .2s;
   position: relative;
 }
+
 .gu-switch-track::after {
-  content: ''; position: absolute; top: 3px; left: 3px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
 }
-.gu-switch--on .gu-switch-track { background: #22c55e; }
-.gu-switch--on .gu-switch-track::after { transform: translateX(18px); }
-.gu-switch--disabled { opacity: .45; cursor: not-allowed; }
+
+.gu-switch--on .gu-switch-track {
+  background: #22c55e;
+}
+
+.gu-switch--on .gu-switch-track::after {
+  transform: translateX(18px);
+}
+
+.gu-switch--disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
 
 /* ── Missing classes ──────────────────────────────────────────── */
-.gu-header   { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-.gu-title    { font-size: var(--text-2xl); font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -.03em; }
-.gu-subtitle { font-size: var(--text-sm); color: var(--text-secondary); margin: 0; }
-.gu-spinner  { width: 24px; height: 24px; border: 2.5px solid var(--border-color); border-top-color: var(--c-brand-500); border-radius: 50%; animation: gu-spin .7s linear infinite; }
-@keyframes gu-spin { to { transform: rotate(360deg); } }
-.gu-badge    { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: var(--text-xs); font-weight: 700; background: var(--bg-muted); color: var(--text-secondary); }
-.gu-actions  { display: flex; gap: 8px; align-items: center; }
-.gu-table-wrap { overflow-x: auto; }
-.gu-table    { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); min-width: 600px; }
+.gu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.gu-title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+  letter-spacing: -.03em;
+}
+
+.gu-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.gu-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid var(--border-color);
+  border-top-color: var(--c-brand-500);
+  border-radius: 50%;
+  animation: gu-spin .7s linear infinite;
+}
+
+@keyframes gu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gu-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+}
+
+.gu-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.gu-table-wrap {
+  overflow-x: auto;
+}
+
+.gu-table td {
+  padding: 12px;
+  text-align: start;
+}

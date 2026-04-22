@@ -54,14 +54,13 @@ export class EvaluacionService {
       where: {
         id_usuario,
         id_materia: configuracion.id_materia,
-        modo_evaluacion: configuracion.modo,
         activo: true,
       },
       attributes: ["id_usuario"],
     });
     if (!inscripcion) {
       throw new Error(
-        "RESTRICCION: No está inscrito en esta materia con el modo requerido, o la inscripción está desactivada.",
+        "RESTRICCION: No está inscrito en esta materia, o la inscripción está desactivada.",
       );
     }
 
@@ -90,7 +89,7 @@ export class EvaluacionService {
 
     const preguntasDisponibles = await BancoPregunta.findAll({
       where: { id_materia: configuracion.id_materia, activo: true },
-      attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta"],
+      attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta", "estructura_json"],
     });
 
     if (preguntasDisponibles.length === 0) {
@@ -150,6 +149,7 @@ export class EvaluacionService {
         enunciado: raw.enunciado,
         url_imagen: raw.url_imagen ?? null,
         tipo_pregunta: raw.tipo_pregunta,
+        estructura_json: raw.estructura_json,
         opciones: opcionesPorPregunta[raw.id_pregunta] ?? [],
       };
     });
@@ -233,11 +233,12 @@ export class EvaluacionService {
           id_materia: configuracion.id_materia,
           activo: true,
         },
-        attributes: ["id_pregunta"],
+        attributes: ["id_pregunta", "tipo_pregunta", "estructura_json"],
         transaction: t,
       });
 
       const idsValidos = new Set(preguntasValidas.map((p) => p.id_pregunta));
+      const preguntasMap = new Map(preguntasValidas.map((p) => [p.id_pregunta, p]));
 
       for (const r of respuestasUsuario) {
         if (!idsValidos.has(r.id_pregunta)) {
@@ -247,47 +248,130 @@ export class EvaluacionService {
         }
       }
 
-      // ── FIX N+1: Cargar todas las opciones elegidas en 1 sola query ──────────
-      const idsOpciones = [
-        ...new Set(respuestasUsuario.map((r) => r.id_opcion)),
-      ];
-      const opcionesElegidas = await OpcionRespuesta.findAll({
-        where: { id_opcion: idsOpciones },
+      // ── Cargar todas las opciones de las preguntas ──────────
+      const opcionesDB = await OpcionRespuesta.findAll({
+        where: { id_pregunta: idsRespuestasPregunta },
         transaction: t,
       });
-      const opcionesMap = new Map(
-        opcionesElegidas.map((o) => [o.id_opcion, o.get({ plain: true })]),
-      );
+
+      const opcionesPorPregunta = new Map();
+      const opcionesPorId = new Map();
+      for (const op of opcionesDB) {
+        const plain = op.get({ plain: true });
+        opcionesPorId.set(plain.id_opcion, plain);
+        if (!opcionesPorPregunta.has(plain.id_pregunta)) {
+          opcionesPorPregunta.set(plain.id_pregunta, []);
+        }
+        opcionesPorPregunta.get(plain.id_pregunta).push(plain);
+      }
 
       // ── Calificar ────────────────────────────────────────────────────────────
       let totalCorrectas = 0;
       const detallesAInsertar = [];
 
       for (const respuesta of respuestasUsuario) {
-        const opcion = opcionesMap.get(respuesta.id_opcion);
+        const pDb = preguntasMap.get(respuesta.id_pregunta);
+        const tipo = pDb?.tipo_pregunta;
+        const estructura = pDb?.estructura_json;
 
-        if (!opcion) {
-          throw new Error(
-            `VALIDACION: La opción ${respuesta.id_opcion} no existe en el sistema.`,
-          );
+        if (tipo === "SELECCION_MULTIPLE") {
+          const opcionesPregunta = opcionesPorPregunta.get(respuesta.id_pregunta) || [];
+          const correctasIds = opcionesPregunta.filter((o) => o.es_correcta).map((o) => o.id_opcion);
+          
+          const raw = respuesta.respuesta_json;
+          const elegidasIds = Array.isArray(raw) ? raw : (raw?.opciones_ids || []);
+
+          const esCorrecta = elegidasIds.length === correctasIds.length && elegidasIds.every((id) => correctasIds.includes(id));
+          const puntos = esCorrecta ? 1.0 : 0.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { opciones_ids: elegidasIds },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "ORDENAR") {
+          const correctOrder = estructura?.respuesta?.orden_ids || [];
+          const raw = respuesta.respuesta_json;
+          const userOrder = Array.isArray(raw) ? raw : (raw?.orden_ids || []);
+          
+          let hits = 0;
+          for (let i = 0; i < correctOrder.length; i++) {
+            if (String(userOrder[i]) === String(correctOrder[i])) hits++;
+          }
+          
+          const puntos = correctOrder.length ? hits / correctOrder.length : 0;
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { orden_ids: userOrder },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "COMPLETAR") {
+          const aceptadasArr = estructura?.respuesta?.aceptadas || [];
+          const raw = respuesta.respuesta_json;
+          const userSlots = Array.isArray(raw?.espacios) ? raw.espacios : (Array.isArray(raw) ? raw : []);
+          
+          const userMap = new Map();
+          userSlots.forEach(s => {
+            userMap.set(String(s.espacio_id), String(s.respuesta || "").trim().toLowerCase());
+          });
+
+          let hits = 0;
+          for (const config of aceptadasArr) {
+            const userVal = userMap.get(String(config.espacio_id));
+            const possibleVals = (config.valores || []).map(v => String(v).trim().toLowerCase());
+            if (userVal && possibleVals.includes(userVal)) {
+              hits++;
+            }
+          }
+
+          const puntos = aceptadasArr.length ? hits / aceptadasArr.length : 0;
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { espacios: userSlots },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else {
+          const opcion = opcionesPorId.get(respuesta.id_opcion);
+
+          if (!opcion) {
+            throw new Error(
+              `VALIDACION: La opción ${respuesta.id_opcion} no existe en el sistema.`,
+            );
+          }
+          if (opcion.id_pregunta !== respuesta.id_pregunta) {
+            throw new Error(
+              `VALIDACION: La opción ${respuesta.id_opcion} no corresponde a la pregunta ${respuesta.id_pregunta}.`,
+            );
+          }
+
+          const esCorrecta = opcion.es_correcta === true;
+          const puntos = esCorrecta ? 1.0 : 0.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: respuesta.id_opcion,
+            es_correcta_snapshot: esCorrecta, // blindaje histórico en BD
+            puntos_obtenidos: puntos,
+          });
         }
-        if (opcion.id_pregunta !== respuesta.id_pregunta) {
-          throw new Error(
-            `VALIDACION: La opción ${respuesta.id_opcion} no corresponde a la pregunta ${respuesta.id_pregunta}.`,
-          );
-        }
-
-        const esCorrecta = opcion.es_correcta === true;
-        const puntos = esCorrecta ? 1.0 : 0.0;
-        if (esCorrecta) totalCorrectas++;
-
-        detallesAInsertar.push({
-          id_intento,
-          id_pregunta: respuesta.id_pregunta,
-          id_opcion_elegida: respuesta.id_opcion,
-          es_correcta_snapshot: esCorrecta, // blindaje histórico en BD
-          puntos_obtenidos: puntos,
-        });
       }
 
       // ── FIX N+1: Inserción masiva del historial ──────────────────────────────
@@ -347,7 +431,7 @@ export class EvaluacionService {
     // Cargar todas las preguntas activas de la materia con opciones (sin es_correcta)
     const preguntas = await BancoPregunta.findAll({
       where: { id_materia: configuracion.id_materia, activo: true },
-      attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta"],
+      attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta", "estructura_json"],
     });
 
     const idsPreguntas = preguntas.map((p) => p.id_pregunta);
@@ -370,6 +454,7 @@ export class EvaluacionService {
         enunciado: raw.enunciado,
         url_imagen: raw.url_imagen ?? null,
         tipo_pregunta: raw.tipo_pregunta,
+        estructura_json: raw.estructura_json,
         opciones: opcionesPorPregunta[raw.id_pregunta] ?? [],
       };
     });

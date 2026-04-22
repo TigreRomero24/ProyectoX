@@ -1,4 +1,5 @@
 import { AcademicoService } from "../services/academico.service.js";
+import { buildPreguntaPublicUrl, deletePreguntaImageByUrl } from "../utils/mediaUpload.js";
 
 export class AcademicoController {
   //Manejador de errores, en un futuro sera actualizado por errorMildeware
@@ -37,8 +38,26 @@ export class AcademicoController {
   // ─── Preguntas ───────────────────────────────────────────────────────────────
   static async crearPregunta(req, res) {
     try {
-      const { id_materia, enunciado, url_imagen, tipo_pregunta, opciones } =
+      let { id_materia, enunciado, tipo_pregunta, opciones, estructura_json } =
         req.body;
+
+      // Si opciones viene como string JSON (desde FormData), parsearlo
+      if (typeof opciones === "string") {
+        try {
+          opciones = JSON.parse(opciones);
+        } catch (e) {
+          opciones = [];
+        }
+      }
+
+      // Si estructura_json viene como string JSON, parsearlo
+      if (typeof estructura_json === "string") {
+        try {
+          estructura_json = JSON.parse(estructura_json);
+        } catch (e) {
+          estructura_json = null;
+        }
+      }
 
       if (!id_materia || !enunciado || !tipo_pregunta) {
         return res.status(400).json({
@@ -48,17 +67,34 @@ export class AcademicoController {
         });
       }
 
-      if (!Array.isArray(opciones) || opciones.length === 0) {
+      // Validar que se envíen opciones o estructura_json según el tipo
+      const tiposLegacy = ["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE"];
+      const tiposComplejos = ["ORDENAR", "RELACIONAR", "COMPLETAR"];
+
+      if (
+        tiposLegacy.includes(tipo_pregunta) &&
+        (!Array.isArray(opciones) || opciones.length === 0)
+      ) {
         return res.status(400).json({
           ok: false,
-          error:
-            "VALIDACION: El campo 'opciones' es requerido y debe ser un arreglo no vacío.",
+          error: `VALIDACION: El campo 'opciones' es requerido para tipo ${tipo_pregunta}.`,
         });
       }
 
+      if (tiposComplejos.includes(tipo_pregunta) && !estructura_json) {
+        return res.status(400).json({
+          ok: false,
+          error: `VALIDACION: El campo 'estructura_json' es requerido para tipo ${tipo_pregunta}.`,
+        });
+      }
+
+      // Si se subió una imagen, construir la URL pública
+      const url_imagen = req.file ? buildPreguntaPublicUrl(req.file.filename) : null;
+
       const resultado = await AcademicoService.crearPreguntaConOpciones(
         { id_materia, enunciado, url_imagen, tipo_pregunta },
-        opciones,
+        opciones || [],
+        estructura_json,
       );
 
       return res.status(201).json({
@@ -131,7 +167,7 @@ export class AcademicoController {
       const preguntas = await AcademicoService.obtenerPreguntasPorMateria(
         id,
         true,
-        true,
+        false,
       );
 
       return res.status(200).json({ ok: true, data: preguntas });
@@ -165,9 +201,8 @@ export class AcademicoController {
       const pregunta = await AcademicoService.obtenerPreguntaPorId(
         id,
         soloActivas,
-        esAdmin,
+        esAdmin
       );
-
       return res.status(200).json({ ok: true, data: pregunta });
     } catch (error) {
       return AcademicoController.#manejarError(
@@ -195,7 +230,25 @@ export class AcademicoController {
         });
       }
 
-      const { enunciado, url_imagen, tipo_pregunta, opciones } = req.body;
+      let { enunciado, tipo_pregunta, opciones, estructura_json } = req.body;
+
+      // Si opciones viene como string JSON (desde FormData), parsearlo
+      if (typeof opciones === "string") {
+        try {
+          opciones = JSON.parse(opciones);
+        } catch (e) {
+          opciones = [];
+        }
+      }
+
+      // Si estructura_json viene como string JSON, parsearlo
+      if (typeof estructura_json === "string") {
+        try {
+          estructura_json = JSON.parse(estructura_json);
+        } catch (e) {
+          estructura_json = null;
+        }
+      }
 
       if (opciones !== undefined && !Array.isArray(opciones)) {
         return res.status(400).json({
@@ -206,14 +259,18 @@ export class AcademicoController {
 
       const datosPregunta = {};
       if (enunciado !== undefined) datosPregunta.enunciado = enunciado;
-      if (url_imagen !== undefined) datosPregunta.url_imagen = url_imagen;
+      if (req.file) {
+        datosPregunta.url_imagen = buildPreguntaPublicUrl(req.file.filename);
+        datosPregunta.debe_eliminar_imagen_anterior = true;
+      }
       if (tipo_pregunta !== undefined)
         datosPregunta.tipo_pregunta = tipo_pregunta;
 
       const resultado = await AcademicoService.actualizarPregunta(
         id,
         datosPregunta,
-        opciones ?? [],
+        opciones,
+        estructura_json,
       );
 
       return res.status(200).json({

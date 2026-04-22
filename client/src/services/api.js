@@ -28,6 +28,33 @@ const request = async (endpoint, options = {}) => {
   return data;
 };
 
+const requestFormData = async (endpoint, options = {}) => {
+  const token = localStorage.getItem("token");
+  const headers = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    if (response.status === 409 && data.codigo === "INTENTO_EN_PROGRESO") {
+      const err = new Error("INTENTO_EN_PROGRESO");
+      err.id_intento = data.id_intento;
+      throw err;
+    }
+    if (data.error) throw new Error(data.error);
+  }
+
+  return data;
+};
+
 export const api = {
   health: () => request("/health"),
 
@@ -80,17 +107,29 @@ export const api = {
 
   getMateriaById: (id) => request(`/materias/${id}`),
 
-  crearMateria: (nombre) =>
-    request("/materias", {
+  crearMateria: (nombre, imagen) => {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+    return requestFormData("/materias", {
       method: "POST",
-      body: JSON.stringify({ nombre }),
-    }),
+      body: formData,
+    });
+  },
 
-  actualizarMateria: (id, nombre) =>
-    request(`/materias/${id}`, {
+  actualizarMateria: (id, nombre, imagen) => {
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+    return requestFormData(`/materias/${id}`, {
       method: "PUT",
-      body: JSON.stringify({ nombre }),
-    }),
+      body: formData,
+    });
+  },
 
   eliminarMateria: (id) => request(`/materias/${id}`, { method: "DELETE" }),
 
@@ -109,17 +148,54 @@ export const api = {
       `/academico/preguntas/${idPregunta}${!soloActivas ? "?activas=false" : ""}`,
     ),
 
-  crearPregunta: (datos) =>
-    request("/academico/preguntas", {
+  crearPregunta: (datos) => {
+    // Si hay imagen, usar FormData; si no, usar JSON
+    if (datos.imagen) {
+      const formData = new FormData();
+      formData.append("id_materia", datos.id_materia);
+      formData.append("enunciado", datos.enunciado);
+      formData.append("tipo_pregunta", datos.tipo_pregunta);
+      if (datos.opciones && datos.opciones.length > 0) {
+        formData.append("opciones", JSON.stringify(datos.opciones));
+      }
+      if (datos.estructura_json) {
+        formData.append("estructura_json", JSON.stringify(datos.estructura_json));
+      }
+      formData.append("imagen", datos.imagen);
+      return requestFormData("/academico/preguntas", {
+        method: "POST",
+        body: formData,
+      });
+    }
+    return request("/academico/preguntas", {
       method: "POST",
       body: JSON.stringify(datos),
-    }),
+    });
+  },
 
-  actualizarPregunta: (id, datos) =>
-    request(`/academico/preguntas/${id}`, {
+  actualizarPregunta: (id, datos) => {
+    // Si hay imagen, usar FormData; si no, usar JSON
+    if (datos.imagen) {
+      const formData = new FormData();
+      formData.append("enunciado", datos.enunciado);
+      formData.append("tipo_pregunta", datos.tipo_pregunta);
+      if (datos.opciones && datos.opciones.length > 0) {
+        formData.append("opciones", JSON.stringify(datos.opciones));
+      }
+      if (datos.estructura_json) {
+        formData.append("estructura_json", JSON.stringify(datos.estructura_json));
+      }
+      formData.append("imagen", datos.imagen);
+      return requestFormData(`/academico/preguntas/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+    }
+    return request(`/academico/preguntas/${id}`, {
       method: "PUT",
       body: JSON.stringify(datos),
-    }),
+    });
+  },
 
   eliminarPregunta: (id) =>
     request(`/academico/preguntas/${id}`, { method: "DELETE" }),
@@ -181,21 +257,21 @@ export const api = {
 
   getMateriasParaInscripcion: () => request("/inscripciones/materias"),
 
-  crearInscripcion: (id_usuario, id_materia, modo_evaluacion) =>
+  crearInscripcion: (id_usuario, id_materia) =>
     request("/inscripciones", {
       method: "POST",
-      body: JSON.stringify({ id_usuario, id_materia, modo_evaluacion }),
+      body: JSON.stringify({ id_usuario, id_materia }),
     }),
 
-  cambiarEstadoInscripcion: (id_usuario, id_materia, modo_evaluacion, activo) =>
+  cambiarEstadoInscripcion: (id_usuario, id_materia, activo) =>
     request("/inscripciones/estado", {
       method: "PATCH",
-      body: JSON.stringify({ id_usuario, id_materia, modo_evaluacion, activo }),
+      body: JSON.stringify({ id_usuario, id_materia, activo }),
     }),
 
-  eliminarInscripcion: (id_usuario, id_materia, modo_evaluacion) =>
+  eliminarInscripcion: (id_usuario, id_materia) =>
     request("/inscripciones", {
       method: "DELETE",
-      body: JSON.stringify({ id_usuario, id_materia, modo_evaluacion }),
+      body: JSON.stringify({ id_usuario, id_materia }),
     }),
 };

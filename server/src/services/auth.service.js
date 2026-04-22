@@ -3,6 +3,7 @@ import { SesionDispositivo } from "../models/security.models/sessionModel.js";
 import { TokenFactory } from "../utils/tokenFactory.js";
 import { env } from "../config/environment.js";
 import { sequelize } from "../config/database.js";
+import { logSecurityEvent } from "../utils/securityLogger.js";
 import argon2 from "argon2";
 
 /**
@@ -26,10 +27,18 @@ export class AuthService {
   /**
    * @method procesarLoginGoogle
    */
-  static async procesarLoginGoogle(googleProfile, dispositivoId) {
+  static async procesarLoginGoogle(googleProfile, dispositivoId, ip) {
     const { correo, googleId } = this._extraerDatosGoogle(googleProfile);
 
     if (!correo.endsWith("@unemi.edu.ec")) {
+      logSecurityEvent({
+        event: "LOGIN_DENIED_DOMAIN",
+        user: correo,
+        ip,
+        severity: "CRITICAL",
+        details: "Intento con correo no institucional",
+      });
+
       throw new Error(
         "ACCESO_DENEGADO: Solo se permiten cuentas institucionales.",
       );
@@ -43,10 +52,28 @@ export class AuthService {
         transaction: t,
       });
 
-      if (!usuario)
+      if (!usuario) {
+        logSecurityEvent({
+          event: "LOGIN_UNAUTHORIZED",
+          user: correo,
+          ip,
+          severity: "CRITICAL",
+          details: "Usuario no registrado",
+        });
+
         throw new Error("USUARIO_NO_REGISTRADO: Contacte al administrador.");
-      if (!usuario.activo)
+      }
+      if (!usuario.activo) {
+        logSecurityEvent({
+          event: "LOGIN_INACTIVE",
+          user: correo,
+          ip,
+          severity: "HIGH",
+          details: "Usuario deshabilitado",
+        });
+
         throw new Error("USUARIO_INACTIVO: Cuenta deshabilitada.");
+      }
 
       if (!usuario.google_id) {
         usuario.google_id = googleId;
@@ -120,6 +147,14 @@ export class AuthService {
 
       await t.commit();
 
+      logSecurityEvent({
+        event: "LOGIN_SUCCESS",
+        user: usuario.id_usuario,
+        ip,
+        severity: "LOW",
+        details: "Inicio de sesión exitoso",
+      });
+
       return {
         accessToken,
         refreshToken,
@@ -138,12 +173,19 @@ export class AuthService {
   /**
    * @method cerrarSesion
    */
-  static async cerrarSesion(dispositivoId, id_usuario) {
+  static async cerrarSesion(dispositivoId, id_usuario, ip) {
     if (!dispositivoId || !id_usuario)
       throw new Error("VALIDACION: Datos incompletos para cerrar sesión.");
 
     await SesionDispositivo.destroy({
       where: { dispositivo_id: dispositivoId, id_usuario: id_usuario },
+    });
+
+    logSecurityEvent({
+      event: "LOGOUT",
+      user: id_usuario,
+      ip: ip || "UNKNOWN",
+      severity: "LOW",
     });
   }
 
@@ -195,6 +237,13 @@ export class AuthService {
       );
 
       if (!isValid) {
+        logSecurityEvent({
+          event: "TOKEN_REUSE_ATTACK",
+          user: payload.id,
+          ip: "UNKNOWN",
+          severity: "CRITICAL",
+          details: "Intento de reutilización de refresh token",
+        });
         await SesionDispositivo.destroy({
           where: { id_sesion: sesion.id_sesion },
           transaction: t,
@@ -236,4 +285,5 @@ export class AuthService {
       throw error;
     }
   }
+
 }

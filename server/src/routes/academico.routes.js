@@ -3,6 +3,7 @@ import { AcademicoController } from "../controllers/academico.controller.js";
 import { AuthMiddleware } from "../middlewares/authMiddleware.js";
 import { SessionMiddleware } from "../middlewares/sessionMiddleware.js";
 import { RoleMiddleware } from "../middlewares/roleMiddleware.js";
+import { uploadPreguntaImagen } from "../utils/mediaUpload.js";
 
 const router = Router();
 
@@ -38,11 +39,17 @@ router.post(
   AcademicoController.crearPreguntasBulk,
 );
 
-router.post("/preguntas", soloAdmin, AcademicoController.crearPregunta);
+router.post(
+  "/preguntas",
+  soloAdmin,
+  uploadPreguntaImagen,
+  AcademicoController.crearPregunta,
+);
 
 router.put(
   "/preguntas/:id_pregunta",
   soloAdmin,
+  uploadPreguntaImagen,
   AcademicoController.actualizarPregunta,
 );
 

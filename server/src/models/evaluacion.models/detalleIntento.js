@@ -19,7 +19,13 @@ export const DetalleIntento = sequelize.define(
     },
     id_opcion_elegida: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      comment: "Para tipos MULTIPLE y VERDADERO_FALSO (legacy)",
+    },
+    respuesta_json: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      comment: "Para tipos SELECCION_MULTIPLE, ORDENAR, RELACIONAR, COMPLETAR",
     },
     es_correcta_snapshot: {
       type: DataTypes.BOOLEAN,

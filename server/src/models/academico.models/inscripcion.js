@@ -14,11 +14,6 @@ export const Inscripcion = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-    modo_evaluacion: {
-      type: DataTypes.ENUM("TEST", "EXAMEN"),
-      primaryKey: true,
-      allowNull: false,
-    },
     activo: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

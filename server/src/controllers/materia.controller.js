@@ -2,6 +2,10 @@ import {
   MateriaService,
   InscripcionService,
 } from "../services/materias.service.js";
+import {
+  buildMateriaPublicUrl,
+  deleteMateriaImageByUrl,
+} from "../utils/mediaUpload.js";
 
 // ════════════════════════════════════════════════════════════════════════════════
 //  Logica de Inscripciones y Materias
@@ -67,7 +71,9 @@ export class MateriaController {
           error: "VALIDACION: El nombre de la materia es obligatorio.",
         });
       }
-      const data = await MateriaService.crearMateria({ nombre });
+      // Si se subió una imagen, construir la URL pública
+      const img = req.file ? buildMateriaPublicUrl(req.file.filename) : null;
+      const data = await MateriaService.crearMateria({ nombre, img });
       return res
         .status(201)
         .json({ ok: true, mensaje: "Materia creada exitosamente.", data });
@@ -134,7 +140,9 @@ export class MateriaController {
           error: "VALIDACION: El nombre de la materia es obligatorio.",
         });
       }
-      const data = await MateriaService.actualizarMateria(id, { nombre });
+      // Si se subió una imagen, construir la URL pública
+      const img = req.file ? buildMateriaPublicUrl(req.file.filename) : null;
+      const data = await MateriaService.actualizarMateria(id, { nombre, img });
       return res.status(200).json({
         ok: true,
         mensaje: "Materia actualizada correctamente.",
@@ -234,11 +242,10 @@ export class InscripcionController {
    */
   static async crear(req, res) {
     try {
-      const { id_usuario, id_materia, modo_evaluacion } = req.body;
+      const { id_usuario, id_materia } = req.body;
       const data = await InscripcionService.crear({
         id_usuario,
         id_materia,
-        modo_evaluacion,
       });
       return res.status(201).json({ ok: true, data });
     } catch (e) {
@@ -253,13 +260,13 @@ export class InscripcionController {
    */
   static async cambiarEstado(req, res) {
     try {
-      const { id_usuario, id_materia, modo_evaluacion, activo } = req.body;
+      const { id_usuario, id_materia, activo } = req.body;
 
-      if (!id_usuario || !id_materia || !modo_evaluacion) {
+      if (!id_usuario || !id_materia) {
         return res.status(400).json({
           ok: false,
           error:
-            "VALIDACION: id_usuario, id_materia y modo_evaluacion son requeridos.",
+            "VALIDACION: id_usuario y id_materia son requeridos.",
         });
       }
       if (typeof activo !== "boolean") {
@@ -272,7 +279,6 @@ export class InscripcionController {
       const data = await InscripcionService.cambiarEstado(
         parseInt(id_usuario),
         parseInt(id_materia),
-        modo_evaluacion,
         activo,
       );
       return res.json({ ok: true, ...data });
@@ -288,20 +294,19 @@ export class InscripcionController {
    */
   static async eliminar(req, res) {
     try {
-      const { id_usuario, id_materia, modo_evaluacion } = req.body;
+      const { id_usuario, id_materia } = req.body;
 
-      if (!id_usuario || !id_materia || !modo_evaluacion) {
+      if (!id_usuario || !id_materia) {
         return res.status(400).json({
           ok: false,
           error:
-            "VALIDACION: id_usuario, id_materia y modo_evaluacion son requeridos.",
+            "VALIDACION: id_usuario y id_materia son requeridos.",
         });
       }
 
       const data = await InscripcionService.eliminar(
         parseInt(id_usuario),
         parseInt(id_materia),
-        modo_evaluacion,
       );
       return res.json({ ok: true, ...data });
     } catch (e) {

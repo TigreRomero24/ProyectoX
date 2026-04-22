@@ -30,7 +30,13 @@ const VISTA = {
   FORM: "form",
   EXCEL: "excel",
 };
-const TIPO_P = { MULTIPLE: "MULTIPLE", VF: "VERDADERO_FALSO" };
+const TIPO_P = {
+  MULTIPLE: "MULTIPLE",
+  VF: "VERDADERO_FALSO",
+  SELECCION_MULTIPLE: "SELECCION_MULTIPLE",
+  ORDENAR: "ORDENAR",
+  COMPLETAR: "COMPLETAR",
+};
 const nuevaOpcion = () => ({
   texto: "",
   es_correcta: false,
@@ -40,6 +46,16 @@ const opcionesVF = (correcta = "Verdadero") => [
   { texto: "Verdadero", es_correcta: correcta === "Verdadero", _id: 1 },
   { texto: "Falso", es_correcta: correcta === "Falso", _id: 2 },
 ];
+const nuevoElementoOrdenar = () => ({
+  texto: "",
+  orden: 0,
+  _id: Math.random(),
+});
+const nuevoEspacioCompletar = () => ({
+  label: "",
+  respuestas: [],
+  _id: Math.random(),
+});
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function GestionPreguntas() {
@@ -62,9 +78,29 @@ export default function GestionPreguntas() {
   const [editando, setEditando] = useState(null);
   const [tipoPregunta, setTipoPregunta] = useState(null);
   const [enunciado, setEnunciado] = useState("");
-  const [urlImagen, setUrlImagen] = useState("");
+  const [imagenArchivo, setImagenArchivo] = useState(null);
+  const [previewImagen, setPreviewImagen] = useState(null);
+
+  // Opciones múltiple y selección múltiple
   const [opciones, setOpciones] = useState([nuevaOpcion(), nuevaOpcion()]);
+
+  // Verdadero/Falso
   const [vfCorrecta, setVfCorrecta] = useState("Verdadero");
+
+  // Ordenar
+  const [elementosOrdenar, setElementosOrdenar] = useState([
+    nuevoElementoOrdenar(),
+    nuevoElementoOrdenar(),
+  ]);
+
+  // Completar
+  const [textoCompletar, setTextoCompletar] = useState("");
+  const [espaciosCompletar, setEspaciosCompletar] = useState([
+    nuevoEspacioCompletar(),
+  ]);
+  const [modoCompletar, setModoCompletar] = useState("ESCRIBIR");
+
+  // UI
   const [errForm, setErrForm] = useState("");
   const [guardando, setGuardando] = useState(false);
 
@@ -98,11 +134,31 @@ export default function GestionPreguntas() {
     cargarConfiguraciones(materiaSeleccionada.id_materia);
   }, [materiaSeleccionada]);
 
+  // 🔥 SINCRONIZAR ESTADO DE COMPLETAR
+  useEffect(() => {
+    if (tipoPregunta !== TIPO_P.COMPLETAR) return;
+    const slots = (textoCompletar || "").match(/\[\[([^\]]+)\]\]/g) || [];
+    const nombresEspacios = slots.map((s) => s.replace(/\[\[|\]\]/g, ""));
+
+    setEspaciosCompletar((prev) =>
+      nombresEspacios.map((nombre) => {
+        const existente = prev.find((e) => e.label === nombre);
+        return (
+          existente || {
+            label: nombre,
+            respuestas: [""],
+            _id: Math.random(),
+          }
+        );
+      })
+    );
+  }, [textoCompletar, tipoPregunta]);
+
   const cargarPreguntas = async (id) => {
     setLoadingPreguntas(true);
     setError("");
     try {
-      const res = await api.getPreguntasPorMateria(id, false);
+      const res = await api.getPreguntasPorMateria(id);
       setPreguntas(res.data || []);
     } catch (e) {
       setError(e.message || "Error al cargar preguntas.");
@@ -115,7 +171,7 @@ export default function GestionPreguntas() {
     try {
       const res = await api.getConfiguracionesPorMateria(id);
       setConfiguraciones(res.data?.configuraciones || []);
-    } catch {}
+    } catch { }
   };
 
   // ── Abrir configurar cuestionario ──────────────────────────────────────────
@@ -201,9 +257,14 @@ export default function GestionPreguntas() {
   const resetForm = () => {
     setEditando(null);
     setEnunciado("");
-    setUrlImagen("");
+    setImagenArchivo(null);
+    setPreviewImagen(null);
     setOpciones([nuevaOpcion(), nuevaOpcion()]);
     setVfCorrecta("Verdadero");
+    setElementosOrdenar([nuevoElementoOrdenar(), nuevoElementoOrdenar()]);
+    setTextoCompletar("");
+    setEspaciosCompletar([nuevoEspacioCompletar()]);
+    setModoCompletar("ESCRIBIR");
     setTipoPregunta(null);
     setErrForm("");
   };
@@ -217,13 +278,15 @@ export default function GestionPreguntas() {
   const abrirEditar = (p) => {
     setEditando(p);
     setEnunciado(p.enunciado);
-    setUrlImagen(p.url_imagen || "");
+    setImagenArchivo(null);
+    setPreviewImagen(p.url_imagen || null);
     setTipoPregunta(p.tipo_pregunta);
+
     if (p.tipo_pregunta === TIPO_P.VF) {
       setVfCorrecta(
         p.opciones?.find((o) => o.es_correcta)?.texto || "Verdadero",
       );
-    } else {
+    } else if ([TIPO_P.MULTIPLE, TIPO_P.SELECCION_MULTIPLE].includes(p.tipo_pregunta)) {
       setOpciones(
         (p.opciones || []).map((o) => ({
           texto: o.texto,
@@ -231,7 +294,28 @@ export default function GestionPreguntas() {
           _id: Math.random(),
         })),
       );
+    } else if (p.tipo_pregunta === TIPO_P.ORDENAR) {
+      const estructura = p.estructura_json || {};
+      setElementosOrdenar(
+        (estructura.opciones || []).map((o, idx) => ({
+          texto: o.texto || o,
+          orden: idx,
+          _id: Math.random(),
+        })) || [nuevoElementoOrdenar()],
+      );
+    } else if (p.tipo_pregunta === TIPO_P.COMPLETAR) {
+      const estructura = p.estructura_json || {};
+      setTextoCompletar(estructura.texto || "");
+      setModoCompletar(estructura.modo_interaccion || "ESCRIBIR");
+      setEspaciosCompletar(
+        (estructura.espacios || []).map((e) => ({
+          label: e.label || "",
+          respuestas: Array.isArray(e.respuestas) ? e.respuestas : [],
+          _id: Math.random(),
+        })) || [nuevoEspacioCompletar()],
+      );
     }
+
     irA(VISTA.FORM);
   };
 
@@ -247,6 +331,7 @@ export default function GestionPreguntas() {
   // ── Validar ────────────────────────────────────────────────────────────────
   const validar = () => {
     if (!enunciado.trim()) return "El enunciado es obligatorio.";
+
     if (tipoPregunta === TIPO_P.MULTIPLE) {
       if (opciones.length < 2) return "Mínimo 2 opciones.";
       if (opciones.some((o) => !o.texto.trim()))
@@ -254,7 +339,27 @@ export default function GestionPreguntas() {
       const n = opciones.filter((o) => o.es_correcta).length;
       if (n === 0) return "Marca exactamente 1 opción correcta.";
       if (n > 1) return "Solo puede haber 1 opción correcta.";
+    } else if (tipoPregunta === TIPO_P.SELECCION_MULTIPLE) {
+      if (opciones.length < 2) return "Mínimo 2 opciones.";
+      if (opciones.some((o) => !o.texto.trim()))
+        return "Todas las opciones deben tener texto.";
+      const n = opciones.filter((o) => o.es_correcta).length;
+      if (n === 0) return "Selecciona al menos 1 opción correcta.";
+    } else if (tipoPregunta === TIPO_P.ORDENAR) {
+      if (elementosOrdenar.length < 2) return "Mínimo 2 elementos para ordenar.";
+      if (elementosOrdenar.some((e) => !e.texto.trim()))
+        return "Todos los elementos deben tener texto.";
+    } else if (tipoPregunta === TIPO_P.COMPLETAR) {
+      if (!textoCompletar.trim()) return "El texto con espacios es obligatorio.";
+      const slots = (textoCompletar || "").match(/\[\[([^\]]+)\]\]/g) || [];
+      if (slots.length === 0)
+        return "Usa [[nombre_espacio]] para indicar los espacios a completar.";
+      if (espaciosCompletar.some((e) => !e.label.trim() || e.respuestas.length === 0))
+        return "Todos los espacios deben tener etiqueta y al menos 1 respuesta válida.";
+      if (slots.length !== espaciosCompletar.length)
+        return `Hay ${slots.length} espacios en el texto pero ${espaciosCompletar.length} espacios configurados.`;
     }
+
     return null;
   };
 
@@ -265,17 +370,115 @@ export default function GestionPreguntas() {
     setGuardando(true);
     setErrForm("");
 
-    const opcionesFinales =
-      tipoPregunta === TIPO_P.VF
-        ? opcionesVF(vfCorrecta)
-        : opciones.map(({ texto, es_correcta }) => ({ texto, es_correcta }));
+    let estructura_json = null;
+    let opciones_finales = [];
+
+    if (tipoPregunta === TIPO_P.VF) {
+      opciones_finales = opcionesVF(vfCorrecta);
+      estructura_json = {
+        tipo: tipoPregunta,
+        opciones: opciones_finales.map((o) => ({
+          opcion_id: o.texto === "Verdadero" ? "V" : "F",
+          texto: o.texto,
+        })),
+        respuesta: {
+          opcion_id: vfCorrecta === "Verdadero" ? "V" : "F",
+        },
+      };
+    } else if (tipoPregunta === TIPO_P.MULTIPLE) {
+      opciones_finales = opciones.map(({ texto, es_correcta }) => ({
+        texto,
+        es_correcta,
+      }));
+      const correcta = opciones.find((o) => o.es_correcta);
+      estructura_json = {
+        tipo: tipoPregunta,
+        opciones: opciones_finales.map((o, idx) => ({
+          opcion_id: String.fromCharCode(65 + idx),
+          texto: o.texto,
+        })),
+        respuesta: {
+          opcion_id: String.fromCharCode(65 + opciones.indexOf(correcta)),
+        },
+      };
+    } else if (tipoPregunta === TIPO_P.SELECCION_MULTIPLE) {
+      opciones_finales = opciones.map(({ texto, es_correcta }) => ({
+        texto,
+        es_correcta,
+      }));
+      const correctas = opciones.filter((o) => o.es_correcta);
+      estructura_json = {
+        tipo: tipoPregunta,
+        opciones: opciones_finales.map((o, idx) => ({
+          opcion_id: String.fromCharCode(65 + idx),
+          texto: o.texto,
+        })),
+        respuesta: {
+          opciones_ids: correctas.map((c) =>
+            String.fromCharCode(65 + opciones.indexOf(c)),
+          ),
+        },
+      };
+    } else if (tipoPregunta === TIPO_P.ORDENAR) {
+      const elementosOrdenados = [...elementosOrdenar];
+      estructura_json = {
+        tipo: tipoPregunta,
+        opciones: elementosOrdenados.map((e) => e.texto),
+        respuesta: {
+          orden_ids: elementosOrdenados.map((e, idx) =>
+            String.fromCharCode(65 + idx),
+          ),
+        },
+      };
+    } else if (tipoPregunta === TIPO_P.COMPLETAR) {
+      const slots = (textoCompletar || "").match(/\[\[([^\]]+)\]\]/g) || [];
+      const espaciosLimpios = espaciosCompletar.map((e) => ({
+        ...e,
+        respuestas: e.respuestas
+          .map((r) => r.trim().toLowerCase())
+          .filter((r) => r !== ""),
+      }));
+
+      const esValido =
+        slots.length > 0 &&
+        espaciosLimpios.length === slots.length &&
+        espaciosLimpios.every(
+          (e) => e.label && e.respuestas.length > 0
+        );
+
+      if (!esValido) {
+        setErrForm(
+          "Todos los espacios deben tener al menos una respuesta válida."
+        );
+        setGuardando(false);
+        return;
+      }
+
+      estructura_json = {
+        tipo: tipoPregunta,
+        texto: textoCompletar,
+        modo_interaccion: modoCompletar,
+        espacios: espaciosLimpios.map((e, idx) => ({
+          espacio_id: String(idx),
+          label: e.label,
+          respuestas: e.respuestas,
+        })),
+        respuesta: {
+          aceptadas: espaciosLimpios.map((e, idx) => ({
+            espacio_id: String(idx),
+            valores: e.respuestas,
+          })),
+        },
+      };
+    }
 
     const datos = {
       id_materia: materiaSeleccionada.id_materia,
       enunciado: enunciado.trim(),
       tipo_pregunta: tipoPregunta,
-      opciones: opcionesFinales,
-      ...(urlImagen.trim() && { url_imagen: urlImagen.trim() }),
+      ...(opciones_finales.length > 0 && { opciones: opciones_finales }),
+      ...(estructura_json && { estructura_json }),
+      ...(imagenArchivo && { imagen: imagenArchivo }),
     };
 
     try {
@@ -424,13 +627,6 @@ export default function GestionPreguntas() {
             Elige una materia del selector para ver y gestionar su banco de
             preguntas.
           </p>
-          <button
-            className="gp-btn-primary"
-            onClick={() => setDropdownAbierto(true)}
-            disabled={loadingMaterias}
-          >
-            {loadingMaterias ? "Cargando..." : "Elegir materia"}
-          </button>
         </div>
       )}
 
@@ -535,15 +731,42 @@ export default function GestionPreguntas() {
                         <p className="gp-item-enunciado">{p.enunciado}</p>
                         <div className="gp-item-meta">
                           <span
-                            className={`gp-tipo-badge gp-tipo-${p.tipo_pregunta === TIPO_P.MULTIPLE ? "mult" : "vf"}`}
+                            className={`gp-tipo-badge gp-tipo-${p.tipo_pregunta === TIPO_P.MULTIPLE
+                              ? "mult"
+                              : p.tipo_pregunta === TIPO_P.VF
+                                ? "vf"
+                                : p.tipo_pregunta === TIPO_P.SELECCION_MULTIPLE
+                                  ? "smult"
+                                  : p.tipo_pregunta === TIPO_P.ORDENAR
+                                    ? "ordenar"
+                                    : p.tipo_pregunta === TIPO_P.RELACIONAR
+                                      ? "relacionar"
+                                      : "completar"
+                              }`}
                           >
-                            {p.tipo_pregunta === TIPO_P.MULTIPLE ? (
+                            {p.tipo_pregunta === TIPO_P.MULTIPLE && (
                               <>
                                 <List size={11} /> Múltiple
                               </>
-                            ) : (
+                            )}
+                            {p.tipo_pregunta === TIPO_P.VF && (
                               <>
                                 <ToggleLeft size={11} /> V/F
+                              </>
+                            )}
+                            {p.tipo_pregunta === TIPO_P.SELECCION_MULTIPLE && (
+                              <>
+                                <CheckCheck size={11} /> Sel. Múltiple
+                              </>
+                            )}
+                            {p.tipo_pregunta === TIPO_P.ORDENAR && (
+                              <>
+                                <List size={11} /> Ordenar
+                              </>
+                            )}
+                            {p.tipo_pregunta === TIPO_P.COMPLETAR && (
+                              <>
+                                <PenLine size={11} /> Completar
                               </>
                             )}
                           </span>
@@ -599,7 +822,7 @@ export default function GestionPreguntas() {
                 </div>
                 {/* Excel */}
                 <div
-                  className="gp-modo-card gp-modo-card--maint"
+                  className="gp-modo-card"
                   onClick={() => irA(VISTA.EXCEL)}
                 >
                   <div className="gp-modo-icon gp-modo-green">
@@ -780,7 +1003,7 @@ export default function GestionPreguntas() {
             </div>
           )}
 
-          {/* ═══════ VISTA: TIPO (Múltiple / V/F) ═══════════════════════ */}
+          {/* ═══════ VISTA: TIPO (Seleccionar tipo) ════════════════════════ */}
           {vista === VISTA.TIPO && (
             <div className="gp-page">
               <div className="gp-page-header">
@@ -788,6 +1011,7 @@ export default function GestionPreguntas() {
                 <p>Selecciona el tipo de pregunta:</p>
               </div>
               <div className="gp-tipo-grid">
+                {/* Opción Múltiple */}
                 <div
                   className="gp-tipo-card"
                   onClick={() => {
@@ -800,8 +1024,10 @@ export default function GestionPreguntas() {
                     <List size={26} />
                   </div>
                   <h4>Opción Múltiple</h4>
-                  <p>Varias opciones, una correcta</p>
+                  <p>Una opción correcta</p>
                 </div>
+
+                {/* Verdadero / Falso */}
                 <div
                   className="gp-tipo-card"
                   onClick={() => {
@@ -815,6 +1041,58 @@ export default function GestionPreguntas() {
                   </div>
                   <h4>Verdadero / Falso</h4>
                   <p>Dos opciones de respuesta</p>
+                </div>
+
+                {/* Selección Múltiple */}
+                <div
+                  className="gp-tipo-card"
+                  onClick={() => {
+                    setTipoPregunta(TIPO_P.SELECCION_MULTIPLE);
+                    setOpciones([nuevaOpcion(), nuevaOpcion()]);
+                    irA(VISTA.FORM);
+                  }}
+                >
+                  <div className="gp-tipo-icon">
+                    <CheckCheck size={26} />
+                  </div>
+                  <h4>Selección Múltiple</h4>
+                  <p>Varias opciones correctas</p>
+                </div>
+
+                {/* Ordenar */}
+                <div
+                  className="gp-tipo-card"
+                  onClick={() => {
+                    setTipoPregunta(TIPO_P.ORDENAR);
+                    setElementosOrdenar([
+                      nuevoElementoOrdenar(),
+                      nuevoElementoOrdenar(),
+                    ]);
+                    irA(VISTA.FORM);
+                  }}
+                >
+                  <div className="gp-tipo-icon">
+                    <List size={26} />
+                  </div>
+                  <h4>Ordenar Elementos</h4>
+                  <p>Ordenar una lista de elementos</p>
+                </div>
+
+                {/* Completar */}
+                <div
+                  className="gp-tipo-card"
+                  onClick={() => {
+                    setTipoPregunta(TIPO_P.COMPLETAR);
+                    setTextoCompletar("");
+                    setEspaciosCompletar([nuevoEspacioCompletar()]);
+                    irA(VISTA.FORM);
+                  }}
+                >
+                  <div className="gp-tipo-icon">
+                    <PenLine size={26} />
+                  </div>
+                  <h4>Completar Espacios</h4>
+                  <p>Llenar espacios en blanco</p>
                 </div>
               </div>
               <div className="gp-page-footer">
@@ -848,13 +1126,29 @@ export default function GestionPreguntas() {
                 )}
 
                 <div className="gp-form-tipo-badge">
-                  {tipoPregunta === TIPO_P.MULTIPLE ? (
+                  {tipoPregunta === TIPO_P.MULTIPLE && (
                     <>
                       <List size={13} /> Opción Múltiple
                     </>
-                  ) : (
+                  )}
+                  {tipoPregunta === TIPO_P.VF && (
                     <>
                       <ToggleLeft size={13} /> Verdadero / Falso
+                    </>
+                  )}
+                  {tipoPregunta === TIPO_P.SELECCION_MULTIPLE && (
+                    <>
+                      <CheckCheck size={13} /> Selección Múltiple
+                    </>
+                  )}
+                  {tipoPregunta === TIPO_P.ORDENAR && (
+                    <>
+                      <List size={13} /> Ordenar Elementos
+                    </>
+                  )}
+                  {tipoPregunta === TIPO_P.COMPLETAR && (
+                    <>
+                      <PenLine size={13} /> Completar Espacios
                     </>
                   )}
                 </div>
@@ -871,19 +1165,38 @@ export default function GestionPreguntas() {
                   />
                 </div>
 
-                {/* URL imagen */}
+                {/* Imagen */}
                 <div className="gp-form-group">
                   <label className="gp-label">
-                    URL de imagen{" "}
+                    Imagen de la pregunta{" "}
                     <span className="gp-label-opt">(opcional)</span>
                   </label>
-                  <input
-                    className="gp-input"
-                    type="text"
-                    placeholder="https://..."
-                    value={urlImagen}
-                    onChange={(e) => setUrlImagen(e.target.value)}
-                  />
+                  <div className="gp-file-input-wrapper">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setImagenArchivo(file);
+                          const reader = new FileReader();
+                          reader.onload = (ev) => setPreviewImagen(ev.target.result);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="gp-file-input"
+                      id="imagen-input"
+                    />
+                    <label htmlFor="imagen-input" className="gp-file-label">
+                      {imagenArchivo ? `📎 ${imagenArchivo.name}` : "Seleccionar imagen"}
+                    </label>
+                  </div>
+                  <p className="gp-hint">Formatos: JPEG, PNG, WebP. Máximo 2MB.</p>
+                  {previewImagen && (
+                    <div className="gp-preview-imagen">
+                      <img src={previewImagen} alt="Preview" className="gp-preview-img" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Opciones MULTIPLE */}
@@ -891,7 +1204,7 @@ export default function GestionPreguntas() {
                   <div className="gp-form-group">
                     <label className="gp-label">Opciones de Respuesta</label>
                     <p className="gp-hint">
-                      Haz clic en el círculo para marcar la respuesta correcta
+                      Haz clic en el círculo para marcar la respuesta correcta (una sola)
                     </p>
                     <div className="gp-opciones">
                       {opciones.map((op, idx) => (
@@ -964,6 +1277,295 @@ export default function GestionPreguntas() {
                       ))}
                     </div>
                   </div>
+                )}
+
+                {/* Opciones SELECCION MULTIPLE */}
+                {tipoPregunta === TIPO_P.SELECCION_MULTIPLE && (
+                  <div className="gp-form-group">
+                    <label className="gp-label">Opciones de Respuesta</label>
+                    <p className="gp-hint">
+                      Haz clic en los checkboxes para marcar todas las opciones correctas
+                    </p>
+                    <div className="gp-opciones">
+                      {opciones.map((op, idx) => (
+                        <div
+                          key={op._id}
+                          className={`gp-opcion-row${op.es_correcta ? " gp-opcion-row--correct" : ""}`}
+                        >
+                          <button
+                            className={`gp-opcion-radio${op.es_correcta ? " gp-opcion-radio--active" : ""}`}
+                            onClick={() => {
+                              setOpciones((prev) =>
+                                prev.map((o) =>
+                                  o._id === op._id
+                                    ? { ...o, es_correcta: !o.es_correcta }
+                                    : o,
+                                ),
+                              );
+                            }}
+                          >
+                            {op.es_correcta ? (
+                              <CheckCheck size={20} />
+                            ) : (
+                              <Circle size={20} />
+                            )}
+                          </button>
+                          <input
+                            className="gp-opcion-input"
+                            type="text"
+                            placeholder={`Opción ${idx + 1}`}
+                            value={op.texto}
+                            onChange={(e) =>
+                              cambiarTexto(op._id, e.target.value)
+                            }
+                          />
+                          {opciones.length > 2 && (
+                            <button
+                              className="gp-opcion-del"
+                              onClick={() => eliminarOpcion(op._id)}
+                            >
+                              <X size={15} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {opciones.length < 6 && (
+                        <button
+                          className="gp-add-opcion"
+                          onClick={agregarOpcion}
+                        >
+                          <Plus size={15} /> Agregar opción
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ORDENAR ELEMENTOS */}
+                {tipoPregunta === TIPO_P.ORDENAR && (
+                  <div className="gp-form-group">
+                    <label className="gp-label">Elementos a Ordenar</label>
+                    <p className="gp-hint">
+                      Ingresa los elementos en el orden CORRECTO (mínimo 2)
+                    </p>
+                    <div className="gp-opciones">
+                      {elementosOrdenar.map((elem, idx) => (
+                        <div key={elem._id} className="gp-opcion-row">
+                          <div className="gp-elemento-pos">
+                            <strong>{idx + 1}º</strong>
+                          </div>
+                          <input
+                            className="gp-opcion-input"
+                            type="text"
+                            placeholder={`Elemento ${idx + 1}`}
+                            value={elem.texto}
+                            onChange={(e) => {
+                              setElementosOrdenar((prev) =>
+                                prev.map((el) =>
+                                  el._id === elem._id
+                                    ? { ...el, texto: e.target.value }
+                                    : el,
+                                ),
+                              );
+                            }}
+                          />
+                          {elementosOrdenar.length > 2 && (
+                            <button
+                              className="gp-opcion-del"
+                              onClick={() => {
+                                setElementosOrdenar((prev) =>
+                                  prev.filter((el) => el._id !== elem._id),
+                                );
+                              }}
+                            >
+                              <X size={15} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {elementosOrdenar.length < 8 && (
+                        <button
+                          className="gp-add-opcion"
+                          onClick={() => {
+                            setElementosOrdenar((prev) => [
+                              ...prev,
+                              { texto: "", orden: prev.length, _id: Math.random() },
+                            ]);
+                          }}
+                        >
+                          <Plus size={15} /> Agregar elemento
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* COMPLETAR ESPACIOS */}
+                {tipoPregunta === TIPO_P.COMPLETAR && (
+                  <>
+                    <div className="gp-form-group">
+                      <label className="gp-label">Modo de Completar</label>
+                      <p className="gp-hint">
+                        ESCRIBIR: Estudiante escribe las respuestas | ARRASTRAR: Arrastra fichas
+                      </p>
+                      <div className="gp-vf-row">
+                        {["ESCRIBIR"].map((modo) => (
+                          <div
+                            key={modo}
+                            className={`gp-vf-card${modoCompletar === modo ? " gp-vf-card--active" : ""}`}
+                            onClick={() => setModoCompletar(modo)}
+                          >
+                            {modoCompletar === modo ? (
+                              <CheckCircle2 size={20} />
+                            ) : (
+                              <Circle size={20} />
+                            )}
+                            <span>{modo}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="gp-form-group">
+                      <label className="gp-label">Texto con Espacios</label>
+                      <p className="gp-hint">
+                        Usa [[nombre]] para marcar espacios. Ej: "París es la capital de [[pais]]"
+                      </p>
+                      <textarea
+                        className="gp-textarea"
+                        value={textoCompletar}
+                        onChange={(e) => setTextoCompletar(e.target.value)}
+                        rows={5}
+                      />
+                    </div>
+
+                    {/* DETECCIÓN + LISTADO DE ESPACIOS */}
+                    {(() => {
+                      const slots = (textoCompletar || "").match(/\[\[([^\]]+)\]\]/g) || [];
+                      const nombresEspacios = slots.map((s) => s.replace(/\[\[|\]\]/g, ""));
+
+                      return (
+                        <>
+                          {slots.length > 0 && (
+                            <div className="gp-form-group">
+                              <p className="gp-hint">
+                                <strong>
+                                  ✓ {slots.length} espacio{slots.length !== 1 ? "s" : ""} detectado{slots.length !== 1 ? "s" : ""}
+                                </strong>
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="gp-form-group">
+                            <label className="gp-label">Respuestas por Espacio</label>
+
+                            {slots.length === 0 ? (
+                              <div className="gp-empty-state">
+                                <AlertCircle size={20} />
+                                <p>Agrega espacios usando [[nombre]]</p>
+                              </div>
+                            ) : (
+                              <div className="gp-espacios-grid">
+                                {nombresEspacios.map((nombreEspacio, idx) => {
+                                  const espacio = espaciosCompletar.find(
+                                    (e) => e.label === nombreEspacio
+                                  );
+
+                                  const respuestas = espacio?.respuestas || [""];
+
+                                  return (
+                                    <div key={nombreEspacio} className="gp-espacio-card">
+                                      {/* 🔥 UI LIMPIA */}
+                                      <div className="gp-espacio-title">
+                                        <span className="gp-espacio-label">
+                                          Espacio {idx + 1}
+                                        </span>
+                                        <span className="gp-espacio-id">
+                                          {nombreEspacio}
+                                        </span>
+                                      </div>
+
+                                      <div className="gp-respuestas-stack">
+                                        {respuestas.map((resp, respIdx) => (
+                                          <div
+                                            key={respIdx}
+                                            className="gp-respuesta-input-row"
+                                          >
+                                            <input
+                                              className="gp-opcion-input"
+                                              type="text"
+                                              value={resp}
+                                              placeholder="Respuesta válida"
+                                              onChange={(e) => {
+                                                const valor = e.target.value;
+
+                                                setEspaciosCompletar((prev) =>
+                                                  prev.map((e) =>
+                                                    e.label === nombreEspacio
+                                                      ? {
+                                                        ...e,
+                                                        respuestas: e.respuestas.map((r, i) =>
+                                                          i === respIdx ? valor : r
+                                                        ),
+                                                      }
+                                                      : e
+                                                  )
+                                                );
+                                              }}
+                                            />
+
+                                            {respuestas.length > 1 && (
+                                              <button
+                                                className="gp-respuesta-del"
+                                                onClick={() => {
+                                                  setEspaciosCompletar((prev) =>
+                                                    prev.map((e) =>
+                                                      e.label === nombreEspacio
+                                                        ? {
+                                                          ...e,
+                                                          respuestas: e.respuestas.filter(
+                                                            (_, i) => i !== respIdx
+                                                          ),
+                                                        }
+                                                        : e
+                                                    )
+                                                  );
+                                                }}
+                                              >
+                                                <X size={15} />
+                                              </button>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+
+                                      <button
+                                        className="gp-add-opcion gp-add-opcion--sm"
+                                        onClick={() => {
+                                          setEspaciosCompletar((prev) =>
+                                            prev.map((e) =>
+                                              e.label === nombreEspacio
+                                                ? {
+                                                  ...e,
+                                                  respuestas: [...e.respuestas, ""],
+                                                }
+                                                : e
+                                            )
+                                          );
+                                        }}
+                                      >
+                                        <Plus size={13} /> Agregar respuesta
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </>
                 )}
 
                 {errForm && (

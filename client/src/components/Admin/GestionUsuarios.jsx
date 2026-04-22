@@ -70,8 +70,8 @@ export default function GestionUsuarios() {
     } catch (e) {
       setErrorMsg(
         e.response?.data?.error ||
-          e.response?.data?.mensaje ||
-          "Error al cambiar el estado.",
+        e.response?.data?.mensaje ||
+        "Error al cambiar el estado.",
       );
     } finally {
       setLoadingId(null);
@@ -132,14 +132,14 @@ export default function GestionUsuarios() {
 
       {/* Tabla */}
       <div className="gu-table-wrap">
-        <table className="gu-table">
+        <table className="gu-tabla">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th style={{ textAlign: "right" }}>Acciones</th>
+              <th style={{ width: "50px" }}>ID</th>
+              <th style={{ textAlign: "left" }}>Email</th>
+              <th style={{ textAlign: "left" }}>Rol</th>
+              <th style={{ textAlign: "left" }}>Estado</th>
+              <th style={{ textAlign: "left" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>

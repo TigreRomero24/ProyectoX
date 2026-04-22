@@ -78,8 +78,8 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="modal-form">
           {error && <div className="alert-error">{error}</div>}
 
-          <div className="form-group">
-            <label htmlFor="correo">
+          <div className="modal-field">
+            <label htmlFor="correo" >
               Correo Institucional (@unemi.edu.ec){" "}
               <span className="required">*</span>
             </label>
@@ -100,7 +100,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
             />
           </div>
 
-          <div className="form-group">
+          <div className="modal-field">
             <label htmlFor="rol">Rol</label>
             <select
               id="rol"
@@ -114,7 +114,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="modal-field">
             <label htmlFor="limite">Límite de Dispositivos (1-999)</label>
             <input
               id="limite"

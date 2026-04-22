@@ -9,20 +9,24 @@ export const parseCompletarText = (texto = "") => {
 
   let cursor = 0;
   let match;
+  let slotIdx = 0;
   while ((match = SLOT_REGEX.exec(source))) {
     const rawId = String(match[1] || "").trim();
+    const espacioId = String(slotIdx);
+
     if (match.index > cursor) {
       tokens.push({ type: "text", value: source.slice(cursor, match.index) });
     }
 
-    tokens.push({ type: "slot", espacio_id: rawId });
+    tokens.push({ type: "slot", espacio_id: espacioId, label: rawId });
     if (rawId) {
-      slots.push(rawId);
+      slots.push(espacioId);
       if (seen.has(rawId)) duplicates.push(rawId);
       seen.add(rawId);
     }
 
     cursor = match.index + match[0].length;
+    slotIdx++;
   }
 
   if (cursor < source.length) {

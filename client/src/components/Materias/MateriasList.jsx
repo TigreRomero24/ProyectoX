@@ -10,15 +10,6 @@ import {
   AlertCircle,
   CheckCheck,
   Atom,
-  Calculator,
-  FlaskConical,
-  Globe,
-  Music,
-  Code,
-  Landmark,
-  Dna,
-  Microscope,
-  BookMarked,
 } from "lucide-react";
 import { api } from "../../services/api";
 import TestMode from "./TestMode";
@@ -28,25 +19,9 @@ import { useAuth } from "../../hooks/useAuth";
 
 const ICONOS = [
   Atom,
-  Calculator,
-  FlaskConical,
-  Globe,
-  Music,
-  Code,
-  Landmark,
-  Dna,
-  Microscope,
-  BookMarked,
 ];
 const PALETAS = [
-  { bg: "#eff6ff", color: "#2563eb" },
-  { bg: "#f0fdf4", color: "#16a34a" },
-  { bg: "#fef3c7", color: "#b45309" },
-  { bg: "#fdf4ff", color: "#9333ea" },
-  { bg: "#fff1f2", color: "#e11d48" },
-  { bg: "#f0f9ff", color: "#0284c7" },
-  { bg: "#fefce8", color: "#ca8a04" },
-  { bg: "#f7fee7", color: "#65a30d" },
+  { bg: "#eff6ff", color: "#2563eb" }
 ];
 const getPaleta = (i) => PALETAS[i % PALETAS.length];
 const getIcono = (i) => ICONOS[i % ICONOS.length];
@@ -290,7 +265,11 @@ export default function MateriasList() {
                       className="mat-card-icon"
                       style={{ background: p.bg, color: p.color }}
                     >
-                      <Icono size={26} />
+                      {m.img ? (
+                        <img src={m.img} alt={m.nombre} className="mat-card-img" />
+                      ) : (
+                        <Icono size={26} />
+                      )}
                     </div>
                     <div className="mat-card-body">
                       <h3 className="mat-card-nombre">{m.nombre}</h3>

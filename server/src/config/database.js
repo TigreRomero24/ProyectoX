@@ -30,19 +30,8 @@ export const dbConnect = async () => {
     await sequelize.authenticate();
     console.log("✅ Base de Datos: Conexión establecida (Sequelize).");
 
-    await sequelize.sync({ force: false, alter: env.isDevelopment });
+    await sequelize.sync({ force: false, alter: false });
     console.log("✅ Base de Datos: Tablas sincronizadas correctamente.");
-
-    try {
-      await sequelize.query(
-        `DROP INDEX IF EXISTS "sesion_dispositivo_dispositivo_id_key"`,
-      );
-      console.log(
-        "✅ Índice único eliminado: sesion_dispositivo_dispositivo_id_key",
-      );
-    } catch (idxError) {
-      console.log("ℹ️ Índice no existía o ya eliminado");
-    }
   } catch (error) {
     console.error("❌ FATAL: Error al conectar con la Base de Datos:");
     console.error(`   Detalle: ${error.message}`);

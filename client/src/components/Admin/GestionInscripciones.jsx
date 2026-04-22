@@ -20,7 +20,6 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
   const [form, setForm] = useState({
     id_usuario: "",
     id_materia: "",
-    modo_evaluacion: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -42,7 +41,7 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleSubmit = async () => {
-    if (!form.id_usuario || !form.id_materia || !form.modo_evaluacion) {
+    if (!form.id_usuario || !form.id_materia) {
       setError("Todos los campos son requeridos.");
       return;
     }
@@ -52,7 +51,6 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
       await api.crearInscripcion(
         parseInt(form.id_usuario),
         parseInt(form.id_materia),
-        form.modo_evaluacion,
       );
       onSuccess();
       onClose();
@@ -130,34 +128,7 @@ function ModalNuevaInscripcion({ onClose, onSuccess }) {
                 </div>
               </div>
 
-              {/* Modo evaluación */}
-              <div className="gi-field">
-                <label className="gi-label">Modo de Evaluación</label>
-                <div className="gi-modo-grid">
-                  <button
-                    type="button"
-                    className={`gi-modo-card${form.modo_evaluacion === "TEST" ? " gi-modo-card--active" : ""}`}
-                    onClick={() => set("modo_evaluacion", "TEST")}
-                  >
-                    <span className="gi-modo-emoji">📝</span>
-                    <span className="gi-modo-name">Test</span>
-                    <span className="gi-modo-desc">
-                      Práctica con feedback inmediato
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`gi-modo-card${form.modo_evaluacion === "EXAMEN" ? " gi-modo-card--active" : ""}`}
-                    onClick={() => set("modo_evaluacion", "EXAMEN")}
-                  >
-                    <span className="gi-modo-emoji">📋</span>
-                    <span className="gi-modo-name">Examen</span>
-                    <span className="gi-modo-desc">
-                      Evaluación formal con nota final
-                    </span>
-                  </button>
-                </div>
-              </div>
+              {/* Modo evaluación eliminado */}
             </>
           )}
         </div>
@@ -235,7 +206,7 @@ export default function GestionInscripciones() {
   }, [busqueda, cargar]);
 
   const rowKey = (ins) =>
-    `${ins.id_usuario}-${ins.id_materia}-${ins.modo_evaluacion}`;
+    `${ins.id_usuario}-${ins.id_materia}`;
 
   const handleToggle = async (ins) => {
     setLoadingId(rowKey(ins));
@@ -243,7 +214,6 @@ export default function GestionInscripciones() {
       await api.cambiarEstadoInscripcion(
         ins.id_usuario,
         ins.id_materia,
-        ins.modo_evaluacion,
         !ins.activo,
       );
       await cargar(busqueda);
@@ -270,7 +240,6 @@ export default function GestionInscripciones() {
       await api.eliminarInscripcion(
         ins.id_usuario,
         ins.id_materia,
-        ins.modo_evaluacion,
       );
       await cargar(busqueda);
     } catch (e) {
@@ -283,10 +252,10 @@ export default function GestionInscripciones() {
   const fmtFecha = (f) =>
     f
       ? new Date(f).toLocaleDateString("es-EC", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "—";
 
   return (
@@ -366,12 +335,11 @@ export default function GestionInscripciones() {
         <table className="gi-table">
           <thead>
             <tr>
-              <th>Estudiante</th>
-              <th>Materia</th>
-              <th>Modo</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th style={{ textAlign: "right" }}>Acciones</th>
+              <th style={{ textAlign: "start" }}>Estudiante</th>
+              <th style={{ textAlign: "start" }}>Materia</th>
+              <th style={{ textAlign: "start" }}>Fecha</th>
+              <th style={{ textAlign: "start" }}>Estado</th>
+              <th style={{ textAlign: "start" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -403,17 +371,6 @@ export default function GestionInscripciones() {
 
                     {/* Materia */}
                     <td className="gi-td-mat">{ins.nombre_materia}</td>
-
-                    {/* Modo */}
-                    <td>
-                      <span
-                        className={`gi-badge-modo gi-badge-modo--${ins.modo_evaluacion.toLowerCase()}`}
-                      >
-                        {ins.modo_evaluacion === "TEST"
-                          ? "📝 Test"
-                          : "📋 Examen"}
-                      </span>
-                    </td>
 
                     {/* Fecha */}
                     <td>

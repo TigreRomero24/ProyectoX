@@ -43,12 +43,12 @@ export default function CompletarRenderer({ estructura, respuestaMap, onChangeMa
   };
 
   return (
-    <div className="ev-opciones">
-      <div className="ev-opcion ev-opcion--idle" style={{ flexWrap: "wrap", alignItems: "center" }}>
+    <div className="ev-opciones" style={{ display: 'block' }}>
+      <div className="ev-completar-text-wrap">
         {tokens.map((token, idx) => {
           if (token.type === "text") {
             return (
-              <span key={`t-${idx}`} className="ev-opcion-texto" style={{ whiteSpace: "pre-wrap" }}>
+              <span key={`t-${idx}`} style={{ whiteSpace: "pre-wrap" }}>
                 {token.value}
               </span>
             );
@@ -62,6 +62,7 @@ export default function CompletarRenderer({ estructura, respuestaMap, onChangeMa
               <CompletarDragSlot
                 key={`s-${idx}`}
                 espacioId={token.espacio_id}
+                label={token.label}
                 value={current}
                 selectedFicha={selectedFicha}
                 onDropFicha={assignDrag}
@@ -91,9 +92,10 @@ export default function CompletarRenderer({ estructura, respuestaMap, onChangeMa
       </div>
 
       {mode === COMPLETAR_MODO.ARRASTRAR && (
-        <>
-          <p className="ev-opcion-texto" style={{ fontSize: "0.8rem", color: "#4b5563" }}>
-            Arrastra una ficha a un hueco o toca ficha + hueco (movil).
+        <div style={{ marginTop: 10 }}>
+          <p className="ev-mode-label" style={{ marginBottom: 10, fontSize: '0.75rem' }}>
+            <span style={{ verticalAlign: 'middle', marginRight: 5 }}>ℹ️</span>
+            Arrastra una ficha a un hueco o toca ficha + hueco (móvil)
           </p>
           <CompletarTokenBank
             fichas={Array.isArray(estructura?.opciones_arrastrar) ? estructura.opciones_arrastrar : []}
@@ -101,7 +103,7 @@ export default function CompletarRenderer({ estructura, respuestaMap, onChangeMa
             selectedFicha={selectedFicha}
             onSelect={setSelectedFicha}
           />
-        </>
+        </div>
       )}
     </div>
   );

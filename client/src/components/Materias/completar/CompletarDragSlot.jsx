@@ -1,16 +1,18 @@
 export default function CompletarDragSlot({
   espacioId,
+  label,
   value,
   onDropFicha,
   onTapAssign,
   onClear,
   selectedFicha,
 }) {
+  const isFilled = !!value;
+
   return (
     <button
       type="button"
-      className="ev-opcion ev-opcion--idle"
-      style={{ display: "inline-flex", width: "auto", minWidth: 140, padding: "8px 10px" }}
+      className={`ev-completar-slot ${isFilled ? "ev-completar-slot--filled" : ""} ${selectedFicha ? "ev-completar-slot--active" : ""}`}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         const texto = e.dataTransfer.getData("text/plain");
@@ -20,13 +22,12 @@ export default function CompletarDragSlot({
         if (selectedFicha) onTapAssign(espacioId, selectedFicha);
       }}
     >
-      <span className="ev-opcion-texto" style={{ fontWeight: 700 }}>{`[[${espacioId}]]`}</span>
-      <span className="ev-opcion-texto" style={{ marginLeft: 6 }}>{value || "(vacio)"}</span>
-      {!!value && (
+      <span>{value || `[[${label || espacioId}]]`}</span>
+      {isFilled && (
         <span
+          className="ev-slot-close"
           role="button"
           tabIndex={0}
-          style={{ marginLeft: 8, color: "#b91c1c", fontWeight: 700 }}
           onClick={(e) => {
             e.stopPropagation();
             onClear(espacioId);
@@ -38,9 +39,10 @@ export default function CompletarDragSlot({
             }
           }}
         >
-          x
+          ×
         </span>
       )}
     </button>
   );
 }
+

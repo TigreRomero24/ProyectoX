@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useSecurity } from "../../context/SecurityContext";
 import { BookOpen, AlertCircle, X } from "lucide-react";
 
 const MENSAJES_ERROR = {
@@ -12,37 +13,37 @@ const MENSAJES_ERROR = {
 export default function Login() {
   const [error, setError] = useState("");
   const { loading } = useAuth();
+  const { logSecurityEvent } = useSecurity();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const codigo = params.get("error");
+
     if (codigo) {
-      setError(MENSAJES_ERROR[codigo] ?? "Error al iniciar sesión. Intenta de nuevo.");
+      const mensaje =
+        MENSAJES_ERROR[codigo] ??
+        "Error al iniciar sesión. Intenta de nuevo.";
+
+      setError(mensaje);
+
+      // 🔥 REGISTRO DE SEGURIDAD
+      logSecurityEvent("LOGIN_FAILED", {
+        errorCode: codigo,
+        message: mensaje,
+        severity: codigo === "usuario_no_registrado" ? "CRITICAL" : "HIGH",
+      });
+
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [logSecurityEvent]);
 
-  const handleGoogleLogin = () => { window.location.href = "/api/v1/auth/google"; };
+  const handleGoogleLogin = () => {
+    logSecurityEvent("LOGIN_ATTEMPT", {
+      provider: "GOOGLE",
+      severity: "LOW",
+    });
 
-  const handleLoginDirecto = async (rol) => {
-    const correo = rol === "ADMINISTRADOR" ? "admin@unemi.edu.ec" : "estudiante@unemi.edu.ec";
-    try {
-      const res = await fetch("/api/v1/auth/login-directo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, rol }),
-      });
-      const data = await res.json();
-      if (data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("user", JSON.stringify(data.usuario));
-        window.location.href = "/dashboard?token=" + data.accessToken;
-      } else {
-        setError(data.error || "Error al iniciar sesión.");
-      }
-    } catch {
-      setError("Error de conexión. Verifica tu red e intenta de nuevo.");
-    }
+    window.location.href = "/api/v1/auth/google";
   };
 
   return (
@@ -80,14 +81,6 @@ export default function Login() {
           {loading ? "Ingresando..." : "Ingresar con Google"}
         </button>
 
-        {/* Dev panel */}
-        <div className="auth-dev-panel">
-          <p>Acceso de pruebas</p>
-          <div className="auth-dev-buttons">
-            <button onClick={() => handleLoginDirecto("ADMINISTRADOR")}>Admin</button>
-            <button onClick={() => handleLoginDirecto("ESTUDIANTE")}>Estudiante</button>
-          </div>
-        </div>
       </div>
     </div>
   );

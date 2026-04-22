@@ -9,6 +9,7 @@ import {
   Inscripcion,
   Usuario,
 } from "../models/index.js";
+import { deleteMateriaImageByUrl } from "../utils/mediaUpload.js";
 
 // ════════════════════════════════════════════════════════════════════════════════
 //  MateriaService  —  CRUD del catálogo de materias
@@ -18,6 +19,7 @@ export class MateriaService {
   static #buildDTO(datos) {
     const dto = {};
     if (datos.nombre !== undefined) dto.nombre = datos.nombre;
+    if (datos.img !== undefined) dto.img = datos.img;
     return dto;
   }
 
@@ -39,14 +41,17 @@ export class MateriaService {
       );
     }
 
-    const nueva = await Materia.create({ nombre: datosMateria.nombre });
+    const nueva = await Materia.create({
+      nombre: datosMateria.nombre,
+      img: datosMateria.img || null,
+    });
     return nueva.get({ plain: true });
   }
 
   // ─── Listar todas ────────────────────────────────────────────────────────────
   static async obtenerMaterias() {
     return Materia.findAll({
-      attributes: ["id_materia", "nombre", "createdAt"],
+      attributes: ["id_materia", "nombre", "img", "createdAt"],
       order: [["nombre", "ASC"]],
       raw: true,
     });
@@ -61,7 +66,7 @@ export class MateriaService {
   static async obtenerMateriasDeUsuario(id_usuario) {
     const inscripciones = await Inscripcion.findAll({
       where: { id_usuario, activo: true },
-      include: [{ model: Materia, attributes: ["id_materia", "nombre"] }],
+      include: [{ model: Materia, attributes: ["id_materia", "nombre", "img"] }],
       raw: true,
       nest: true,
     });
@@ -72,8 +77,8 @@ export class MateriaService {
     const mapaMateria = new Map();
 
     for (const ins of inscripciones) {
-      // Sequelize con raw:true+nest:true pluraliza el modelo en inglés → "Materium"
-      const mat = ins.Materia ?? ins.Materium;
+      // Sequelize con raw:true+nest:true puede usar distintos nombres según tableName
+      const mat = ins.Materia ?? ins.Materium ?? ins.matedum;
       const id = mat?.id_materia;
       if (!id) continue;
 
@@ -81,12 +86,9 @@ export class MateriaService {
         mapaMateria.set(id, {
           id_materia: mat.id_materia,
           nombre: mat.nombre,
-          modos_inscritos: [],
+          img: mat.img,
+          modos_inscritos: ["TEST", "EXAMEN"], // Ahora siempre tiene ambos modos si está inscrito
         });
-      }
-      const entry = mapaMateria.get(id);
-      if (!entry.modos_inscritos.includes(ins.modo_evaluacion)) {
-        entry.modos_inscritos.push(ins.modo_evaluacion);
       }
     }
 
@@ -98,7 +100,7 @@ export class MateriaService {
   // ─── Obtener por ID ──────────────────────────────────────────────────────────
   static async obtenerMateriaPorId(id_materia) {
     const materia = await Materia.findByPk(id_materia, {
-      attributes: ["id_materia", "nombre", "createdAt"],
+      attributes: ["id_materia", "nombre", "img", "createdAt"],
     });
     if (!materia)
       throw new Error("NO_ENCONTRADO: La materia solicitada no existe.");
@@ -134,6 +136,11 @@ export class MateriaService {
             `DUPLICADO: El nombre '${nombreNormalizado}' ya está en uso por otra materia.`,
           );
         }
+      }
+
+      // Si se sube una nueva imagen, eliminar la anterior
+      if (dto.img && materia.img) {
+        await deleteMateriaImageByUrl(materia.img);
       }
 
       await materia.update(dto, { transaction: t });
@@ -191,10 +198,9 @@ const nombreDesdeCorreo = (correo = "") => correo.split("@")[0];
 const toDTO = (ins) => ({
   id_usuario: ins.id_usuario,
   id_materia: ins.id_materia,
-  modo_evaluacion: ins.modo_evaluacion,
   nombre_usuario: nombreDesdeCorreo(ins.Usuario?.correo_institucional),
   correo: ins.Usuario?.correo_institucional || "",
-  nombre_materia: (ins.Materia ?? ins.Materium)?.nombre || "",
+  nombre_materia: (ins.Materia ?? ins.Materium ?? ins.matedum)?.nombre || "",
   activo: ins.activo,
   fecha_inscripcion: ins.fecha_inscripcion,
 });
@@ -256,14 +262,11 @@ export class InscripcionService {
   }
 
   // ─── Crear inscripción ───────────────────────────────────────────────────────
-  static async crear({ id_usuario, id_materia, modo_evaluacion }) {
-    if (!id_usuario || !id_materia || !modo_evaluacion) {
+  static async crear({ id_usuario, id_materia }) {
+    if (!id_usuario || !id_materia) {
       throw new Error(
-        "VALIDACION: id_usuario, id_materia y modo_evaluacion son requeridos.",
+        "VALIDACION: id_usuario y id_materia son requeridos.",
       );
-    }
-    if (!["TEST", "EXAMEN"].includes(modo_evaluacion)) {
-      throw new Error("VALIDACION: modo_evaluacion debe ser TEST o EXAMEN.");
     }
 
     const usuario = await Usuario.findByPk(id_usuario, {
@@ -282,44 +285,32 @@ export class InscripcionService {
     const materia = await Materia.findByPk(id_materia);
     if (!materia) throw new Error("NO_ENCONTRADO: La materia no existe.");
 
-    if (modo_evaluacion === "EXAMEN") {
-      const nPreguntas = await BancoPregunta.count({
-        where: { id_materia, activo: true },
-      });
-      if (nPreguntas === 0) {
-        throw new Error(
-          "VALIDACION: La materia no tiene preguntas activas para el modo EXAMEN.",
-        );
-      }
-    }
-
     const existe = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
+      where: { id_usuario, id_materia },
     });
     if (existe) {
       throw new Error(
-        `DUPLICADO: El estudiante ya está inscrito en esta materia con modo ${modo_evaluacion}.`,
+        `DUPLICADO: El estudiante ya está inscrito en esta materia.`,
       );
     }
 
     await Inscripcion.create({
       id_usuario,
       id_materia,
-      modo_evaluacion,
       activo: true,
     });
 
     const nueva = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
+      where: { id_usuario, id_materia },
       ...WITH_ASSOCIATIONS,
     });
     return toDTO(nueva);
   }
 
   // ─── Cambiar estado ──────────────────────────────────────────────────────────
-  static async cambiarEstado(id_usuario, id_materia, modo_evaluacion, activo) {
+  static async cambiarEstado(id_usuario, id_materia, activo) {
     const ins = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
+      where: { id_usuario, id_materia },
     });
     if (!ins) throw new Error("NO_ENCONTRADO: Inscripción no encontrada.");
     await ins.update({ activo });
@@ -329,9 +320,9 @@ export class InscripcionService {
   }
 
   // ─── Eliminar inscripción ────────────────────────────────────────────────────
-  static async eliminar(id_usuario, id_materia, modo_evaluacion) {
+  static async eliminar(id_usuario, id_materia) {
     const ins = await Inscripcion.findOne({
-      where: { id_usuario, id_materia, modo_evaluacion },
+      where: { id_usuario, id_materia },
     });
     if (!ins) throw new Error("NO_ENCONTRADO: Inscripción no encontrada.");
     if (ins.activo) {
