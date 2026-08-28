@@ -153,6 +153,16 @@ export class AcademicoController {
    * Solo usuarios autenticados (cualquier rol).
 
    */
+  // 🔥 NUEVO: mezcla un arreglo de forma aleatoria (Fisher-Yates)
+  static #mezclarArreglo(arreglo) {
+    const copia = [...arreglo];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
   static async obtenerPreguntasTest(req, res) {
     try {
       const id = AcademicoController.#parsearId(req.params.id_materia);
@@ -167,10 +177,21 @@ export class AcademicoController {
       const preguntas = await AcademicoService.obtenerPreguntasPorMateria(
         id,
         true,
-        false,
+        true,
       );
 
-      return res.status(200).json({ ok: true, data: preguntas });
+      // 🔥 CAMBIO: mezclar orden de preguntas y de las opciones de cada
+      // pregunta, para que el modo TEST no muestre siempre el mismo orden.
+      const preguntasMezcladas = AcademicoController.#mezclarArreglo(
+        preguntas,
+      ).map((p) => ({
+        ...p,
+        opciones: Array.isArray(p.opciones)
+          ? AcademicoController.#mezclarArreglo(p.opciones)
+          : p.opciones,
+      }));
+
+      return res.status(200).json({ ok: true, data: preguntasMezcladas });
     } catch (error) {
       return AcademicoController.#manejarError(
         res,

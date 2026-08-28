@@ -6,8 +6,11 @@ import GestionMaterias from "../Admin/GestionMaterias";
 import GestionPreguntas from "../Admin/GestionPreguntas";
 import GestionUsuarios from "../Admin/GestionUsuarios";
 import GestionInscripciones from "../Admin/GestionInscripciones";
-import Forum from "../Forum/Forum";
+import GestionIntentos from "../Admin/GestionIntentos";
+import GestionLogs from "../Admin/GestionLogs";
 import About from "../About/About";
+import Perfil from "../Perfil/Perfil";
+import Duelo from "../Duelo/Duelo";
 
 const useTheme = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem("eq-theme") || "light");
@@ -27,13 +30,16 @@ export default function Dashboard({ user }) {
   const renderSection = () => {
     switch (activeSection) {
       case "materias":            return <MateriasList />;
+      case "duelo":                return <Duelo />;
       case "historial":           return <Historial />;
-      case "forum":               return <Forum />;
       case "about":               return <About />;
+      case "perfil":              return <Perfil />;
       case "admin-materias":      return isAdmin ? <GestionMaterias /> : <MateriasList />;
       case "admin-preguntas":     return isAdmin ? <GestionPreguntas /> : <MateriasList />;
       case "admin-usuarios":      return isAdmin ? <GestionUsuarios /> : <MateriasList />;
       case "admin-inscripciones": return isAdmin ? <GestionInscripciones /> : <MateriasList />;
+      case "admin-intentos":      return isAdmin ? <GestionIntentos /> : <MateriasList />;
+      case "admin-logs":          return isAdmin ? <GestionLogs /> : <MateriasList />;
       default:                    return <MateriasList />;
     }
   };

@@ -40,6 +40,14 @@ export const Usuario = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 3,
     },
+    nombre: {
+      type: DataTypes.STRING(150),
+      allowNull: true,
+    },
+    url_foto: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
     tableName: "usuario",

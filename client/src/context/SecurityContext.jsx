@@ -35,7 +35,7 @@ export const SecurityProvider = ({ children }) => {
         body: JSON.stringify({
           event: eventType,
           timestamp: new Date().toISOString(),
-          user: user?.id || "ANONIMO",
+          user: user?.correo_institucional || "ANONIMO",
           url: window.location.href,
           userAgent: navigator.userAgent,
           ipPublic: ip || "UNKNOWN",

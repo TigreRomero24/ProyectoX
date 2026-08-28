@@ -603,22 +603,6 @@ export class AcademicoService {
     }
   }
 
-  // ─── Carga masiva desde Excel ────────────────────────────────────────────────
-
-  /**
-   * Inserta múltiples preguntas en una sola transacción.
-   * Cada item del array tiene el mismo formato que crearPreguntaConOpciones.
-   *
-   * Estrategia de duplicados:
-   *   - El frontend detecta duplicados (enunciado idéntico en la misma materia)
-   *     y envía forzarDuplicados=true si el usuario acepta sobreescribir.
-   *   - Si forzarDuplicados=false y hay duplicados → error con lista de coincidencias.
-   *
-   * Resultado: { insertadas, omitidas, errores[] }
-   *   - insertadas: cantidad creada exitosamente
-   *   - omitidas:   duplicadas omitidas (cuando forzarDuplicados=false y hay match)
-   *   - errores:    [{ fila, enunciado, motivo }] — filas con datos inválidos
-   */
   static async crearPreguntasBulk(
     id_materia,
     preguntas,
@@ -650,9 +634,9 @@ export class AcademicoService {
     const errores = [];
 
     preguntas.forEach((item, idx) => {
-      const fila = idx + 2; // fila Excel (1=cabecera, datos desde 2)
+      const fila = idx + 2; 
 
-      // Validar estructura mínima
+      
       if (!item.enunciado?.trim()) {
         errores.push({
           fila,

@@ -7,6 +7,9 @@ import { OpcionRespuesta } from "./academico.models/opcionRespuesta.js";
 import { ConfiguracionExamen } from "./evaluacion.models/configuracionExamen.js";
 import { Intento } from "./evaluacion.models/intento.js";
 import { DetalleIntento } from "./evaluacion.models/detalleIntento.js";
+import { Duelo } from "./duelo.models/duelo.js";
+import { DueloParticipante } from "./duelo.models/dueloParticipante.js";
+import { DueloRespuesta } from "./duelo.models/dueloRespuesta.js";
 
 Usuario.hasMany(SesionDispositivo, {
   foreignKey: "id_usuario",
@@ -76,7 +79,7 @@ Intento.hasMany(DetalleIntento, {
 DetalleIntento.belongsTo(Intento, { foreignKey: "id_intento" });
 
 BancoPregunta.hasMany(DetalleIntento, { foreignKey: "id_pregunta" });
-DetalleIntento.belongsTo(BancoPregunta, { foreignKey: "id_pregunta" });
+DetalleIntento.belongsTo(BancoPregunta, { foreignKey: "id_pregunta", as: "pregunta_banco" });
 
 OpcionRespuesta.hasMany(DetalleIntento, {
   foreignKey: "id_opcion_elegida",
@@ -84,4 +87,39 @@ OpcionRespuesta.hasMany(DetalleIntento, {
 DetalleIntento.belongsTo(OpcionRespuesta, {
   foreignKey: "id_opcion_elegida",
   as: "opcion_marcada",
+});
+
+// ─── Duelo de batalla ───────────────────────────────────────────────────────
+
+Materia.hasMany(Duelo, { foreignKey: "id_materia", as: "duelos" });
+Duelo.belongsTo(Materia, { foreignKey: "id_materia" });
+
+Usuario.hasMany(Duelo, { foreignKey: "id_creador", as: "duelos_creados" });
+Duelo.belongsTo(Usuario, { foreignKey: "id_creador", as: "creador" });
+
+Duelo.hasMany(DueloParticipante, {
+  foreignKey: "id_duelo",
+  as: "participantes",
+});
+DueloParticipante.belongsTo(Duelo, { foreignKey: "id_duelo" });
+
+Usuario.hasMany(DueloParticipante, {
+  foreignKey: "id_usuario",
+  as: "participaciones_duelo",
+});
+DueloParticipante.belongsTo(Usuario, {
+  foreignKey: "id_usuario",
+  as: "usuario",
+});
+
+Duelo.hasMany(DueloRespuesta, { foreignKey: "id_duelo", as: "respuestas" });
+DueloRespuesta.belongsTo(Duelo, { foreignKey: "id_duelo" });
+
+Usuario.hasMany(DueloRespuesta, { foreignKey: "id_usuario" });
+DueloRespuesta.belongsTo(Usuario, { foreignKey: "id_usuario" });
+
+BancoPregunta.hasMany(DueloRespuesta, { foreignKey: "id_pregunta" });
+DueloRespuesta.belongsTo(BancoPregunta, {
+  foreignKey: "id_pregunta",
+  as: "pregunta_banco",
 });

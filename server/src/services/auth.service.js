@@ -75,8 +75,20 @@ export class AuthService {
         throw new Error("USUARIO_INACTIVO: Cuenta deshabilitada.");
       }
 
+      let userUpdated = false;
       if (!usuario.google_id) {
         usuario.google_id = googleId;
+        userUpdated = true;
+      }
+      if (!usuario.nombre && googleProfile.displayName) {
+        usuario.nombre = googleProfile.displayName;
+        userUpdated = true;
+      }
+      if (!usuario.url_foto && googleProfile.photos && googleProfile.photos[0]?.value) {
+        usuario.url_foto = googleProfile.photos[0].value;
+        userUpdated = true;
+      }
+      if (userUpdated) {
         await usuario.save({ transaction: t });
       }
 
@@ -87,6 +99,9 @@ export class AuthService {
         id: usuario.id_usuario,
         rol: usuario.rol,
         dispositivoId: dispositivoId,
+        nombre: usuario.nombre || null,
+        correo: usuario.correo_institucional,
+        url_foto: usuario.url_foto || null,
       });
 
       const refreshToken = refreshFactory.generateToken({
@@ -149,7 +164,7 @@ export class AuthService {
 
       logSecurityEvent({
         event: "LOGIN_SUCCESS",
-        user: usuario.id_usuario,
+        user: usuario.correo_institucional,
         ip,
         severity: "LOW",
         details: "Inicio de sesión exitoso",
@@ -177,13 +192,16 @@ export class AuthService {
     if (!dispositivoId || !id_usuario)
       throw new Error("VALIDACION: Datos incompletos para cerrar sesión.");
 
+    const usuario = await Usuario.findByPk(id_usuario);
+    const userEmail = usuario ? usuario.correo_institucional : id_usuario;
+
     await SesionDispositivo.destroy({
       where: { dispositivo_id: dispositivoId, id_usuario: id_usuario },
     });
 
     logSecurityEvent({
       event: "LOGOUT",
-      user: id_usuario,
+      user: userEmail,
       ip: ip || "UNKNOWN",
       severity: "LOW",
     });
@@ -237,9 +255,11 @@ export class AuthService {
       );
 
       if (!isValid) {
+        const usuario = await Usuario.findByPk(payload.id);
+        const userEmail = usuario ? usuario.correo_institucional : payload.id;
         logSecurityEvent({
           event: "TOKEN_REUSE_ATTACK",
-          user: payload.id,
+          user: userEmail,
           ip: "UNKNOWN",
           severity: "CRITICAL",
           details: "Intento de reutilización de refresh token",
@@ -258,6 +278,9 @@ export class AuthService {
         id: usuario.id_usuario,
         rol: usuario.rol,
         dispositivoId: sesion.dispositivo_id,
+        nombre: usuario.nombre || null,
+        correo: usuario.correo_institucional,
+        url_foto: usuario.url_foto || null,
       });
 
       const newRefreshToken = refreshFactory.generateToken({

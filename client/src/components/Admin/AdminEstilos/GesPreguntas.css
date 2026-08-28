@@ -1156,3 +1156,41 @@
   padding: 5px 10px;
   align-self: flex-start;
 }
+
+/* Search Bar styling */
+.gp-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gp-search-wrap {
+  position: relative;
+  min-width: 280px;
+}
+
+.gp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.gp-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.gp-search-input:focus {
+  outline: none;
+  border-color: var(--c-brand-400);
+}

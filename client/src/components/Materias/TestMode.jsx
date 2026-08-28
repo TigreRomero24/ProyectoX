@@ -23,14 +23,16 @@ import {
   resolveCompletarMode 
 } from "./completar/completarState";
 import { corregirRespuestaTest } from "./questionRuntime";
+import { api } from "../../services/api";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 
-export default function TestMode({ preguntas, nombreMateria, onVolver }) {
+export default function TestMode({ preguntas, nombreMateria, idMateria, onVolver }) {
   const [actual, setActual] = useState(0);
   const [respuestas, setRespuestas] = useState({});
   const [feedback, setFeedback] = useState({});
   const [mostrarResumen, setMostrarResumen] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   const pregunta = preguntas[actual];
   const total = preguntas.length;
@@ -136,6 +138,48 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
   const incorrectas = Object.values(feedback).filter((f) => !f.correcto).length;
   const sinResponder = total - respondidas;
   const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
+
+  // ── Guardar evaluación en el servidor ────────────────────────────────────
+  const guardarEvaluacion = async () => {
+    setGuardando(true);
+    try {
+      // Convertir respuestas al formato esperado por el servidor
+      const respuestasFormato = preguntas
+        .filter((p) => respuestas[p.id_pregunta] !== undefined)
+        .map((p) => {
+          const resp = respuestas[p.id_pregunta];
+          
+          if (p.tipo_pregunta === "SELECCION_MULTIPLE") {
+            return {
+              id_pregunta: p.id_pregunta,
+              respuesta_json: { opciones_ids: resp || [] },
+            };
+          } else if (p.tipo_pregunta === "ORDENAR") {
+            return {
+              id_pregunta: p.id_pregunta,
+              respuesta_json: { orden_ids: resp || [] },
+            };
+          } else if (p.tipo_pregunta === "COMPLETAR") {
+            return {
+              id_pregunta: p.id_pregunta,
+              respuesta_json: resp,
+            };
+          } else {
+            // MULTIPLE, VERDADERO_FALSO
+            return {
+              id_pregunta: p.id_pregunta,
+              id_opcion: resp,
+            };
+          }
+        });
+
+      await api.guardarEvaluacionRapida(idMateria, respuestasFormato);
+    } catch (error) {
+      console.error("Error al guardar evaluación:", error);
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // PANTALLA DE RESUMEN
@@ -429,10 +473,12 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
               <>
                 <XCircle size={16} />
                 <div>
-                  <strong>Incorrecto</strong>
-                  <p className="ev-feedback-sub">
-                    La respuesta correcta es: {fb.textoCorrecta}
-                  </p>
+                  <strong>{fb.detalle === "Parcial" ? "Parcialmente Correcto" : "Incorrecto"}</strong>
+                  {fb.textoCorrecta && (
+                    <p className="ev-feedback-sub">
+                      La respuesta correcta es: {fb.textoCorrecta}
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -474,9 +520,13 @@ export default function TestMode({ preguntas, nombreMateria, onVolver }) {
         ) : (
           <button
             className="ev-nav-btn ev-nav-btn--finish"
-            onClick={() => setMostrarResumen(true)}
+            onClick={async () => {
+              await guardarEvaluacion();
+              setMostrarResumen(true);
+            }}
+            disabled={guardando}
           >
-            Ver Resultados
+            {guardando ? "Guardando..." : "Ver Resultados"}
           </button>
         )}
       </div>

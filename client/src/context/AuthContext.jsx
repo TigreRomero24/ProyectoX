@@ -28,6 +28,14 @@ const decodeJWT = (token) => {
 const TOKEN_KEY = "token";
 const USER_KEY = "user";
 
+const buildUserFromPayload = (payload, fallbackRol) => ({
+  id: payload.id,
+  rol: payload.rol ?? fallbackRol ?? "ESTUDIANTE",
+  nombre: payload.nombre || null,
+  correo: payload.correo || null,
+  url_foto: payload.url_foto || null,
+});
+
 const persistirSesion = (token, usuario) => {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(usuario));
@@ -67,6 +75,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Actualizar token y usuario tras cambios de perfil
+  const actualizarSesion = useCallback((newToken) => {
+    const payload = decodeJWT(newToken);
+    if (!payload?.id) return;
+    const usuarioData = buildUserFromPayload(payload);
+    persistirSesion(newToken, usuarioData);
+    setToken(newToken);
+    setUser(usuarioData);
+  }, []);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = urlParams.get("token");
@@ -90,10 +108,7 @@ export const AuthProvider = ({ children }) => {
           throw new Error("Token de autenticación inválido.");
         }
 
-        const usuarioData = {
-          id: payload.id,
-          rol: payload.rol ?? "ESTUDIANTE",
-        };
+        const usuarioData = buildUserFromPayload(payload);
 
         persistirSesion(urlToken, usuarioData);
         setToken(urlToken);
@@ -161,10 +176,7 @@ export const AuthProvider = ({ children }) => {
         try {
           const data = await api.refreshToken();
           const nuevoPayload = decodeJWT(data.accessToken);
-          const usuarioData = {
-            id: nuevoPayload.id,
-            rol: nuevoPayload.rol ?? user?.rol,
-          };
+          const usuarioData = buildUserFromPayload(nuevoPayload, user?.rol);
           persistirSesion(data.accessToken, usuarioData);
           setToken(data.accessToken);
           setUser(usuarioData);
@@ -193,7 +205,9 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         token,
+        setToken,
         loading,
         error,
         setError,
@@ -201,6 +215,7 @@ export const AuthProvider = ({ children }) => {
         register,
         loginConGoogle,
         logout,
+        actualizarSesion,
         isAdmin: user?.rol === "ADMINISTRADOR",
         isAuthenticated: !!token,
       }}

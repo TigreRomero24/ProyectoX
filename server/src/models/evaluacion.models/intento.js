@@ -15,7 +15,7 @@ export const Intento = sequelize.define(
     },
     id_config: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     fecha_inicio: {
       type: DataTypes.DATE,
@@ -26,13 +26,21 @@ export const Intento = sequelize.define(
       allowNull: true,
     },
     estado: {
-      type: DataTypes.ENUM("EN_PROGRESO", "FINALIZADO"),
+      type: DataTypes.ENUM("EN_PROGRESO", "FINALIZADO", "ANULADO"),
       defaultValue: "EN_PROGRESO",
       allowNull: false,
     },
     nota_final: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
+    },
+    total_preguntas: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // null en intentos legacy ya existentes
+    },
+    preguntas_ids: {
+      type: DataTypes.JSONB,
+      allowNull: true, // array de id_pregunta en el orden sorteado
     },
   },
   {

@@ -59,6 +59,9 @@ export class AccessTokenFactory extends BaseTokenFactory {
       id: payload.id,
       rol: payload.rol,
       dispositivoId: payload.dispositivoId,
+      nombre: payload.nombre || null,
+      correo: payload.correo || null,
+      url_foto: payload.url_foto || null,
       tipo: "access",
     };
 

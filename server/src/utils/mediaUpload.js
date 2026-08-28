@@ -183,3 +183,68 @@ export const deletePreguntaImageByUrl = async (imagenUrl) => {
   const filename = path.basename(imagenUrl);
   await deleteFileIfExists(path.join(PREGUNTAS_DIR, filename));
 };
+
+const PERFIL_DIR = path.join(MEDIA_ROOT, "perfil");
+
+const ensurePerfilStorage = async () => {
+  await fs.mkdir(PERFIL_DIR, { recursive: true });
+};
+
+const storagePerfil = multer.diskStorage({
+  destination: async (_req, _file, cb) => {
+    try {
+      await ensurePerfilStorage();
+      cb(null, PERFIL_DIR);
+    } catch (error) {
+      cb(error);
+    }
+  },
+  filename: (req, file, cb) => {
+    const rawExt = path.extname(file.originalname || "").replace(".", "").toLowerCase();
+    const safeExt = ALLOWED_EXTENSIONS.has(rawExt)
+      ? rawExt
+      : ALLOWED_MIME_TO_EXT[file.mimetype] || "jpg";
+    const timestamp = Date.now();
+    const rand = crypto.randomBytes(2).toString("hex");
+
+    cb(null, `perf_${timestamp}_${rand}.${safeExt}`);
+  },
+});
+
+const uploadPerfil = multer({
+  storage: storagePerfil,
+  limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
+  fileFilter,
+});
+
+export const uploadPerfilImagen = (req, res, next) => {
+  uploadPerfil.single("imagen")(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+
+    if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({
+        ok: false,
+        error: "VALIDACION: La imagen excede el tamaño máximo permitido de 2MB.",
+      });
+      return;
+    }
+
+    res.status(400).json({
+      ok: false,
+      error: error.message || "VALIDACION: No se pudo procesar la imagen.",
+    });
+  });
+};
+
+export const buildPerfilPublicUrl = (filename) => `/media/perfil/${filename}`;
+
+export const deletePerfilImageByUrl = async (imagenUrl) => {
+  if (!imagenUrl) return;
+  if (!imagenUrl.startsWith("/media/perfil/")) return;
+
+  const filename = path.basename(imagenUrl);
+  await deleteFileIfExists(path.join(PERFIL_DIR, filename));
+};

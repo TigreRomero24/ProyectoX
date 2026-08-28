@@ -18,9 +18,6 @@
 @import '../components/Materias/Evaluacion.css';
 @import '../components/Materias/Historial.css';
 
-/* ── Foro */
-@import '../components/Forum/Forum.css';
-
 /* ── About */
 @import '../components/About/About.css';
 
@@ -31,3 +28,6 @@
 @import '../components/Admin/AdminEstilos/Gestioninscripciones.css';
 @import '../components/Admin/AdminEstilos/Cargaexcel.css';
 @import '../components/Admin/AdminEstilos/Modal.css';
+
+/* ── Perfil */
+@import '../components/Perfil/Perfil.css';

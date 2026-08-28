@@ -120,8 +120,10 @@ export default function MateriasList() {
     try {
       const res = await api.getPreguntasTest(detalle.materia.id_materia);
       const todas = res.data || [];
-      const cant = Math.min(10, todas.length);
-      const mezcla = [...todas].sort(() => Math.random() - 0.5).slice(0, cant);
+      // 🔥 CAMBIO: TEST ya no limita a 10 — entran todas las preguntas activas,
+      // solo se mezcla el orden (las opciones de cada pregunta se mezclan
+      // dentro de TestMode/OrdenarRenderer/etc. si aplica).
+      const mezcla = [...todas].sort(() => Math.random() - 0.5);
       if (!mezcla.length) {
         setError("No hay preguntas activas.");
         return;
@@ -197,6 +199,7 @@ export default function MateriasList() {
       <TestMode
         preguntas={preguntasTest}
         nombreMateria={detalle?.materia?.nombre || ""}
+        idMateria={detalle?.materia?.id_materia}
         onVolver={volverADetalle}
       />
     );

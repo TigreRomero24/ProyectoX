@@ -30,7 +30,7 @@ export const dbConnect = async () => {
     await sequelize.authenticate();
     console.log("✅ Base de Datos: Conexión establecida (Sequelize).");
 
-    await sequelize.sync({ force: false, alter: false });
+    await sequelize.sync({ force: false, alter: true });
     console.log("✅ Base de Datos: Tablas sincronizadas correctamente.");
   } catch (error) {
     console.error("❌ FATAL: Error al conectar con la Base de Datos:");

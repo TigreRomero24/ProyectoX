@@ -18,6 +18,7 @@ import {
   ChevronDown,
   ArrowLeft,
   Settings,
+  Search,
 } from "lucide-react";
 import { api } from "../../services/api";
 import CargaExcel from "./Cargaexcel";
@@ -73,6 +74,7 @@ export default function GestionPreguntas() {
   const [vista, setVista] = useState(VISTA.LISTA);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [busqueda, setBusqueda] = useState("");
 
   // ── Formulario ─────────────────────────────────────────────────────────────
   const [editando, setEditando] = useState(null);
@@ -267,6 +269,7 @@ export default function GestionPreguntas() {
     setModoCompletar("ESCRIBIR");
     setTipoPregunta(null);
     setErrForm("");
+    setBusqueda("");
   };
 
   const volverALista = () => {
@@ -521,6 +524,10 @@ export default function GestionPreguntas() {
     }
   };
 
+  const preguntasFiltradas = preguntas.filter((p) =>
+    (p.enunciado || "").toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER
   // ══════════════════════════════════════════════════════════════════════════
@@ -700,8 +707,22 @@ export default function GestionPreguntas() {
 
               {/* Lista preguntas */}
               <div className="gp-section-header">
-                <h3 className="gp-section-title">Preguntas Registradas</h3>
-                <span className="gp-badge-count">{preguntas.length}</span>
+                <div className="gp-section-header-left">
+                  <h3 className="gp-section-title">Preguntas Registradas</h3>
+                  <span className="gp-badge-count">{preguntasFiltradas.length}</span>
+                </div>
+                {preguntas.length > 0 && (
+                  <div className="gp-search-wrap">
+                    <Search size={16} className="gp-search-icon" />
+                    <input
+                      type="text"
+                      className="gp-search-input"
+                      placeholder="Buscar preguntas..."
+                      value={busqueda}
+                      onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
 
               {loadingPreguntas ? (
@@ -722,9 +743,16 @@ export default function GestionPreguntas() {
                     Agregar primera pregunta
                   </button>
                 </div>
+              ) : preguntasFiltradas.length === 0 ? (
+                <div className="gp-empty">
+                  <div className="gp-empty-icon">
+                    <BookOpen size={24} />
+                  </div>
+                  <p>No se encontraron preguntas que coincidan con la búsqueda.</p>
+                </div>
               ) : (
                 <div className="gp-list">
-                  {preguntas.map((p, i) => (
+                  {preguntasFiltradas.map((p, i) => (
                     <div key={p.id_pregunta} className="gp-item">
                       <div className="gp-item-num">{i + 1}</div>
                       <div className="gp-item-body">

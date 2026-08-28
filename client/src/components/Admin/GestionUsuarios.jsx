@@ -8,6 +8,8 @@ import {
   UserCheck,
   UserX,
   AlertCircle,
+  Search,
+  Edit2,
 } from "lucide-react";
 import ModalCrearUsuario from "./ModalCrearUsuario";
 
@@ -19,6 +21,8 @@ export default function GestionUsuarios() {
   const [loading, setLoading] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const token = localStorage.getItem("token");
@@ -105,6 +109,24 @@ export default function GestionUsuarios() {
     }
   };
 
+  const handleEdit = (usuario) => {
+    setEditingUser(usuario);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditingUser(null);
+    setModalOpen(false);
+  };
+
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      u.correo_institucional.toLowerCase().includes(term) ||
+      u.id_usuario.toString().includes(term)
+    );
+  });
+
   return (
     <div className="gu-root">
       {/* Cabecera */}
@@ -115,9 +137,22 @@ export default function GestionUsuarios() {
             Administra los usuarios de la plataforma
           </p>
         </div>
-        <button className="gu-btn-add" onClick={() => setModalOpen(true)}>
+        <button className="gu-btn-add" onClick={() => { setEditingUser(null); setModalOpen(true); }}>
           <Plus size={16} /> Agregar Usuarios
         </button>
+      </div>
+
+      <div className="gu-search-bar">
+        <div className="gu-search-input-wrapper">
+          <Search size={18} className="gu-search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar por correo o ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="gu-search-input"
+          />
+        </div>
       </div>
 
       {errorMsg && (
@@ -149,14 +184,14 @@ export default function GestionUsuarios() {
                   <span className="gu-spinner" /> Cargando usuarios...
                 </td>
               </tr>
-            ) : usuarios.length === 0 ? (
+            ) : usuariosFiltrados.length === 0 ? (
               <tr>
                 <td colSpan={5} className="gu-td-state">
-                  No hay usuarios registrados.
+                  {searchTerm ? "No se encontraron usuarios para esa búsqueda." : "No hay usuarios registrados."}
                 </td>
               </tr>
             ) : (
-              usuarios.map((u) => {
+              usuariosFiltrados.map((u) => {
                 const isActivo = normalizarBooleano(u.activo);
                 const isAdmin = u.rol === "ADMINISTRADOR";
                 const busy = loadingId === u.id_usuario;
@@ -191,6 +226,16 @@ export default function GestionUsuarios() {
                     </td>
                     <td>
                       <div className="gu-actions">
+                        {/* Editar */}
+                        <button
+                          className="gu-btn-edit"
+                          onClick={() => handleEdit(u)}
+                          disabled={busy}
+                          title="Editar usuario"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+
                         {/* Toggle activar/desactivar */}
                         <label
                           className={`gu-switch${isActivo ? " gu-switch--on" : ""}${busy ? " gu-switch--disabled" : ""}`}
@@ -249,8 +294,9 @@ export default function GestionUsuarios() {
 
       <ModalCrearUsuario
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         onSuccess={fetchUsuarios}
+        editingUser={editingUser}
       />
     </div>
   );

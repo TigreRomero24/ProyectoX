@@ -38,8 +38,7 @@ const SecurityListener = () => {
     };
 
     const handleBlur = () => {
-      logSecurityEvent("WINDOW_BLUR", { severity: "MEDIUM" });
-      document.body.style.filter = "blur(10px)";
+      document.body.style.filter = "blur(8px)";
     };
 
     const handleFocus = () => {

@@ -14,7 +14,7 @@ export const OpcionRespuesta = sequelize.define(
       allowNull: false,
     },
     texto: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: false,
       validate: {
         notEmpty: true,

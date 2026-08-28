@@ -34,6 +34,8 @@ router.delete(
 
 router.post("/iniciar", soloAuth, EvaluacionController.iniciarExamen);
 
+router.post("/rapida", soloAuth, EvaluacionController.guardarEvaluacionRapida);
+
 router.get("/historial", soloAuth, EvaluacionController.obtenerHistorial);
 
 router.get(
@@ -52,6 +54,19 @@ router.patch(
   "/intentos/:id_intento/enviar",
   soloAuth,
   EvaluacionController.enviarExamen,
+);
+
+// ── Admin: intentos de un estudiante y reset ──────────────────────────────────
+router.get(
+  "/admin/estudiante/:id_usuario/intentos",
+  soloAdmin,
+  EvaluacionController.getIntentosEstudiante,
+);
+
+router.patch(
+  "/admin/estudiante/:id_usuario/config/:id_config/reset",
+  soloAdmin,
+  EvaluacionController.resetearIntentos,
 );
 
 export default router;

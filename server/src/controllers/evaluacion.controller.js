@@ -83,6 +83,7 @@ export class EvaluacionController {
       const resultado = await EvaluacionService.iniciarExamen(
         id_usuario,
         id_configuracion,
+        req.user.rol === "ADMINISTRADOR",
       );
 
       return res.status(201).json({
@@ -335,6 +336,94 @@ export class EvaluacionController {
         res,
         error,
         "Error al eliminar la configuración.",
+      );
+    }
+  }
+
+  /**
+   * POST /evaluaciones/rapida
+   * Guarda resultados de una evaluación rápida (TEST mode) sin configuración formal.
+   */
+  static async guardarEvaluacionRapida(req, res) {
+    try {
+      const id_usuario = req.user.id;
+      const { id_materia, respuestas } = req.body;
+
+      const id = EvaluacionController.#parsearId(id_materia);
+      if (!id) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "VALIDACION: El id_materia debe ser un número entero positivo.",
+        });
+      }
+
+      const errorRespuestas =
+        EvaluacionController.#validarEstructuraRespuestas(respuestas);
+      if (errorRespuestas) {
+        return res.status(400).json({ ok: false, error: errorRespuestas });
+      }
+
+      const resultado = await EvaluacionService.guardarEvaluacionRapida(
+        id_usuario,
+        id,
+        respuestas,
+        req.user.rol === "ADMINISTRADOR",
+      );
+
+      return res.status(201).json({
+        ok: true,
+        mensaje: "Evaluación guardada correctamente.",
+        data: resultado,
+      });
+    } catch (error) {
+      return EvaluacionController.#manejarError(
+        res,
+        error,
+        "Error al guardar la evaluación.",
+      );
+    }
+  }
+
+  // ── Admin: ver intentos de un estudiante ─────────────────────────────────────
+  static async getIntentosEstudiante(req, res) {
+    try {
+      const id_usuario = EvaluacionController.#parsearId(req.params.id_usuario);
+      if (!id_usuario) {
+        return res.status(400).json({
+          ok: false,
+          error: "VALIDACION: id_usuario inválido.",
+        });
+      }
+      const data = await EvaluacionService.getIntentosEstudiante(id_usuario);
+      return res.status(200).json({ ok: true, data });
+    } catch (error) {
+      return EvaluacionController.#manejarError(
+        res,
+        error,
+        "Error al obtener los intentos del estudiante.",
+      );
+    }
+  }
+
+  // ── Admin: resetear intentos de un estudiante en una configuración ───────────
+  static async resetearIntentos(req, res) {
+    try {
+      const id_usuario = EvaluacionController.#parsearId(req.params.id_usuario);
+      const id_config  = EvaluacionController.#parsearId(req.params.id_config);
+      if (!id_usuario || !id_config) {
+        return res.status(400).json({
+          ok: false,
+          error: "VALIDACION: id_usuario e id_config inválidos.",
+        });
+      }
+      const data = await EvaluacionService.resetearIntentos(id_usuario, id_config);
+      return res.status(200).json({ ok: true, ...data });
+    } catch (error) {
+      return EvaluacionController.#manejarError(
+        res,
+        error,
+        "Error al resetear los intentos.",
       );
     }
   }

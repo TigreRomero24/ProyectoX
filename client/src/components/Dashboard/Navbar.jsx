@@ -1,15 +1,15 @@
 import { useState } from "react";
 import {
-  BookOpen, History, MessageSquare, Info, Shield,
+  BookOpen, History, MessageSquare, Info, Shield, Swords,
   LayoutGrid, ClipboardList, Users, UserCheck,
-  LogOut, User, ShieldCheck, Sun, Moon, Menu, X, ChevronDown,
+  LogOut, User, ShieldCheck, Sun, Moon, Menu, X, ChevronDown, RotateCcw,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
 const NAV_ITEMS = [
   { id: "materias",  label: "Materias",   Icon: BookOpen },
+  { id: "duelo",     label: "Duelo",      Icon: Swords },
   { id: "historial", label: "Historial",  Icon: History },
-  { id: "forum",     label: "Foro",       Icon: MessageSquare },
   { id: "about",     label: "Acerca de",  Icon: Info },
 ];
 
@@ -18,6 +18,8 @@ const ADMIN_ITEMS = [
   { id: "admin-preguntas",     label: "Gestión de Preguntas",   Icon: ClipboardList },
   { id: "admin-usuarios",      label: "Gestión de Usuarios",    Icon: Users },
   { id: "admin-inscripciones", label: "Gestión de Inscripción", Icon: UserCheck },
+  { id: "admin-intentos",      label: "Gestión de Intentos",    Icon: RotateCcw },
+  { id: "admin-logs",          label: "Logs de Seguridad",      Icon: Shield },
 ];
 
 export default function Navbar({ user, activeSection, setActiveSection, theme, toggleTheme }) {
@@ -33,6 +35,25 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
   };
 
   const isAdminSection = activeSection?.startsWith("admin");
+
+  const AvatarContent = ({ size = 16 }) => {
+    if (user?.url_foto) {
+      return (
+        <img
+          src={user.url_foto}
+          alt={user.nombre || "Avatar"}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "50%",
+          }}
+          referrerPolicy="no-referrer"
+        />
+      );
+    }
+    return <User size={size} />;
+  };
 
   return (
     <>
@@ -79,7 +100,14 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
                 {user.rol}
               </div>
             )}
-            <div className="topnav-avatar" title={user?.nombre || user?.correo}><User size={16} /></div>
+            <div
+              className={`topnav-avatar${activeSection === "perfil" ? " active" : ""}`}
+              title={user?.nombre || user?.correo || "Mi perfil"}
+              onClick={() => handleNav("perfil")}
+              style={{ cursor: "pointer" }}
+            >
+              <AvatarContent size={16} />
+            </div>
             <button className="topnav-logout" onClick={logout}><LogOut size={15} /><span>Salir</span></button>
             <button className="topnav-hamburger" onClick={() => setMobileOpen(o => !o)} style={{ display: "flex" }}>
               {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -90,13 +118,16 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
 
       <div className={`topnav-mobile-overlay${mobileOpen ? " open" : ""}`} onClick={() => setMobileOpen(false)} />
       <div className={`topnav-mobile-drawer${mobileOpen ? " open" : ""}`}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:8, background:"var(--bg-muted)", borderRadius:"var(--radius-md)" }}>
-          <div style={{ width:36, height:36, background:"var(--c-brand-600)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0 }}>
-            <User size={16} />
+        <div
+          style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:8, background:"var(--bg-muted)", borderRadius:"var(--radius-md)", cursor: "pointer" }}
+          onClick={() => handleNav("perfil")}
+        >
+          <div style={{ width:36, height:36, background: user?.url_foto ? "transparent" : "var(--c-brand-600)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0, overflow:"hidden" }}>
+            <AvatarContent size={16} />
           </div>
           <div>
             <div style={{ fontSize:"var(--text-sm)", fontWeight:700, color:"var(--text-primary)" }}>{user?.nombre || "Usuario"}</div>
-            <div style={{ fontSize:"var(--text-xs)", color:"var(--text-muted)" }}>{user?.rol}</div>
+            <div style={{ fontSize:"var(--text-xs)", color:"var(--text-muted)" }}>{user?.correo || user?.rol}</div>
           </div>
         </div>
         {NAV_ITEMS.map(({ id, label, Icon }) => (

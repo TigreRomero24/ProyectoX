@@ -74,6 +74,22 @@ export const api = {
 
   refreshToken: () => request("/auth/refresh", { method: "POST" }),
 
+  getProfile: () => request("/auth/me"),
+
+  updateProfile: (nombre, imagen) => {
+    const formData = new FormData();
+    if (typeof nombre === "string") {
+      formData.append("nombre", nombre);
+    }
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+    return requestFormData("/auth/me", {
+      method: "PUT",
+      body: formData,
+    });
+  },
+
   // ── Usuarios (Admin) ─────────────────────────────────────────────────────────
 
   getUsuarios: () => request("/usuarios"),
@@ -233,6 +249,12 @@ export const api = {
       body: JSON.stringify({ id_configuracion: idConfiguracion }),
     }),
 
+  guardarEvaluacionRapida: (idMateria, respuestas) =>
+    request("/evaluaciones/rapida", {
+      method: "POST",
+      body: JSON.stringify({ id_materia: idMateria, respuestas }),
+    }),
+
   enviarExamen: (idIntento, respuestas) =>
     request(`/evaluaciones/intentos/${idIntento}/enviar`, {
       method: "PATCH",
@@ -243,7 +265,19 @@ export const api = {
 
   retomarExamen: (idIntento) => request(`/evaluaciones/retomar/${idIntento}`),
 
-  getHistorial: () => request("/evaluaciones/historial"),
+  getHistorial: () => request("/evaluaciones/historial", { cache: "no-store" }),
+
+  // ── Admin: intentos de estudiantes ───────────────────────────────────────────
+  getIntentosEstudiante: (idUsuario) =>
+    request(`/evaluaciones/admin/estudiante/${idUsuario}/intentos`),
+
+  resetearIntentos: (idUsuario, idConfig) =>
+    request(
+      `/evaluaciones/admin/estudiante/${idUsuario}/config/${idConfig}/reset`,
+      { method: "PATCH" },
+    ),
+
+  getSecurityLogs: () => request("/security-logs"),
 
   // ── Inscripciones ────────────────────────────────────────────────────────────
   getInscripciones: (busqueda = "") =>
@@ -274,4 +308,17 @@ export const api = {
       method: "DELETE",
       body: JSON.stringify({ id_usuario, id_materia }),
     }),
+
+  // ── Duelo de batalla ──────────────────────────────────────────────────────────
+
+  crearDuelo: (datos) =>
+    request("/duelos", {
+      method: "POST",
+      body: JSON.stringify(datos),
+    }),
+
+  obtenerDuelo: (codigo) => request(`/duelos/${codigo}`),
+
+  unirseDuelo: (codigo) =>
+    request(`/duelos/${codigo}/unirse`, { method: "POST" }),
 };

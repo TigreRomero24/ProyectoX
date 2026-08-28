@@ -6,6 +6,7 @@ import inscripcionRoutes from "./Inscripcion.routes.js";
 import academicoRoutes from "./academico.routes.js";
 import evaluacionRoutes from "./evaluacion.routes.js";
 import usuarioRoutes from "./usuario.routes.js";
+import dueloRoutes from "./duelo.routes.js";
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use("/inscripciones", inscripcionRoutes);
 router.use("/academico", academicoRoutes);
 router.use("/evaluaciones", evaluacionRoutes);
 router.use("/usuarios", usuarioRoutes);
+router.use("/duelos", dueloRoutes);
 
 export default router;

@@ -8,7 +8,6 @@ const FEATURES = [
   { Icon: BookOpen,     color: "#2563eb", bg: "#eff6ff", title: "Banco de preguntas",   desc: "Gestión completa de preguntas con múltiples tipos y configuraciones." },
   { Icon: ClipboardList,color: "#059669", bg: "#f0fdf4", title: "Modos de evaluación",  desc: "Modo Test con feedback inmediato y Modo Examen con calificación final." },
   { Icon: Shield,       color: "#7c3aed", bg: "#f5f3ff", title: "Seguridad robusta",    desc: "Autenticación OAuth2 con Google y control de roles por usuario." },
-  { Icon: MessageSquare,color: "#0284c7", bg: "#f0f9ff", title: "Foro académico",       desc: "Espacio colaborativo para resolver dudas entre estudiantes." },
   { Icon: Settings,     color: "#b45309", bg: "#fef3c7", title: "Panel de administración", desc: "Gestión de materias, preguntas, usuarios e inscripciones." },
   { Icon: Zap,          color: "#e11d48", bg: "#fff1f2", title: "Tiempo real",           desc: "Actualizaciones instantáneas y experiencia fluida sin recargas." },
 ];

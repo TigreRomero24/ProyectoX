@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
+export default function ModalCrearUsuario({ isOpen, onClose, onSuccess, editingUser = null }) {
   const [formData, setFormData] = useState({
     correo_institucional: "",
     rol: "ESTUDIANTE",
@@ -10,6 +10,22 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (editingUser) {
+      setFormData({
+        correo_institucional: editingUser.correo_institucional || "",
+        rol: editingUser.rol || "ESTUDIANTE",
+        limite_dispositivos: editingUser.limite_dispositivos || 3,
+      });
+    } else {
+      setFormData({
+        correo_institucional: "",
+        rol: "ESTUDIANTE",
+        limite_dispositivos: 3,
+      });
+    }
+  }, [editingUser, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
@@ -17,7 +33,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
     setError("");
     setLoading(true);
 
-    // Validar dominio del correo
+    // Validar dominio del correo (solo si es nuevo usuario o se cambió el correo)
     if (!formData.correo_institucional.endsWith("@unemi.edu.ec")) {
       setError("El correo debe terminar en @unemi.edu.ec");
       setLoading(false);
@@ -37,25 +53,40 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("/api/v1/usuarios", formData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
-
-      if (response.data.ok) {
-        alert("Usuario creado exitosamente");
-        setFormData({
-          correo_institucional: "",
-          rol: "ESTUDIANTE",
-          limite_dispositivos: 3,
+      if (editingUser) {
+        // Actualizar usuario existente
+        const response = await axios.put(`/api/v1/usuarios/${editingUser.id_usuario}`, formData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
         });
-        onSuccess();
-        onClose();
+
+        if (response.data.ok) {
+          alert("Usuario actualizado exitosamente");
+          onSuccess();
+          onClose();
+        } else {
+          setError(response.data.error || "Error al actualizar usuario");
+        }
       } else {
-        setError(response.data.error || "Error al crear usuario");
+        // Crear nuevo usuario
+        const response = await axios.post("/api/v1/usuarios", formData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        });
+
+        if (response.data.ok) {
+          alert("Usuario creado exitosamente");
+          onSuccess();
+          onClose();
+        } else {
+          setError(response.data.error || "Error al crear usuario");
+        }
       }
     } catch (err) {
       console.error("Error:", err);
@@ -69,7 +100,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Crear Nuevo Usuario</h3>
+          <h3>{editingUser ? "Editar Usuario" : "Crear Nuevo Usuario"}</h3>
           <button className="modal-close" onClick={onClose}>
             &times;
           </button>
@@ -97,6 +128,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
               required
               placeholder="ejemplo@unemi.edu.ec"
               title="Debe terminar en @unemi.edu.ec"
+              disabled={!!editingUser} // Generalmente no se cambia el correo base si es PK o clave de identidad
             />
           </div>
 
@@ -136,7 +168,7 @@ export default function ModalCrearUsuario({ isOpen, onClose, onSuccess }) {
               Cancelar
             </button>
             <button type="submit" className="btn-save" disabled={loading}>
-              {loading ? "Guardando..." : "Crear Usuario"}
+              {loading ? "Guardando..." : editingUser ? "Actualizar" : "Crear Usuario"}
             </button>
           </div>
         </form>

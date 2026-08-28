@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
+import { obtenerRespuestaCorrecta, obtenerRespuestaUsuario } from "./respuestaFeedback";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatFecha = (str) => {
@@ -42,6 +43,7 @@ const porcentaje = (intento) => {
   if (!intento) return 0;
   return Math.round((intento.nota_final / 10) * 100);
 };
+
 
 // ─── Datos mock para la vista (se reemplazarán por API) ───────────────────────
 const MOCK_MI_HISTORIAL = [
@@ -200,13 +202,13 @@ export default function Historial() {
     setLoading(true);
     setError("");
     // TODO: reemplazar MOCK por api real
-    setTimeout(() => {
-      setDatos(vista === "mio" ? MOCK_MI_HISTORIAL : MOCK_TODOS);
-      setLoading(false);
-    }, 300);
+    //setTimeout(() => {
+    //  setDatos(vista === "mio" ? MOCK_MI_HISTORIAL : MOCK_TODOS);
+    //  setLoading(false);
+    //}, 300);
     // Real:
-    // api.getHistorial().then(r => { setDatos(r.data ?? []); setLoading(false); })
-    //   .catch(() => { setError("Error al cargar historial"); setLoading(false); });
+    api.getHistorial().then(r => { setDatos(r.data ?? []); setLoading(false); })
+       .catch(() => { setError("Error al cargar historial"); setLoading(false); });
   }, [vista]);
 
   // Stats calculadas
@@ -251,6 +253,10 @@ export default function Historial() {
     setBusqueda("");
     setFiltroMateria("todas");
     setFiltroModo("todos");
+  };
+
+  const ExportarExcel = () => {
+    alert("Función de exportación en desarrollo");
   };
 
   // ── Detalle ────────────────────────────────────────────────────────────────
@@ -336,23 +342,71 @@ export default function Historial() {
         </div>
 
         {/* Respuestas detalle — se muestran cuando api.getIntento devuelva respuestas_detalle */}
-        <div className="hi-detalle-placeholder">
-          <BookOpen size={32} />
-          <p>Para ver el detalle de respuestas haz clic en "Ver respuestas"</p>
-          <button
-            className="hi-btn hi-btn--primary"
-            onClick={async () => {
-              try {
-                const res = await api.getIntento(detalleIntento.id_intento);
-                if (res.ok)
-                  setDetalleIntento({ ...detalleIntento, ...res.data });
-              } catch {
-                /* mostrar error */
-              }
-            }}
-          >
-            Ver respuestas
-          </button>
+        <div className="hi-detalle-respuestas">
+          <h3 className="hi-detalle-subtitle">Detalle de Respuestas</h3>
+          {detalleIntento.respuestas_detalle && detalleIntento.respuestas_detalle.length > 0 ? (
+            <div className="hi-respuestas-list">
+              {detalleIntento.respuestas_detalle.map((resp, idx) => (
+                <div 
+                  key={idx} 
+                  className={`hi-respuesta-item ${resp.es_correcta_snapshot ? "hi-respuesta-item--ok" : "hi-respuesta-item--fail"}`}
+                >
+                  <div className="hi-respuesta-header">
+                    <span className="hi-respuesta-num">Pregunta {idx + 1}</span>
+                    {resp.es_correcta_snapshot ? (
+                      <span className="hi-respuesta-status hi-respuesta-status--ok">
+                        <CheckCircle2 size={14} /> Correcta
+                      </span>
+                    ) : (
+                      <span className="hi-respuesta-status hi-respuesta-status--fail">
+                        <X size={14} /> Incorrecta
+                      </span>
+                    )}
+                  </div>
+                  <p className="hi-respuesta-texto">{resp.pregunta_banco?.enunciado}</p>
+                  <div className="hi-respuesta-feedback">
+                    <div className="hi-feedback-row">
+                      <div className="hi-feedback-item">
+                        <p className="hi-feedback-label">Tu respuesta:</p>
+                        <p className="hi-feedback-valor">
+                          {obtenerRespuestaUsuario(resp, resp.pregunta_banco)}
+                        </p>
+                      </div>
+                      {!resp.es_correcta_snapshot &&
+                        resp.pregunta_banco &&
+                        obtenerRespuestaCorrecta(resp.pregunta_banco) && (
+                          <div className="hi-feedback-item hi-feedback-item--correct">
+                            <p className="hi-feedback-label">Respuesta correcta:</p>
+                            <p className="hi-feedback-valor">
+                              {obtenerRespuestaCorrecta(resp.pregunta_banco)}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="hi-detalle-placeholder">
+              <BookOpen size={32} />
+              <p>Para ver el detalle de respuestas haz clic en "Ver respuestas"</p>
+              <button
+                className="hi-btn hi-btn--primary"
+                onClick={async () => {
+                  try {
+                    const res = await api.getIntento(detalleIntento.id_intento);
+                    if (res.ok)
+                      setDetalleIntento({ ...detalleIntento, ...res.data });
+                  } catch {
+                    /* mostrar error */
+                  }
+                }}
+              >
+                Ver respuestas
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -460,7 +514,7 @@ export default function Historial() {
         </div>
 
         <div className="hi-filtros-actions">
-          <button className="hi-btn hi-btn--export">
+          <button className="hi-btn hi-btn--export" onClick={ExportarExcel}>
             <Download size={14} /> Exportar a Excel
           </button>
           <button className="hi-btn hi-btn--ghost" onClick={limpiarFiltros}>

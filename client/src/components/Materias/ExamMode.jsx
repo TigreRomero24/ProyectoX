@@ -24,6 +24,8 @@ import {
 } from "./completar/completarState";
 import { buildExamPayloadEntry } from "./questionRuntime";
 import { api } from "../../services/api";
+import { obtenerRespuestaCorrecta, obtenerRespuestaUsuario } from "./respuestaFeedback";
+import ExamResultadoFX from "./ExamResultadoFX";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 
@@ -82,6 +84,9 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
   const [confirmar, setConfirmar] = useState(false);
+  const [detalleRespuestas, setDetalleRespuestas] = useState(null);
+  const [loadingDetalle, setLoadingDetalle] = useState(false);
+  const [errorDetalle, setErrorDetalle] = useState("");
 
   const tiempoInicial = configuracion?.tiempo_limite_min
     ? configuracion.tiempo_limite_min * 60
@@ -163,6 +168,26 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
       try {
         const res = await api.enviarExamen(id_intento, payload);
         setResultado(res.data);
+
+        // 🔥 NUEVO: cargar retroalimentación final (qué respondió el alumno
+        // vs. la respuesta correcta, por pregunta) ahora que el examen ya
+        // está FINALIZADO. enviarExamen no expone la respuesta correcta por
+        // seguridad mientras el examen está en curso; getIntento sí, una vez
+        // finalizado y siendo el dueño del intento.
+        if (res.data?.id_intento && !res.data?.tiempo_expirado) {
+          setLoadingDetalle(true);
+          setErrorDetalle("");
+          try {
+            const detalle = await api.getIntento(res.data.id_intento);
+            setDetalleRespuestas(detalle.data?.respuestas_detalle || []);
+          } catch (errDetalle) {
+            setErrorDetalle(
+              "No se pudo cargar el detalle de tus respuestas.",
+            );
+          } finally {
+            setLoadingDetalle(false);
+          }
+        }
       } catch (e) {
         const msg = e.message || "";
         if (msg.includes("RESTRICCION") && msg.includes("tiempo")) {
@@ -203,6 +228,13 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
     const aprobado = resultado.nota_final >= 7;
     return (
       <div className="ev-root">
+        {/* 🔥 ANIMACIÓN Y SONIDO: confeti+fanfare si aprobó, lluvia+melodía
+            triste si reprobó. Se auto-destruye después de ~4 segundos. */}
+        <ExamResultadoFX
+          aprobado={aprobado}
+          tiempoExpirado={!!resultado.tiempo_expirado}
+        />
+
         <div className="ev-resultado">
           <div
             className={`ev-resultado-icon ${aprobado ? "ev-resultado-icon--ok" : "ev-resultado-icon--fail"}`}
@@ -259,6 +291,68 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
           <button className="ev-btn-volver" onClick={onVolver}>
             Volver a Materias
           </button>
+
+          {/* 🔥 NUEVO: Retroalimentación final — qué respondiste vs. la
+              respuesta correcta, por pregunta. Solo aplica si el examen
+              se entregó normalmente (no por tiempo expirado). */}
+          {!resultado.tiempo_expirado && (
+            <div className="hi-detalle-respuestas" style={{ marginTop: "24px", width: "100%" }}>
+              <h3 className="hi-detalle-subtitle">Retroalimentación</h3>
+
+              {loadingDetalle ? (
+                <div className="ev-state" style={{ padding: "16px 0" }}>
+                  <div className="ev-spinner-sm" /> Cargando retroalimentación...
+                </div>
+              ) : errorDetalle ? (
+                <div className="ev-error-banner">
+                  <AlertCircle size={15} /> {errorDetalle}
+                </div>
+              ) : detalleRespuestas && detalleRespuestas.length > 0 ? (
+                <div className="hi-respuestas-list">
+                  {detalleRespuestas.map((resp, idx) => (
+                    <div
+                      key={idx}
+                      className={`hi-respuesta-item ${resp.es_correcta_snapshot ? "hi-respuesta-item--ok" : "hi-respuesta-item--fail"}`}
+                    >
+                      <div className="hi-respuesta-header">
+                        <span className="hi-respuesta-num">Pregunta {idx + 1}</span>
+                        {resp.es_correcta_snapshot ? (
+                          <span className="hi-respuesta-status hi-respuesta-status--ok">
+                            <CheckCircle2 size={14} /> Correcta
+                          </span>
+                        ) : (
+                          <span className="hi-respuesta-status hi-respuesta-status--fail">
+                            <XCircle size={14} /> Incorrecta
+                          </span>
+                        )}
+                      </div>
+                      <p className="hi-respuesta-texto">{resp.pregunta_banco?.enunciado}</p>
+                      <div className="hi-respuesta-feedback">
+                        <div className="hi-feedback-row">
+                          <div className="hi-feedback-item">
+                            <p className="hi-feedback-label">Tu respuesta:</p>
+                            <p className="hi-feedback-valor">
+                              {obtenerRespuestaUsuario(resp, resp.pregunta_banco)}
+                            </p>
+                          </div>
+                          {!resp.es_correcta_snapshot &&
+                            resp.pregunta_banco &&
+                            obtenerRespuestaCorrecta(resp.pregunta_banco) && (
+                              <div className="hi-feedback-item hi-feedback-item--correct">
+                                <p className="hi-feedback-label">Respuesta correcta:</p>
+                                <p className="hi-feedback-valor">
+                                  {obtenerRespuestaCorrecta(resp.pregunta_banco)}
+                                </p>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -411,7 +505,7 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
             <OrdenarRenderer 
               pregunta={pregunta}
               onReorder={handleOrdenar}
-              disabled={yaRespondio}
+              disabled={entregando || !!resultado}
               respuestaActual={respuestas[pregunta.id_pregunta]}
             />
           )}

@@ -8,7 +8,8 @@ import { ConfiguracionExamen } from "../models/evaluacion.models/configuracionEx
 import { Intento } from "../models/evaluacion.models/intento.js";
 import { DetalleIntento } from "../models/evaluacion.models/detalleIntento.js";
 
-const PREGUNTAS_MODO_TEST = 10;
+// 🔥 CAMBIO: el límite fijo ahora aplica a EXAMEN, no a TEST.
+const PREGUNTAS_MODO_EXAMEN = 30;
 const TOLERANCIA_TIEMPO_MIN = 2;
 
 export class EvaluacionService {
@@ -21,11 +22,40 @@ export class EvaluacionService {
     return copia.slice(0, cantidad);
   }
 
-  static #calcularCantidadPreguntas(modo, totalDisponibles) {
-    if (modo === "TEST") {
-      return Math.min(PREGUNTAS_MODO_TEST, totalDisponibles);
+  // 🔥 NUEVO: helper genérico para mezclar un arreglo completo (usado en opciones)
+  static #mezclarArreglo(arreglo) {
+    const copia = [...arreglo];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
     }
-    return totalDisponibles;
+    return copia;
+  }
+
+  // 🔥 CAMBIO: lógica invertida — EXAMEN se limita a 30, TEST trae todas.
+  static #calcularCantidadPreguntas(modo, totalDisponibles) {
+    if (modo === "EXAMEN") {
+      return Math.min(PREGUNTAS_MODO_EXAMEN, totalDisponibles);
+    }
+    return totalDisponibles; // TEST: todas las preguntas activas
+  }
+
+  // 🔥 NUEVO: arma el mapa id_pregunta -> opciones, ya mezcladas al azar.
+  static #buildOpcionesPorPreguntaMezcladas(opcionesDB) {
+    const opcionesPorPregunta = opcionesDB.reduce((acc, opcion) => {
+      const raw = opcion.get({ plain: true });
+      if (!acc[raw.id_pregunta]) acc[raw.id_pregunta] = [];
+      acc[raw.id_pregunta].push({ id_opcion: raw.id_opcion, texto: raw.texto });
+      return acc;
+    }, {});
+
+    for (const idPregunta in opcionesPorPregunta) {
+      opcionesPorPregunta[idPregunta] = EvaluacionService.#mezclarArreglo(
+        opcionesPorPregunta[idPregunta],
+      );
+    }
+
+    return opcionesPorPregunta;
   }
 
   static #buildDetalleDTO(detalle) {
@@ -41,27 +71,29 @@ export class EvaluacionService {
 
   /**
    * Valida reglas de negocio, genera el conjunto aleatorio de preguntas
-   * y registra el intento EN_PROGRESO en BD.
+   * (y de opciones por pregunta) y registra el intento EN_PROGRESO en BD.
    */
-  static async iniciarExamen(id_usuario, id_configuracion) {
+  static async iniciarExamen(id_usuario, id_configuracion, esAdmin = false) {
     // ── Fase 1: Validaciones previas (lecturas sin transacción) ──────────────
     const configuracion = await ConfiguracionExamen.findByPk(id_configuracion);
     if (!configuracion) {
       throw new Error("NO_ENCONTRADO: Configuración de examen no encontrada.");
     }
 
-    const inscripcion = await Inscripcion.findOne({
-      where: {
-        id_usuario,
-        id_materia: configuracion.id_materia,
-        activo: true,
-      },
-      attributes: ["id_usuario"],
-    });
-    if (!inscripcion) {
-      throw new Error(
-        "RESTRICCION: No está inscrito en esta materia, o la inscripción está desactivada.",
-      );
+    if (!esAdmin) {
+      const inscripcion = await Inscripcion.findOne({
+        where: {
+          id_usuario,
+          id_materia: configuracion.id_materia,
+          activo: true,
+        },
+        attributes: ["id_usuario"],
+      });
+      if (!inscripcion) {
+        throw new Error(
+          "RESTRICCION: No está inscrito en esta materia, o la inscripción está desactivada.",
+        );
+      }
     }
 
     const intentosFinalizados = await Intento.count({
@@ -103,6 +135,7 @@ export class EvaluacionService {
       preguntasDisponibles.length,
     );
 
+    // Mezcla y recorta el conjunto de preguntas (orden aleatorio + cantidad según modo)
     const preguntasSeleccionadas = EvaluacionService.#mezclarYCortar(
       preguntasDisponibles,
       cantidad,
@@ -114,12 +147,9 @@ export class EvaluacionService {
       attributes: ["id_opcion", "id_pregunta", "texto"],
     });
 
-    const opcionesPorPregunta = todasLasOpciones.reduce((acc, opcion) => {
-      const raw = opcion.get({ plain: true });
-      if (!acc[raw.id_pregunta]) acc[raw.id_pregunta] = [];
-      acc[raw.id_pregunta].push({ id_opcion: raw.id_opcion, texto: raw.texto });
-      return acc;
-    }, {});
+    // 🔥 CAMBIO: las opciones de cada pregunta también se mezclan al azar.
+    const opcionesPorPregunta =
+      EvaluacionService.#buildOpcionesPorPreguntaMezcladas(todasLasOpciones);
 
     const t = await sequelize.transaction();
     let intento;
@@ -130,12 +160,16 @@ export class EvaluacionService {
           id_config: id_configuracion,
           fecha_inicio: new Date(),
           estado: "EN_PROGRESO",
+          // 🔥 NUEVO: guardar cuántas preguntas tiene este examen y cuáles
+          // son, en el orden sorteado. Permite calcular nota correctamente
+          // (dividir entre total, no entre respondidas) y retomarExamen
+          // con exactamente el mismo subconjunto de preguntas.
+          total_preguntas: cantidad,
+          preguntas_ids: preguntasSeleccionadas.map((p) => p.id_pregunta),
         },
         { transaction: t },
       );
       await t.commit();
-      // FIX CRÍTICO: commit ANTES del DTO — si el map() falla, el intento
-      // ya existe en BD y el cliente puede reanudar con obtenerIntento().
     } catch (error) {
       await t.rollback();
       throw error;
@@ -378,9 +412,15 @@ export class EvaluacionService {
       await DetalleIntento.bulkCreate(detallesAInsertar, { transaction: t });
 
       const totalRespondidas = detallesAInsertar.length;
+
+      // 🔥 CAMBIO: usar el total real del examen como denominador.
+      // intento.total_preguntas se guardó al crear el intento en iniciarExamen.
+      // Si es null (intentos legacy anteriores a este cambio), fallback a
+      // totalRespondidas para no romper comportamiento previo.
+      const totalExamen = intento.total_preguntas || totalRespondidas;
       const notaFinal =
-        totalRespondidas > 0
-          ? parseFloat(((totalCorrectas / totalRespondidas) * 10).toFixed(2))
+        totalExamen > 0
+          ? parseFloat(((totalCorrectas / totalExamen) * 10).toFixed(2))
           : 0;
 
       await intento.update(
@@ -396,11 +436,10 @@ export class EvaluacionService {
         estado: "FINALIZADO",
         nota_final: notaFinal,
         preguntas_correctas: totalCorrectas,
-        total_preguntas: totalRespondidas,
+        total_preguntas: totalExamen,
         porcentaje: parseFloat(
-          ((totalCorrectas / totalRespondidas) * 100).toFixed(1),
+          ((totalCorrectas / totalExamen) * 100).toFixed(1),
         ),
-        // es_correcta expuesto por decisión de negocio: el alumno ve el resultado completo
         detalle: detallesAInsertar.map(EvaluacionService.#buildDetalleDTO),
       };
     } catch (error) {
@@ -412,9 +451,11 @@ export class EvaluacionService {
   // ─── Retomar intento en progreso ────────────────────────────────────────────
 
   /**
-   * Carga un intento EN_PROGRESO con todas sus preguntas y opciones
-   * para que el estudiante pueda continuar donde lo dejó.
-   * Solo accesible por el propietario del intento.
+   * Carga un intento EN_PROGRESO con exactamente el mismo subconjunto de
+   * preguntas (y en el mismo orden) que se sorteó en iniciarExamen,
+   * usando preguntas_ids guardado en el intento.
+   * Si preguntas_ids es null (intento legacy), hace fallback a cargar
+   * todas las preguntas activas de la materia.
    */
   static async retomarExamen(id_intento, id_usuario) {
     const intento = await Intento.findOne({
@@ -427,28 +468,50 @@ export class EvaluacionService {
     }
 
     const configuracion = intento.configuracion;
+    const preguntasIdsGuardados = intento.preguntas_ids; // array ordenado o null
 
-    // Cargar todas las preguntas activas de la materia con opciones (sin es_correcta)
-    const preguntas = await BancoPregunta.findAll({
-      where: { id_materia: configuracion.id_materia, activo: true },
-      attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta", "estructura_json"],
-    });
+    let preguntas;
 
-    const idsPreguntas = preguntas.map((p) => p.id_pregunta);
+    if (Array.isArray(preguntasIdsGuardados) && preguntasIdsGuardados.length > 0) {
+      // 🔥 NUEVO: cargar exactamente las preguntas del intento original, en
+      // el orden guardado (findAll no garantiza orden, lo reordenamos abajo).
+      const rows = await BancoPregunta.findAll({
+        where: {
+          id_pregunta: preguntasIdsGuardados,
+          activo: true,
+        },
+        attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta", "estructura_json"],
+      });
+
+      // Reordenar según el orden original sorteado
+      const rowsMap = new Map(rows.map((r) => [r.id_pregunta, r]));
+      preguntas = preguntasIdsGuardados
+        .map((id) => rowsMap.get(id))
+        .filter(Boolean);
+    } else {
+      // Fallback legacy: cargar todas las preguntas activas de la materia
+      preguntas = await BancoPregunta.findAll({
+        where: { id_materia: configuracion.id_materia, activo: true },
+        attributes: ["id_pregunta", "enunciado", "url_imagen", "tipo_pregunta", "estructura_json"],
+      });
+    }
+
+    const idsPreguntas = preguntas.map((p) =>
+      typeof p.id_pregunta !== "undefined" ? p.id_pregunta : p.get("id_pregunta"),
+    );
+
     const opciones = await OpcionRespuesta.findAll({
       where: { id_pregunta: idsPreguntas },
       attributes: ["id_opcion", "id_pregunta", "texto"],
     });
 
-    const opcionesPorPregunta = opciones.reduce((acc, op) => {
-      const raw = op.get({ plain: true });
-      if (!acc[raw.id_pregunta]) acc[raw.id_pregunta] = [];
-      acc[raw.id_pregunta].push({ id_opcion: raw.id_opcion, texto: raw.texto });
-      return acc;
-    }, {});
+    // Las opciones se mezclan al azar (el orden original de opciones no se
+    // guarda, pero no importa porque la calificación usa id_opcion, no posición)
+    const opcionesPorPregunta =
+      EvaluacionService.#buildOpcionesPorPreguntaMezcladas(opciones);
 
     const preguntasConOpciones = preguntas.map((p) => {
-      const raw = p.get({ plain: true });
+      const raw = typeof p.get === "function" ? p.get({ plain: true }) : p;
       return {
         id_pregunta: raw.id_pregunta,
         enunciado: raw.enunciado,
@@ -483,22 +546,35 @@ export class EvaluacionService {
       include: [
         {
           model: DetalleIntento,
-          as: "respuestas_detalle", // ← confirmado en relacionesModel.js
+          as: "respuestas_detalle",
           include: [
             {
               model: BancoPregunta,
-              // sin as — asociación definida sin alias en relacionesModel.js
-              attributes: ["id_pregunta", "enunciado", "tipo_pregunta"],
+              as: "pregunta_banco",
+              attributes: ["id_pregunta", "enunciado", "tipo_pregunta", "estructura_json"],
+              include: [
+                {
+                  model: OpcionRespuesta,
+                  as: "opciones",
+                  attributes: ["id_opcion", "texto", "es_correcta"],
+                  required: false,
+                },
+              ],
+            },
+            {
+              model: OpcionRespuesta,
+              as: "opcion_marcada",
+              attributes: ["id_opcion", "texto"],
+              required: false,
             },
           ],
         },
         {
           model: ConfiguracionExamen,
-          as: "configuracion", // ← confirmado en relacionesModel.js
+          as: "configuracion",
           include: [
             {
               model: Materia,
-              // sin as — asociación definida sin alias en relacionesModel.js
               attributes: ["id_materia", "nombre"],
             },
           ],
@@ -526,11 +602,10 @@ export class EvaluacionService {
       include: [
         {
           model: ConfiguracionExamen,
-          as: "configuracion", // ← confirmado en relacionesModel.js
+          as: "configuracion",
           include: [
             {
               model: Materia,
-              // sin as — asociación sin alias en relacionesModel.js
               attributes: ["id_materia", "nombre"],
             },
           ],
@@ -546,7 +621,33 @@ export class EvaluacionService {
       order: [["fecha_fin", "DESC"]],
     });
 
-    return intentos.map((i) => i.get({ plain: true }));
+    // Para cada intento, contar las preguntas correctas
+    const intentosConDetalles = await Promise.all(
+      intentos.map(async (intento) => {
+        const plain = intento.get({ plain: true });
+        
+        // Contar preguntas correctas
+        const correctas = await DetalleIntento.count({
+          where: {
+            id_intento: plain.id_intento,
+            es_correcta_snapshot: true,
+          },
+        });
+        
+        // Contar total de preguntas respondidas
+        const total = await DetalleIntento.count({
+          where: { id_intento: plain.id_intento },
+        });
+        
+        return {
+          ...plain,
+          preguntas_correctas: correctas,
+          total_preguntas: total,
+        };
+      })
+    );
+
+    return intentosConDetalles;
   }
 
   // ─── Configuraciones por materia ─────────────────────────────────────────────
@@ -701,5 +802,341 @@ export class EvaluacionService {
 
     await config.destroy();
     return { mensaje: "Configuración eliminada correctamente." };
+  }
+
+  // ─── Guardar evaluación rápida (TEST mode) ───────────────────────────────────
+
+  /**
+   * Guarda los resultados de una evaluación rápida (TEST mode) sin configuración formal.
+   * Crea un intento sin id_config y registra las respuestas.
+   *
+   * NOTA: este método califica respuestas que el frontend ya envió; el orden
+   * aleatorio de preguntas/opciones del modo TEST se controla en el momento
+   * en que el frontend obtiene las preguntas (no aquí).
+   */
+  static async guardarEvaluacionRapida(id_usuario, id_materia, respuestasUsuario) {
+    if (!Array.isArray(respuestasUsuario)) {
+      throw new Error("VALIDACION: El formato de las respuestas es inválido.");
+    }
+
+    // Verificar que el usuario está inscrito en la materia
+    const inscripcion = await Inscripcion.findOne({
+      where: {
+        id_usuario,
+        id_materia,
+        activo: true,
+      },
+      attributes: ["id_usuario"],
+    });
+    if (!inscripcion) {
+      throw new Error("RESTRICCION: No está inscrito en esta materia.");
+    }
+
+    const t = await sequelize.transaction();
+
+    try {
+      // Obtener preguntas de la materia para validar respuestas
+      const preguntasValidas = await BancoPregunta.findAll({
+        where: {
+          id_pregunta: [...new Set(respuestasUsuario.map((r) => r.id_pregunta))],
+          id_materia,
+          activo: true,
+        },
+        attributes: ["id_pregunta", "tipo_pregunta", "estructura_json"],
+        transaction: t,
+      });
+
+      const preguntasMap = new Map(preguntasValidas.map((p) => [p.id_pregunta, p]));
+      const idsValidos = new Set(preguntasValidas.map((p) => p.id_pregunta));
+
+      // Validar que todas las preguntas respondidas pertenecen a la materia
+      for (const r of respuestasUsuario) {
+        if (!idsValidos.has(r.id_pregunta)) {
+          throw new Error(
+            `VALIDACION: La pregunta ${r.id_pregunta} no pertenece a esta materia.`,
+          );
+        }
+      }
+
+      // Cargar opciones de las preguntas
+      const opcionesDB = await OpcionRespuesta.findAll({
+        where: { id_pregunta: [...idsValidos] },
+        transaction: t,
+      });
+
+      const opcionesPorId = new Map();
+      const opcionesPorPregunta = new Map();
+      for (const op of opcionesDB) {
+        const plain = op.get({ plain: true });
+        opcionesPorId.set(plain.id_opcion, plain);
+        if (!opcionesPorPregunta.has(plain.id_pregunta)) {
+          opcionesPorPregunta.set(plain.id_pregunta, []);
+        }
+        opcionesPorPregunta.get(plain.id_pregunta).push(plain);
+      }
+
+      // Buscar o crear una configuración de modo TEST para esta materia
+      let config = await ConfiguracionExamen.findOne({
+        where: { id_materia, modo: "TEST" },
+        transaction: t,
+      });
+
+      if (!config) {
+        config = await ConfiguracionExamen.create(
+          {
+            id_materia,
+            modo: "TEST",
+            intentos_permitidos: 999,
+            tiempo_limite_min: null,
+          },
+          { transaction: t },
+        );
+      }
+
+      // Crear intento con el id_config encontrado o creado
+      const ahora = new Date();
+      const intento = await Intento.create(
+        {
+          id_usuario,
+          id_config: config.id_config,
+          fecha_inicio: ahora,
+          fecha_fin: ahora,
+          estado: "FINALIZADO",
+          nota_final: 0, // Se recalculará
+        },
+        { transaction: t },
+      );
+
+      // Calificar respuestas
+      let totalCorrectas = 0;
+      const detallesAInsertar = [];
+
+      for (const respuesta of respuestasUsuario) {
+        const pDb = preguntasMap.get(respuesta.id_pregunta);
+        const tipo = pDb?.tipo_pregunta;
+        const estructura = pDb?.estructura_json;
+
+        if (tipo === "SELECCION_MULTIPLE") {
+          const opcionesPregunta = opcionesPorPregunta.get(respuesta.id_pregunta) || [];
+          const correctasIds = opcionesPregunta.filter((o) => o.es_correcta).map((o) => o.id_opcion);
+          
+          const raw = respuesta.respuesta_json;
+          const elegidasIds = Array.isArray(raw) ? raw : (raw?.opciones_ids || []);
+
+          const esCorrecta = elegidasIds.length === correctasIds.length && elegidasIds.every((id) => correctasIds.includes(id));
+          const puntos = esCorrecta ? 1.0 : 0.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: intento.id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { opciones_ids: elegidasIds },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "ORDENAR") {
+          const correctOrder = estructura?.respuesta?.orden_ids || [];
+          const raw = respuesta.respuesta_json;
+          const userOrder = Array.isArray(raw) ? raw : (raw?.orden_ids || []);
+          
+          let hits = 0;
+          for (let i = 0; i < correctOrder.length; i++) {
+            if (String(userOrder[i]) === String(correctOrder[i])) hits++;
+          }
+          
+          const puntos = correctOrder.length ? hits / correctOrder.length : 0;
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: intento.id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { orden_ids: userOrder },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "COMPLETAR") {
+          const aceptadasArr = estructura?.respuesta?.aceptadas || [];
+          const raw = respuesta.respuesta_json;
+          const userSlots = Array.isArray(raw?.espacios) ? raw.espacios : (Array.isArray(raw) ? raw : []);
+          
+          const userMap = new Map();
+          userSlots.forEach(s => {
+            userMap.set(String(s.espacio_id), String(s.respuesta || "").trim().toLowerCase());
+          });
+
+          let hits = 0;
+          for (const config of aceptadasArr) {
+            const userVal = userMap.get(String(config.espacio_id));
+            const possibleVals = (config.valores || []).map(v => String(v).trim().toLowerCase());
+            if (userVal && possibleVals.includes(userVal)) {
+              hits++;
+            }
+          }
+
+          const puntos = aceptadasArr.length ? hits / aceptadasArr.length : 0;
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: intento.id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { espacios: userSlots },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else {
+          const opcion = opcionesPorId.get(respuesta.id_opcion);
+
+          if (!opcion) {
+            throw new Error(
+              `VALIDACION: La opción ${respuesta.id_opcion} no existe en el sistema.`,
+            );
+          }
+          if (opcion.id_pregunta !== respuesta.id_pregunta) {
+            throw new Error(
+              `VALIDACION: La opción ${respuesta.id_opcion} no corresponde a la pregunta ${respuesta.id_pregunta}.`,
+            );
+          }
+
+          const esCorrecta = opcion.es_correcta === true;
+          const puntos = esCorrecta ? 1.0 : 0.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: intento.id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: respuesta.id_opcion,
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        }
+      }
+
+      // Insertar detalles
+      await DetalleIntento.bulkCreate(detallesAInsertar, { transaction: t });
+
+      // Calcular nota final
+      const totalRespondidas = detallesAInsertar.length;
+      const notaFinal =
+        totalRespondidas > 0
+          ? parseFloat(((totalCorrectas / totalRespondidas) * 10).toFixed(2))
+          : 0;
+
+      // Actualizar intento con nota final
+      await intento.update(
+        { nota_final: notaFinal },
+        { transaction: t },
+      );
+
+      await t.commit();
+
+      return {
+        id_intento: intento.id_intento,
+        estado: "FINALIZADO",
+        nota_final: notaFinal,
+        preguntas_correctas: totalCorrectas,
+        total_preguntas: totalRespondidas,
+        porcentaje: parseFloat(((totalCorrectas / totalRespondidas) * 100).toFixed(2)),
+      };
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  // ─── Resetear intentos de un estudiante (Admin) ──────────────────────────────
+
+  /**
+   * Marca como ANULADO todos los intentos FINALIZADOS de un estudiante
+   * en una configuración específica, sin borrar el historial.
+   * El conteo de intentosFinalizados en iniciarExamen filtra solo FINALIZADO,
+   * así que los ANULADO no suman y el estudiante recupera sus intentos.
+   */
+  static async resetearIntentos(id_usuario, id_config) {
+    if (!id_usuario || !id_config) {
+      throw new Error("VALIDACION: id_usuario e id_config son requeridos.");
+    }
+
+    const config = await ConfiguracionExamen.findByPk(id_config, {
+      include: [{ model: Materia, attributes: ["nombre"] }],
+    });
+    if (!config) {
+      throw new Error("NO_ENCONTRADO: Configuración no encontrada.");
+    }
+
+    const [filas] = await Intento.update(
+      { estado: "ANULADO" },
+      { where: { id_usuario, id_config, estado: "FINALIZADO" } },
+    );
+
+    return {
+      intentos_anulados: filas,
+      mensaje:
+        filas > 0
+          ? `Se resetearon ${filas} intento(s). El estudiante puede volver a intentar.`
+          : "No había intentos finalizados para resetear.",
+    };
+  }
+
+  /**
+   * Retorna todos los intentos (finalizados y anulados) de un estudiante
+   * agrupados por configuración, para que el admin vea el estado actual
+   * antes de decidir si resetea.
+   */
+  static async getIntentosEstudiante(id_usuario) {
+    if (!id_usuario) {
+      throw new Error("VALIDACION: id_usuario es requerido.");
+    }
+
+    const intentos = await Intento.findAll({
+      where: {
+        id_usuario,
+        estado: ["FINALIZADO", "ANULADO"],
+      },
+      include: [
+        {
+          model: ConfiguracionExamen,
+          as: "configuracion",
+          attributes: ["id_config", "modo", "intentos_permitidos"],
+          include: [{ model: Materia, attributes: ["id_materia", "nombre"] }],
+        },
+      ],
+      attributes: ["id_intento", "estado", "nota_final", "fecha_fin"],
+      order: [["fecha_fin", "DESC"]],
+    });
+
+    // Agrupar por id_config
+    const grupos = {};
+    for (const i of intentos) {
+      const plain = i.get({ plain: true });
+      const cfg = plain.configuracion;
+      if (!cfg) continue;
+      const key = cfg.id_config;
+      if (!grupos[key]) {
+        grupos[key] = {
+          id_config: cfg.id_config,
+          modo: cfg.modo,
+          intentos_permitidos: cfg.intentos_permitidos,
+          materia: cfg.Materia?.nombre || cfg.Materium?.nombre || "—",
+          intentos: [],
+        };
+      }
+      grupos[key].intentos.push({
+        id_intento: plain.id_intento,
+        estado: plain.estado,
+        nota_final: plain.nota_final,
+        fecha_fin: plain.fecha_fin,
+      });
+    }
+
+    return Object.values(grupos).map((g) => ({
+      ...g,
+      finalizados: g.intentos.filter((i) => i.estado === "FINALIZADO").length,
+      anulados: g.intentos.filter((i) => i.estado === "ANULADO").length,
+    }));
   }
 }

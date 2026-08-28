@@ -553,6 +553,120 @@
   font-size: var(--text-sm);
 }
 
+/* ── Respuestas Detalladas ──────────────────────────────────── */
+.hi-detalle-respuestas {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 20px;
+}
+
+.hi-detalle-subtitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 16px;
+}
+
+.hi-respuestas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hi-respuesta-item {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--border-color);
+  transition: background .15s, border-color .15s;
+}
+
+.hi-respuesta-item--ok {
+  background: var(--c-success-bg);
+  border-left-color: var(--c-success-txt);
+}
+
+.hi-respuesta-item--fail {
+  background: var(--c-error-bg);
+  border-left-color: var(--c-error-txt);
+}
+
+.hi-respuesta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.hi-respuesta-num {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hi-respuesta-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.hi-respuesta-status--ok {
+  color: var(--c-success-txt);
+}
+
+.hi-respuesta-status--fail {
+  color: var(--c-error-txt);
+}
+
+.hi-respuesta-texto {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.hi-respuesta-feedback {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.hi-feedback-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 0 0 4px;
+}
+
+.hi-feedback-valor {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+.hi-feedback-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.hi-feedback-item {
+  padding: 10px;
+  border-radius: 4px;
+  background-color: rgba(255, 107, 107, 0.08);
+}
+
+.hi-feedback-item--correct {
+  background-color: rgba(76, 175, 80, 0.08);
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .hi-stats { grid-template-columns: repeat(2, 1fr); }

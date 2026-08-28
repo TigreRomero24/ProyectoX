@@ -7,6 +7,9 @@ import { OpcionRespuesta } from "./academico.models/opcionRespuesta.js";
 import { ConfiguracionExamen } from "./evaluacion.models/configuracionExamen.js";
 import { Intento } from "./evaluacion.models/intento.js";
 import { DetalleIntento } from "./evaluacion.models/detalleIntento.js";
+import { Duelo } from "./duelo.models/duelo.js";
+import { DueloParticipante } from "./duelo.models/dueloParticipante.js";
+import { DueloRespuesta } from "./duelo.models/dueloRespuesta.js";
 
 export {
   Usuario,
@@ -18,4 +21,7 @@ export {
   ConfiguracionExamen,
   Intento,
   DetalleIntento,
+  Duelo,
+  DueloParticipante,
+  DueloRespuesta,
 };

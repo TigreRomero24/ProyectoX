@@ -271,8 +271,66 @@
 
 .gu-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
+}
+
+/* Search bar */
+.gu-search-bar {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.gu-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 400px;
+}
+
+.gu-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.gu-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.gu-search-input:focus {
+  outline: none;
+  border-color: var(--c-brand-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Edit button */
+.gu-btn-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.gu-btn-edit:hover:not(:disabled) {
+  background: var(--c-info-bg);
+  color: var(--c-info-txt);
+  border-color: var(--c-info-bdr);
 }
 
 .gu-table-wrap {
