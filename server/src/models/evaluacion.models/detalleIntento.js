@@ -39,5 +39,7 @@ export const DetalleIntento = sequelize.define(
   {
     tableName: "detalle_intento",
     timestamps: false,
+    // la tabla que más crece: siempre se lee por intento
+    indexes: [{ name: "idx_detalle_intento", fields: ["id_intento"] }],
   },
 );

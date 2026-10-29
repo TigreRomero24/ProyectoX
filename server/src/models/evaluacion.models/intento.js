@@ -46,5 +46,11 @@ export const Intento = sequelize.define(
   {
     tableName: "intento",
     timestamps: false,
+    indexes: [
+      // historial del estudiante (id_usuario + estado)
+      { name: "idx_intento_usuario_estado", fields: ["id_usuario", "estado"] },
+      // conteo de intentos por examen al iniciar / resetear
+      { name: "idx_intento_config_usuario", fields: ["id_config", "id_usuario"] },
+    ],
   },
 );

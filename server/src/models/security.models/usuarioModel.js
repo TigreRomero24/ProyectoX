@@ -12,7 +12,6 @@ export const Usuario = sequelize.define(
     correo_institucional: {
       type: DataTypes.STRING(150),
       allowNull: false,
-      unique: true,
       validate: {
         isEmail: true,
         isEmailFromUnemi(value) {
@@ -25,7 +24,6 @@ export const Usuario = sequelize.define(
     google_id: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      unique: true,
     },
     rol: {
       type: DataTypes.ENUM("ESTUDIANTE", "ADMINISTRADOR"),
@@ -52,6 +50,12 @@ export const Usuario = sequelize.define(
   {
     tableName: "usuario",
     timestamps: false,
+    // Unicidad como índice con nombre, no `unique: true` en la columna: con
+    // sync({ alter }) esa forma agregaba una restricción duplicada en cada arranque.
+    indexes: [
+      { unique: true, fields: ["correo_institucional"], name: "usuario_correo_institucional_key" },
+      { unique: true, fields: ["google_id"], name: "usuario_google_id_key" },
+    ],
     hooks: {
       beforeSave: (usuario) => {
         if (usuario.correo_institucional) {

@@ -13,7 +13,6 @@ export const Duelo = sequelize.define(
       // código corto para unirse a la sala (ej: "K3F9A1")
       type: DataTypes.STRING(6),
       allowNull: false,
-      unique: true,
     },
     id_materia: {
       type: DataTypes.INTEGER,
@@ -74,7 +73,8 @@ export const Duelo = sequelize.define(
     tableName: "duelo",
     timestamps: true,
     indexes: [
-      { unique: true, fields: ["codigo"] },
+      // con nombre fijo (ver nota en usuarioModel.js)
+      { unique: true, fields: ["codigo"], name: "duelo_codigo_key" },
       { name: "idx_duelo_materia", fields: ["id_materia"] },
     ],
   },

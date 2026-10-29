@@ -12,6 +12,7 @@ import { estructuraPublica } from "../utils/estructuraPublica.js";
 
 // 🔥 CAMBIO: el límite fijo ahora aplica a EXAMEN, no a TEST.
 const PREGUNTAS_MODO_EXAMEN = 30;
+const MAX_HISTORIAL = 500;
 const TOLERANCIA_TIEMPO_MIN = 2;
 
 export class EvaluacionService {
@@ -638,35 +639,38 @@ export class EvaluacionService {
         "estado",
       ],
       order: [["fecha_fin", "DESC"]],
+      // ponytail: tope fijo en vez de paginación, porque el cliente calcula
+      // promedios y gráficos sobre la lista completa. Si un estudiante pasa
+      // de esto, mover esas estadísticas al servidor y paginar.
+      limit: MAX_HISTORIAL,
     });
 
-    // Para cada intento, contar las preguntas correctas
-    const intentosConDetalles = await Promise.all(
-      intentos.map(async (intento) => {
-        const plain = intento.get({ plain: true });
-        
-        // Contar preguntas correctas
-        const correctas = await DetalleIntento.count({
-          where: {
-            id_intento: plain.id_intento,
-            es_correcta_snapshot: true,
-          },
-        });
-        
-        // Contar total de preguntas respondidas
-        const total = await DetalleIntento.count({
-          where: { id_intento: plain.id_intento },
-        });
-        
-        return {
-          ...plain,
-          preguntas_correctas: correctas,
-          total_preguntas: total,
-        };
-      })
-    );
+    // Una sola consulta agrupada para todos los intentos (antes eran 2 COUNT
+    // por intento, todos en paralelo, que acaparaban el pool de conexiones).
+    const ids = intentos.map((i) => i.id_intento);
+    const conteos = ids.length
+      ? await DetalleIntento.findAll({
+          attributes: [
+            "id_intento",
+            [sequelize.fn("COUNT", sequelize.col("id_intento")), "total"],
+            [sequelize.literal("COUNT(*) FILTER (WHERE es_correcta_snapshot)"), "correctas"],
+          ],
+          where: { id_intento: ids },
+          group: ["id_intento"],
+          raw: true,
+        })
+      : [];
+    const porIntento = new Map(conteos.map((c) => [c.id_intento, c]));
 
-    return intentosConDetalles;
+    return intentos.map((intento) => {
+      const plain = intento.get({ plain: true });
+      const c = porIntento.get(plain.id_intento);
+      return {
+        ...plain,
+        preguntas_correctas: Number(c?.correctas || 0),
+        total_preguntas: Number(c?.total || 0),
+      };
+    });
   }
 
   // ─── Configuraciones por materia ─────────────────────────────────────────────

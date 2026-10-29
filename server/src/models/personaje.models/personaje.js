@@ -12,7 +12,6 @@ export const Personaje = sequelize.define(
     id_usuario: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true,
     },
     animal: {
       // mascota base del modo de capas PNG: owl | fox | cat | panda | penguin
@@ -75,5 +74,7 @@ export const Personaje = sequelize.define(
   {
     tableName: "personaje",
     timestamps: true,
+    // con nombre fijo (ver nota en usuarioModel.js)
+    indexes: [{ unique: true, fields: ["id_usuario"], name: "personaje_id_usuario_key" }],
   },
 );

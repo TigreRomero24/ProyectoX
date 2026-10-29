@@ -39,5 +39,7 @@ export const SesionDispositivo = sequelize.define(
   {
     tableName: "sesion_dispositivo",
     timestamps: false, // Manejamos las fechas manualmente según tu análisis
+    // SessionMiddleware busca por estos dos campos en cada petición autenticada.
+    indexes: [{ name: "idx_sesion_usuario_dispositivo", fields: ["id_usuario", "dispositivo_id"] }],
   },
 );
