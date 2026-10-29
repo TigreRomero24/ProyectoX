@@ -14,10 +14,12 @@ import {
   Clock,
   BadgeCheck,
   ClipboardList,
+  BarChart3,
 } from "lucide-react";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { obtenerRespuestaCorrecta, obtenerRespuestaUsuario } from "./respuestaFeedback";
+import ProgresoMateria from "./ProgresoMateria";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const formatFecha = (str) => {
@@ -196,6 +198,7 @@ export default function Historial() {
   const [filtroMateria, setFiltroMateria] = useState("todas");
   const [filtroModo, setFiltroModo] = useState("todos");
   const [detalleIntento, setDetalleIntento] = useState(null);
+  const [verProgreso, setVerProgreso] = useState(false);
 
   // Cargar datos
   useEffect(() => {
@@ -428,19 +431,25 @@ export default function Historial() {
       {/* Tabs — solo admin ve "Todos los Usuarios" */}
       <div className="hi-tabs">
         <button
-          className={`hi-tab ${vista === "mio" ? "hi-tab--active" : ""}`}
-          onClick={() => setVista("mio")}
+          className={`hi-tab ${vista === "mio" && !verProgreso ? "hi-tab--active" : ""}`}
+          onClick={() => { setVista("mio"); setVerProgreso(false); }}
         >
           <User size={15} /> Mi Historial
         </button>
         {isAdmin && (
           <button
-            className={`hi-tab ${vista === "todos" ? "hi-tab--active" : ""}`}
-            onClick={() => setVista("todos")}
+            className={`hi-tab ${vista === "todos" && !verProgreso ? "hi-tab--active" : ""}`}
+            onClick={() => { setVista("todos"); setVerProgreso(false); }}
           >
             <User size={15} /> Todos los Usuarios
           </button>
         )}
+        <button
+          className={`hi-tab ${verProgreso ? "hi-tab--active" : ""}`}
+          onClick={() => setVerProgreso(true)}
+        >
+          <BarChart3 size={15} /> Progreso
+        </button>
       </div>
 
       {/* Stats */}
@@ -471,95 +480,101 @@ export default function Historial() {
         />
       </div>
 
-      {/* Filtros */}
-      <div className="hi-filtros-wrap">
-        <div className="hi-filtros-row">
-          <div className="hi-search">
-            <Search size={15} className="hi-search-icon" />
-            <input
-              placeholder={
-                vista === "todos"
-                  ? "Buscar por materia o usuario..."
-                  : "Buscar por materia..."
-              }
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
-
-          <div className="hi-select-wrap">
-            <select
-              value={filtroMateria}
-              onChange={(e) => setFiltroMateria(e.target.value)}
-            >
-              <option value="todas">Todas las materias</option>
-              {materias.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
-            <ChevronDown size={15} className="hi-select-arrow" />
-          </div>
-
-          <div className="hi-select-wrap">
-            <select
-              value={filtroModo}
-              onChange={(e) => setFiltroModo(e.target.value)}
-            >
-              <option value="todos">Todos los modos</option>
-              <option value="EXAMEN">Examen</option>
-              <option value="TEST">Evaluación</option>
-            </select>
-            <ChevronDown size={15} className="hi-select-arrow" />
-          </div>
-        </div>
-
-        <div className="hi-filtros-actions">
-          <button className="hi-btn hi-btn--export" onClick={ExportarExcel}>
-            <Download size={14} /> Exportar a Excel
-          </button>
-          <button className="hi-btn hi-btn--ghost" onClick={limpiarFiltros}>
-            Limpiar Filtros
-          </button>
-        </div>
-      </div>
-
-      {/* Tabla */}
-      {loading ? (
-        <div className="hi-state">
-          <div className="hi-spinner" />
-          <span>Cargando...</span>
-        </div>
-      ) : error ? (
-        <div className="hi-state hi-state--error">{error}</div>
-      ) : filtrados.length === 0 ? (
-        <div className="hi-state">
-          <BookOpen size={32} />
-          <span>No hay registros que coincidan con los filtros</span>
-        </div>
+      {verProgreso ? (
+        <ProgresoMateria datos={filtrados} />
       ) : (
-        <div className="hi-tabla">
-          {/* Cabecera */}
-          <div
-            className={`hi-tabla-head ${vista === "todos" ? "hi-tabla-head--todos" : ""}`}
-          >
-            {vista === "todos" && <span>USUARIO</span>}
-            <span>MATERIA</span>
-            <span>MODO</span>
-            <span>PUNTUACIÓN</span>
-            <span>FECHA</span>
-            <span>DURACIÓN</span>
-            <span>ESTADO</span>
+        <>
+          {/* Filtros */}
+          <div className="hi-filtros-wrap">
+            <div className="hi-filtros-row">
+              <div className="hi-search">
+                <Search size={15} className="hi-search-icon" />
+                <input
+                  placeholder={
+                    vista === "todos"
+                      ? "Buscar por materia o usuario..."
+                      : "Buscar por materia..."
+                  }
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </div>
+
+              <div className="hi-select-wrap">
+                <select
+                  value={filtroMateria}
+                  onChange={(e) => setFiltroMateria(e.target.value)}
+                >
+                  <option value="todas">Todas las materias</option>
+                  {materias.map((m) => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+                <ChevronDown size={15} className="hi-select-arrow" />
+              </div>
+
+              <div className="hi-select-wrap">
+                <select
+                  value={filtroModo}
+                  onChange={(e) => setFiltroModo(e.target.value)}
+                >
+                  <option value="todos">Todos los modos</option>
+                  <option value="EXAMEN">Examen</option>
+                  <option value="TEST">Evaluación</option>
+                </select>
+                <ChevronDown size={15} className="hi-select-arrow" />
+              </div>
+            </div>
+
+            <div className="hi-filtros-actions">
+              <button className="hi-btn hi-btn--export" onClick={ExportarExcel}>
+                <Download size={14} /> Exportar a Excel
+              </button>
+              <button className="hi-btn hi-btn--ghost" onClick={limpiarFiltros}>
+                Limpiar Filtros
+              </button>
+            </div>
           </div>
 
-          {filtrados.map((intento) => (
-            <FilaIntento
-              key={intento.id_intento}
-              intento={intento}
-              conUsuario={vista === "todos"}
-              onClick={setDetalleIntento}
-            />
-          ))}
-        </div>
+          {/* Tabla */}
+          {loading ? (
+            <div className="hi-state">
+              <div className="hi-spinner" />
+              <span>Cargando...</span>
+            </div>
+          ) : error ? (
+            <div className="hi-state hi-state--error">{error}</div>
+          ) : filtrados.length === 0 ? (
+            <div className="hi-state">
+              <BookOpen size={32} />
+              <span>No hay registros que coincidan con los filtros</span>
+            </div>
+          ) : (
+            <div className="hi-tabla">
+              {/* Cabecera */}
+              <div
+                className={`hi-tabla-head ${vista === "todos" ? "hi-tabla-head--todos" : ""}`}
+              >
+                {vista === "todos" && <span>USUARIO</span>}
+                <span>MATERIA</span>
+                <span>MODO</span>
+                <span>PUNTUACIÓN</span>
+                <span>FECHA</span>
+                <span>DURACIÓN</span>
+                <span>ESTADO</span>
+              </div>
+
+              {filtrados.map((intento) => (
+                <FilaIntento
+                  key={intento.id_intento}
+                  intento={intento}
+                  conUsuario={vista === "todos"}
+                  onClick={setDetalleIntento}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

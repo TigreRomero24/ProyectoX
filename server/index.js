@@ -16,6 +16,7 @@ import "./src/models/relacionesModel.js";
 import apiRoutes from "./src/routes/api.routes.js";
 import { ErrorMiddleware } from "./src/middlewares/errorMiddleware.js";
 import { setupDueloSocket } from "./src/sockets/duelo.socket.js";
+import { PersonajeService } from "./src/services/personaje.service.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,13 +26,16 @@ const app = express();
 app.set("trust proxy", 1);
 
 const corsOptions = {
-  origin: true,
+  // Peticiones sin Origin (mismo origen, curl) pasan; el resto solo si está en la lista.
+  origin: (origin, cb) => cb(null, !origin || env.allowedOrigins.includes(origin)),
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "X-Device-Fingerprint"],
 };
 
 app.use(cors(corsOptions));
 
+// La carga masiva (hasta 200 preguntas) necesita más que el límite general.
+app.use("/api/v1/academico/preguntas/bulk", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ extended: true, limit: "50kb" }));
 app.use(cookieParser());
@@ -39,6 +43,7 @@ app.use(passport.initialize());
 
 app.use("/api/v1", apiRoutes);
 app.use("/api/v1", securityRoutes);
+app.use("/api", (_req, res) => res.status(404).json({ ok: false, error: "Ruta no encontrada." }));
 
 // Servir archivos estáticos de medios
 app.use("/media/materias", express.static(path.join(__dirname, "storage", "materias")));
@@ -67,6 +72,7 @@ const startServer = async () => {
   try {
     console.info("Conectando con la base de datos...");
     await dbConnect();
+    await PersonajeService.sembrarTiendaSiVacia();
 
     httpServer.listen(env.port, () => {
       console.info("-------------------------------------------------------");

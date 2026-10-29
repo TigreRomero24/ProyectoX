@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import {
   Upload,
   FileSpreadsheet,
+  FileText,
   Download,
   AlertCircle,
   CheckCircle2,
@@ -28,122 +29,111 @@ const COLUMNAS = [
   "opcion_d",
   "correcta",
   "tipo",
+  "imagen",
 ];
 /*
   Formato esperado del Excel (fila 1 = cabecera):
-  | enunciado | opcion_a | opcion_b | opcion_c | opcion_d | correcta | tipo     |
-  | ¿Qué...?  | F=ma     | E=mc2    | V=IR     | P=F/A    | A        | MULTIPLE |
-  | ¿Es...?   | Verdadero| Falso    |          |          | A        | VF       |
+  | enunciado | opcion_a | opcion_b | opcion_c | opcion_d | correcta | tipo     | imagen |
+  | ¿Qué...?  | F=ma     | E=mc2    | V=IR     | P=F/A    | A        | MULTIPLE |        |
+  | ¿Cuáles?  | 2        | 3        | 4        | 5        | A,B      | SM       |        |
+  | ¿Es...?   | Verdadero| Falso    |          |          | A        | VF       | si     |
 
-  - correcta: "A", "B", "C" o "D"  → índice de la opción correcta
-  - tipo: "MULTIPLE" o "VF" (Verdadero/Falso) — si omitido, se detecta automáticamente
-  - opcion_c y opcion_d son opcionales (mínimo 2 opciones para MULTIPLE)
+  - correcta: "A".."D"; en selección múltiple varias separadas por coma ("A,C")
+  - tipo: "MULTIPLE", "SM" (selección múltiple) o "VF" — si se omite, se
+    detecta: varias correctas → SM, si no → MULTIPLE
+  - imagen: cualquier valor (ej. "si") marca que la pregunta lleva imagen; la
+    fila queda en rojo hasta adjuntarla en la vista previa
+  - opcion_c y opcion_d son opcionales (mínimo 2 opciones)
 */
 
 const LETRAS = ["A", "B", "C", "D"];
 
-// ─── Parsear fila Excel → estructura interna ───────────────────────────────────
-const parsearFila = (fila, idx) => {
-  const enunciado = String(fila["enunciado"] || "").trim();
-  const opcion_a = String(fila["opcion_a"] || "").trim();
-  const opcion_b = String(fila["opcion_b"] || "").trim();
-  const opcion_c = String(fila["opcion_c"] || "").trim();
-  const opcion_d = String(fila["opcion_d"] || "").trim();
-  const correctaRaw = String(fila["correcta"] || "")
-    .trim()
-    .toUpperCase();
-  const tipoRaw = String(fila["tipo"] || "")
-    .trim()
-    .toUpperCase();
-
-  // Detectar tipo si no está especificado
-  const tipo =
-    tipoRaw === "VF" || tipoRaw === "VERDADERO_FALSO"
-      ? "VERDADERO_FALSO"
-      : "MULTIPLE";
-
-  // Construir opciones según tipo
-  let opciones = [];
-  if (tipo === "VERDADERO_FALSO") {
-    const correctaVF = correctaRaw === "B" ? "Falso" : "Verdadero";
-    opciones = [
-      { texto: "Verdadero", es_correcta: correctaVF === "Verdadero" },
-      { texto: "Falso", es_correcta: correctaVF === "Falso" },
-    ];
-  } else {
-    const textos = [opcion_a, opcion_b, opcion_c, opcion_d].filter(
-      (t) => t !== "",
-    );
-    const idxCorrecta = LETRAS.indexOf(correctaRaw);
-    opciones = textos.map((texto, i) => ({
-      texto,
-      es_correcta: i === idxCorrecta,
-    }));
-  }
-
-  const errores = [];
-  if (!enunciado) errores.push("Enunciado vacío");
-  if (tipo === "MULTIPLE") {
-    if (opciones.length < 2) errores.push("Mínimo 2 opciones");
-    if (!opciones.some((o) => o.es_correcta))
-      errores.push("Ninguna opción correcta (A-D inválida)");
-  }
-
-  return {
-    _id: idx,
-    _fila: idx + 2,
-    _error: errores,
-    _editando: false,
-    enunciado,
-    tipo_pregunta: tipo,
-    opciones,
-    _opcionTextos:
-      tipo === "MULTIPLE"
-        ? opciones.map((o) => o.texto)
-        : ["Verdadero", "Falso"],
-    _correctaIdx:
-      tipo === "MULTIPLE"
-        ? opciones.findIndex((o) => o.es_correcta)
-        : opciones.find((o) => o.es_correcta)?.texto === "Falso"
-          ? 1
-          : 0,
-  };
+const TIPO_POR_TEXTO = {
+  VF: "VERDADERO_FALSO",
+  VERDADERO_FALSO: "VERDADERO_FALSO",
+  SM: "SELECCION_MULTIPLE",
+  SELECCION: "SELECCION_MULTIPLE",
+  SELECCION_MULTIPLE: "SELECCION_MULTIPLE",
+  MULTIPLE: "MULTIPLE",
 };
 
-// ─── Validar una pregunta editada ──────────────────────────────────────────────
+// ─── Validar una pregunta (al leerla y al editarla) ────────────────────────────
 const validarPregunta = (p) => {
   const errs = [];
   if (!p.enunciado.trim()) errs.push("Enunciado vacío");
-  if (p.tipo_pregunta === "MULTIPLE") {
+  if (p.tipo_pregunta !== "VERDADERO_FALSO") {
     const validas = p._opcionTextos.filter((t) => t.trim() !== "");
     if (validas.length < 2) errs.push("Mínimo 2 opciones con texto");
-    if (p._correctaIdx < 0 || p._correctaIdx >= validas.length)
-      errs.push("Opción correcta inválida");
+    const correctas = p._correctas.filter((i) => i < validas.length);
+    if (correctas.length === 0) errs.push("Marca la opción correcta");
+    else if (p.tipo_pregunta === "MULTIPLE" && correctas.length > 1)
+      errs.push("Opción múltiple admite una sola correcta (usa tipo SM)");
+  } else if (p._correctas.length !== 1) {
+    errs.push("Elige Verdadero o Falso");
   }
+  if (p._requiereImagen && !p._imagen) errs.push("Lleva imagen: adjúntala");
   return errs;
+};
+
+// ─── Parsear fila Excel → estructura interna ───────────────────────────────────
+const parsearFila = (fila, idx) => {
+  const texto = (campo) => String(fila[campo] || "").trim();
+  const enunciado = texto("enunciado");
+  // "A,C", "a c" o "AC" → [0, 2]
+  const letras = [
+    ...new Set(texto("correcta").toUpperCase().match(/[A-D]/g) || []),
+  ];
+  const tipo =
+    TIPO_POR_TEXTO[texto("tipo").toUpperCase()] ||
+    (letras.length > 1 ? "SELECCION_MULTIPLE" : "MULTIPLE");
+
+  const opcionTextos =
+    tipo === "VERDADERO_FALSO"
+      ? ["Verdadero", "Falso"]
+      : [texto("opcion_a"), texto("opcion_b"), texto("opcion_c"), texto("opcion_d")].filter(
+          (t) => t !== "",
+        );
+
+  const p = {
+    _id: idx,
+    _fila: idx + 2,
+    _editando: false,
+    _requiereImagen: texto("imagen") !== "",
+    _imagen: null,
+    enunciado,
+    tipo_pregunta: tipo,
+    _opcionTextos: opcionTextos,
+    _correctas: letras.map((l) => LETRAS.indexOf(l)).sort(),
+  };
+  // V/F solo admite A (Verdadero) o B (Falso)
+  if (tipo === "VERDADERO_FALSO") p._correctas = p._correctas.filter((i) => i < 2);
+  p._error = validarPregunta(p);
+  return p;
 };
 
 // ─── Convertir pregunta interna → payload API ──────────────────────────────────
 const toPayload = (p) => {
-  if (p.tipo_pregunta === "VERDADERO_FALSO") {
-    return {
-      enunciado: p.enunciado.trim(),
-      tipo_pregunta: "VERDADERO_FALSO",
-      opciones: [
-        { texto: "Verdadero", es_correcta: p._correctaIdx === 0 },
-        { texto: "Falso", es_correcta: p._correctaIdx === 1 },
-      ],
+  const textos = p._opcionTextos.filter((t) => t.trim() !== "");
+  const opciones = textos.map((texto, i) => ({
+    texto,
+    es_correcta: p._correctas.includes(i),
+  }));
+  const payload = {
+    enunciado: p.enunciado.trim(),
+    tipo_pregunta: p.tipo_pregunta,
+    opciones,
+  };
+  // Igual que GestionPreguntas: el modo práctica corrige SM con esta clave.
+  if (p.tipo_pregunta === "SELECCION_MULTIPLE") {
+    payload.estructura_json = {
+      tipo: "SELECCION_MULTIPLE",
+      opciones: opciones.map((o, i) => ({ opcion_id: LETRAS[i], texto: o.texto })),
+      respuesta: {
+        opciones_ids: opciones.flatMap((o, i) => (o.es_correcta ? [LETRAS[i]] : [])),
+      },
     };
   }
-  const textos = p._opcionTextos.filter((t) => t.trim() !== "");
-  return {
-    enunciado: p.enunciado.trim(),
-    tipo_pregunta: "MULTIPLE",
-    opciones: textos.map((texto, i) => ({
-      texto,
-      es_correcta: i === p._correctaIdx,
-    })),
-  };
+  return payload;
 };
 
 // ─── Generar plantilla Excel descargable ──────────────────────────────────────
@@ -176,6 +166,25 @@ const descargarPlantilla = () => {
       correcta: "B",
       tipo: "MULTIPLE",
     },
+    {
+      enunciado: "¿Cuáles son números primos?",
+      opcion_a: "2",
+      opcion_b: "3",
+      opcion_c: "4",
+      opcion_d: "9",
+      correcta: "A,B",
+      tipo: "SM",
+    },
+    {
+      enunciado: "Observa la figura: ¿qué figura geométrica es?",
+      opcion_a: "Triángulo",
+      opcion_b: "Cuadrado",
+      opcion_c: "",
+      opcion_d: "",
+      correcta: "A",
+      tipo: "MULTIPLE",
+      imagen: "si",
+    },
   ];
   const ws = XLSX.utils.json_to_sheet(datos, { header: COLUMNAS });
   const wb = XLSX.utils.book_new();
@@ -189,11 +198,13 @@ const descargarPlantilla = () => {
     { wch: 20 },
     { wch: 10 },
     { wch: 15 },
+    { wch: 10 },
   ];
   XLSX.writeFile(wb, "plantilla_preguntas.xlsx");
 };
 
 export default function CargaExcel({
+  soloPdf = false,
   idMateria,
   nombreMateria,
   onVolver,
@@ -219,10 +230,35 @@ export default function CargaExcel({
 
   // ── Edición inline ─────────────────────────────────────────────────────────
   const [editIdx, setEditIdx] = useState(null); // índice en preguntas[]
+  const [leyendoPdf, setLeyendoPdf] = useState(false);
+
+  // ── PDF: la IA devuelve filas con las mismas columnas que la plantilla ─────
+  const parsearPdf = async (file) => {
+    setArchivoNombre(file.name);
+    setErrorGlobal("");
+    setLeyendoPdf(true);
+    try {
+      const res = await api.extraerPreguntasPdf(file);
+      // Sin respuesta en el PDF → la fila queda en rojo hasta marcarla.
+      const parsed = (res.data || []).map((fila, i) => parsearFila(fila, i));
+      setPreguntas(parsed);
+      setFase("preview");
+      setEditIdx(null);
+    } catch (err) {
+      setErrorGlobal(err.message || "No se pudo leer el PDF.");
+    } finally {
+      setLeyendoPdf(false);
+    }
+  };
 
   // ── Parsear archivo ────────────────────────────────────────────────────────
   const parsearArchivo = (file) => {
-    if (!file) return;
+    if (!file || leyendoPdf) return;
+    if (soloPdf) {
+      if (/\.pdf$/i.test(file.name)) parsearPdf(file);
+      else setErrorGlobal("Solo se aceptan archivos .pdf");
+      return;
+    }
     if (!file.name.match(/\.(xlsx|xls)$/i)) {
       setErrorGlobal("Solo se aceptan archivos .xlsx o .xls");
       return;
@@ -289,7 +325,15 @@ export default function CargaExcel({
   const marcarCorrecta = (idx, opIdx) => {
     setPreguntas((prev) => {
       const next = [...prev];
-      const p = { ...next[idx], _correctaIdx: opIdx };
+      const actual = next[idx];
+      // Selección múltiple alterna; el resto deja una sola correcta.
+      const _correctas =
+        actual.tipo_pregunta === "SELECCION_MULTIPLE"
+          ? actual._correctas.includes(opIdx)
+            ? actual._correctas.filter((i) => i !== opIdx)
+            : [...actual._correctas, opIdx].sort()
+          : [opIdx];
+      const p = { ...actual, _correctas };
       p._error = validarPregunta(p);
       next[idx] = p;
       return next;
@@ -301,9 +345,27 @@ export default function CargaExcel({
     if (editIdx === idx) setEditIdx(null);
   };
 
+  const adjuntarImagen = (idx, file) => {
+    if (file && !file.type.startsWith("image/")) {
+      setErrorGlobal("La imagen debe ser un archivo de imagen (png, jpg, webp…).");
+      return;
+    }
+    setPreguntas((prev) => {
+      const next = [...prev];
+      const p = { ...next[idx], _imagen: file || null };
+      p._error = validarPregunta(p);
+      next[idx] = p;
+      return next;
+    });
+  };
+
   // ── Enviar al backend ──────────────────────────────────────────────────────
-  const handleEnviar = async (forzar = false) => {
-    const validas = preguntas.filter((p) => p._error.length === 0);
+  // modo: "revisar" (avisa duplicados), "omitir" (salta duplicados) o
+  // "forzar" (inserta todo). Los duplicados se detectan aquí, con la misma
+  // regla del servidor, para cubrir también las preguntas con imagen, que no
+  // pasan por la carga masiva.
+  const handleEnviar = async (modo = "revisar") => {
+    let validas = preguntas.filter((p) => p._error.length === 0);
     if (validas.length === 0) {
       setErrorGlobal(
         "No hay preguntas válidas para cargar. Corrige los errores primero.",
@@ -315,18 +377,59 @@ export default function CargaExcel({
     setErrorGlobal("");
 
     try {
-      const payload = validas.map(toPayload);
-      const res = await api.crearPreguntasBulk(idMateria, payload, forzar);
-      const data = res.data;
+      if (modo !== "forzar") {
+        const res = await api.getPreguntasPorMateria(idMateria, false);
+        const clave = (t) => String(t || "").trim().toLowerCase();
+        const existentes = new Set((res.data || []).map((q) => clave(q.enunciado)));
+        const dup = validas.filter((p) => existentes.has(clave(p.enunciado)));
 
-      if (data.requiereConfirmacion) {
-        setDuplicados(data.omitidas);
-        setFase("duplicados");
-      } else {
-        setResultado(data);
-        setFase("resultado");
-        if (data.insertadas > 0) onExito?.();
+        if (dup.length > 0 && modo === "revisar") {
+          setDuplicados(dup.map((p) => ({ fila: p._fila, enunciado: p.enunciado })));
+          setFase("duplicados");
+          return;
+        }
+        validas = validas.filter((p) => !dup.includes(p));
       }
+
+      const omitidas = preguntas.filter((p) => p._error.length === 0).length - validas.length;
+      let data = { insertadas: 0, omitidas: [], errores: [] };
+
+      // La carga masiva es JSON: las preguntas con imagen van una a una por
+      // el endpoint normal, que sí acepta archivo.
+      const sinImagen = validas.filter((p) => !p._imagen);
+      const conImagen = validas.filter((p) => p._imagen);
+
+      if (sinImagen.length > 0) {
+        const res = await api.crearPreguntasBulk(
+          idMateria,
+          sinImagen.map(toPayload),
+          modo === "forzar",
+        );
+        // Solo pasa si alguien agregó la misma pregunta mientras tanto.
+        if (res.data.requiereConfirmacion) {
+          setDuplicados(res.data.omitidas);
+          setFase("duplicados");
+          return;
+        }
+        data = { ...res.data, errores: res.data.errores || [] };
+      }
+
+      for (const p of conImagen) {
+        try {
+          await api.crearPregunta({ ...toPayload(p), id_materia: idMateria, imagen: p._imagen });
+          data.insertadas++;
+        } catch (err) {
+          data.errores.push({
+            fila: p._fila,
+            enunciado: p.enunciado,
+            motivo: (err.message || "Error al crear").replace("VALIDACION: ", ""),
+          });
+        }
+      }
+
+      setResultado({ ...data, omitidasCount: omitidas });
+      setFase("resultado");
+      if (data.insertadas > 0) onExito?.();
     } catch (e) {
       setErrorGlobal(e.message || "Error al cargar las preguntas.");
     } finally {
@@ -348,25 +451,35 @@ export default function CargaExcel({
           <ChevronLeft size={16} /> Volver
         </button>
         <div>
-          <h3 className="ce-title">Carga desde Excel</h3>
+          <h3 className="ce-title">{soloPdf ? "Importar PDF con IA" : "Carga desde Excel"}</h3>
           <p className="ce-subtitle">{nombreMateria}</p>
         </div>
-        <button className="ce-plantilla-btn" onClick={descargarPlantilla}>
-          <Download size={15} /> Descargar plantilla
-        </button>
+        {!soloPdf && (
+          <button className="ce-plantilla-btn" onClick={descargarPlantilla}>
+            <Download size={15} /> Descargar plantilla
+          </button>
+        )}
       </div>
 
       {/* Formato info */}
       <div className="ce-info-banner">
         <Info size={14} />
-        <span>
-          Formato:{" "}
-          <strong>
-            enunciado | opcion_a | opcion_b | opcion_c | opcion_d | correcta
-            (A/B/C/D) | tipo (MULTIPLE/VF)
-          </strong>
-          . Descarga la plantilla para ver ejemplos.
-        </span>
+        {soloPdf ? (
+          <span>
+            La IA extrae preguntas de <strong>opción múltiple, selección múltiple y V/F</strong>.
+            Revisa cada una antes de guardar: las que no indiquen la respuesta o lleven
+            imagen saldrán en rojo hasta que las completes.
+          </span>
+        ) : (
+          <span>
+            Formato:{" "}
+            <strong>
+              enunciado | opcion_a | opcion_b | opcion_c | opcion_d | correcta
+              (A/B/C/D; varias con coma en SM) | tipo (MULTIPLE/SM/VF) | imagen (opcional)
+            </strong>
+            . Descarga la plantilla para ver ejemplos.
+          </span>
+        )}
       </div>
 
       {errorGlobal && (
@@ -393,16 +506,27 @@ export default function CargaExcel({
           <input
             ref={inputRef}
             type="file"
-            accept=".xlsx,.xls"
+            accept={soloPdf ? ".pdf" : ".xlsx,.xls"}
             style={{ display: "none" }}
             onChange={(e) => parsearArchivo(e.target.files?.[0])}
           />
           <div className="ce-drop-icon">
-            <FileSpreadsheet size={40} />
+            {soloPdf ? <FileText size={40} /> : <FileSpreadsheet size={40} />}
           </div>
-          <h4>Arrastra tu archivo Excel aquí</h4>
-          <p>o haz clic para seleccionarlo</p>
-          <span className="ce-drop-hint">.xlsx · .xls · máx. 200 filas</span>
+          {leyendoPdf ? (
+            <>
+              <h4>Leyendo el PDF con IA…</h4>
+              <p>Puede tardar de 1 a 4 minutos si la IA está saturada.</p>
+            </>
+          ) : (
+            <>
+              <h4>{soloPdf ? "Arrastra tu PDF aquí" : "Arrastra tu archivo Excel aquí"}</h4>
+              <p>o haz clic para seleccionarlo</p>
+            </>
+          )}
+          <span className="ce-drop-hint">
+            {soloPdf ? ".pdf · máx. 15 MB · 200 preguntas" : ".xlsx · .xls · máx. 200 filas"}
+          </span>
         </div>
       )}
 
@@ -447,11 +571,15 @@ export default function CargaExcel({
                 <div className="ce-fila-header">
                   <span className="ce-fila-num">Fila {p._fila}</span>
                   <span
-                    className={`ce-tipo-badge ce-tipo-${p.tipo_pregunta === "MULTIPLE" ? "mult" : "vf"}`}
+                    className={`ce-tipo-badge ce-tipo-${p.tipo_pregunta === "VERDADERO_FALSO" ? "vf" : "mult"}`}
                   >
                     {p.tipo_pregunta === "MULTIPLE" ? (
                       <>
                         <List size={10} /> Múltiple
+                      </>
+                    ) : p.tipo_pregunta === "SELECCION_MULTIPLE" ? (
+                      <>
+                        <CheckCheck size={10} /> Selección
                       </>
                     ) : (
                       <>
@@ -498,6 +626,20 @@ export default function CargaExcel({
                   />
                 )}
 
+                {/* Imagen: obligatoria si el Excel/PDF la marca, opcional en edición */}
+                {(p._requiereImagen || p._imagen || editIdx === idx) && (
+                  <label className="ce-imagen-row">
+                    <Upload size={13} />
+                    {p._imagen ? `Imagen: ${p._imagen.name}` : "Adjuntar imagen"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => adjuntarImagen(idx, e.target.files?.[0])}
+                    />
+                  </label>
+                )}
+
                 {/* Opciones — solo en modo edición */}
                 {editIdx === idx && (
                   <div className="ce-opciones-edit">
@@ -506,10 +648,10 @@ export default function CargaExcel({
                         {["Verdadero", "Falso"].map((val, i) => (
                           <div
                             key={val}
-                            className={`ce-vf-opt${p._correctaIdx === i ? " ce-vf-opt--active" : ""}`}
+                            className={`ce-vf-opt${p._correctas.includes(i) ? " ce-vf-opt--active" : ""}`}
                             onClick={() => marcarCorrecta(idx, i)}
                           >
-                            {p._correctaIdx === i ? (
+                            {p._correctas.includes(i) ? (
                               <CheckCircle2 size={16} />
                             ) : (
                               <Circle size={16} />
@@ -522,10 +664,10 @@ export default function CargaExcel({
                       p._opcionTextos.map((texto, oi) => (
                         <div key={oi} className="ce-opcion-edit-row">
                           <button
-                            className={`ce-radio${p._correctaIdx === oi ? " ce-radio--active" : ""}`}
+                            className={`ce-radio${p._correctas.includes(oi) ? " ce-radio--active" : ""}`}
                             onClick={() => marcarCorrecta(idx, oi)}
                           >
-                            {p._correctaIdx === oi ? (
+                            {p._correctas.includes(oi) ? (
                               <CheckCircle2 size={17} />
                             ) : (
                               <Circle size={17} />
@@ -555,9 +697,9 @@ export default function CargaExcel({
                         {["Verdadero", "Falso"].map((val, i) => (
                           <span
                             key={val}
-                            className={`ce-opcion-chip${p._correctaIdx === i ? " ce-opcion-chip--ok" : ""}`}
+                            className={`ce-opcion-chip${p._correctas.includes(i) ? " ce-opcion-chip--ok" : ""}`}
                           >
-                            {p._correctaIdx === i && <CheckCircle2 size={11} />}{" "}
+                            {p._correctas.includes(i) && <CheckCircle2 size={11} />}{" "}
                             {val}
                           </span>
                         ))}
@@ -568,9 +710,9 @@ export default function CargaExcel({
                         .map((t, i) => (
                           <span
                             key={i}
-                            className={`ce-opcion-chip${p._correctaIdx === i ? " ce-opcion-chip--ok" : ""}`}
+                            className={`ce-opcion-chip${p._correctas.includes(i) ? " ce-opcion-chip--ok" : ""}`}
                           >
-                            {p._correctaIdx === i && <CheckCircle2 size={11} />}{" "}
+                            {p._correctas.includes(i) && <CheckCircle2 size={11} />}{" "}
                             {LETRAS[i]}. {t}
                           </span>
                         ))
@@ -590,7 +732,7 @@ export default function CargaExcel({
             </span>
             <button
               className="ce-btn-cargar"
-              onClick={() => handleEnviar(false)}
+              onClick={() => handleEnviar()}
               disabled={cargando || totalValidas === 0}
             >
               {cargando ? (
@@ -630,14 +772,14 @@ export default function CargaExcel({
           <div className="ce-dup-btns">
             <button
               className="ce-btn-omitir"
-              onClick={() => handleEnviar(false)}
+              onClick={() => handleEnviar("omitir")}
               disabled={cargando}
             >
               Omitir duplicados e insertar el resto
             </button>
             <button
               className="ce-btn-forzar"
-              onClick={() => handleEnviar(true)}
+              onClick={() => handleEnviar("forzar")}
               disabled={cargando}
             >
               {cargando ? (
@@ -676,6 +818,12 @@ export default function CargaExcel({
               </span>
               <span>insertadas</span>
             </div>
+            {resultado.omitidasCount > 0 && (
+              <div className="ce-res-stat">
+                <span className="ce-res-num">{resultado.omitidasCount}</span>
+                <span>duplicadas omitidas</span>
+              </div>
+            )}
             {resultado.errores?.length > 0 && (
               <div className="ce-res-stat">
                 <span className="ce-res-num ce-res-num--err">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  BookOpen, History, MessageSquare, Info, Shield, Swords,
+  BookOpen, History, MessageSquare, Info, Shield, Swords, UserCircle2,
   LayoutGrid, ClipboardList, Users, UserCheck,
   LogOut, User, ShieldCheck, Sun, Moon, Menu, X, ChevronDown, RotateCcw,
 } from "lucide-react";
@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 const NAV_ITEMS = [
   { id: "materias",  label: "Materias",   Icon: BookOpen },
   { id: "duelo",     label: "Duelo",      Icon: Swords },
+  { id: "personaje", label: "Personaje",  Icon: UserCircle2 },
   { id: "historial", label: "Historial",  Icon: History },
   { id: "about",     label: "Acerca de",  Icon: Info },
 ];
@@ -21,6 +22,25 @@ const ADMIN_ITEMS = [
   { id: "admin-intentos",      label: "Gestión de Intentos",    Icon: RotateCcw },
   { id: "admin-logs",          label: "Logs de Seguridad",      Icon: Shield },
 ];
+
+const AvatarContent = ({ user, size = 16 }) => {
+  if (user?.url_foto) {
+    return (
+      <img
+        src={user.url_foto}
+        alt={user.nombre || "Avatar"}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          borderRadius: "50%",
+        }}
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+  return <User size={size} />;
+};
 
 export default function Navbar({ user, activeSection, setActiveSection, theme, toggleTheme }) {
   const { logout } = useAuth();
@@ -35,25 +55,6 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
   };
 
   const isAdminSection = activeSection?.startsWith("admin");
-
-  const AvatarContent = ({ size = 16 }) => {
-    if (user?.url_foto) {
-      return (
-        <img
-          src={user.url_foto}
-          alt={user.nombre || "Avatar"}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            borderRadius: "50%",
-          }}
-          referrerPolicy="no-referrer"
-        />
-      );
-    }
-    return <User size={size} />;
-  };
 
   return (
     <>
@@ -106,7 +107,7 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
               onClick={() => handleNav("perfil")}
               style={{ cursor: "pointer" }}
             >
-              <AvatarContent size={16} />
+              <AvatarContent user={user} size={16} />
             </div>
             <button className="topnav-logout" onClick={logout}><LogOut size={15} /><span>Salir</span></button>
             <button className="topnav-hamburger" onClick={() => setMobileOpen(o => !o)} style={{ display: "flex" }}>
@@ -123,7 +124,7 @@ export default function Navbar({ user, activeSection, setActiveSection, theme, t
           onClick={() => handleNav("perfil")}
         >
           <div style={{ width:36, height:36, background: user?.url_foto ? "transparent" : "var(--c-brand-600)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0, overflow:"hidden" }}>
-            <AvatarContent size={16} />
+            <AvatarContent user={user} size={16} />
           </div>
           <div>
             <div style={{ fontSize:"var(--text-sm)", fontWeight:700, color:"var(--text-primary)" }}>{user?.nombre || "Usuario"}</div>

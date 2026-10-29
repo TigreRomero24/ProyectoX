@@ -3,9 +3,11 @@ services:
     image: postgres:16
     container_name: postgres_db
     restart: always
+    # POSTGRES_PASSWORD sale de server/.env (misma fuente que usa el backend)
+    env_file:
+      - ./server/.env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: unemi123567
       POSTGRES_DB: EduQuery
     expose:
       - "5432"

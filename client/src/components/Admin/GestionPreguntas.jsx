@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   FileQuestion,
   TableProperties,
+  Sparkles,
   PenLine,
   X,
   ChevronLeft,
@@ -30,6 +31,7 @@ const VISTA = {
   TIPO: "tipo",
   FORM: "form",
   EXCEL: "excel",
+  PDF: "pdf",
 };
 const TIPO_P = {
   MULTIPLE: "MULTIPLE",
@@ -867,6 +869,22 @@ export default function GestionPreguntas() {
                     <li>Ahorra tiempo</li>
                   </ul>
                 </div>
+                {/* PDF con IA */}
+                <div className="gp-modo-card" onClick={() => irA(VISTA.PDF)}>
+                  <div className="gp-modo-icon gp-modo-amber">
+                    <Sparkles size={28} />
+                  </div>
+                  <h4>Importar PDF con IA</h4>
+                  <p>
+                    Sube un PDF de examen o banco de preguntas y la IA las
+                    extrae. Revisas todo antes de guardar.
+                  </p>
+                  <ul className="gp-modo-list gp-modo-list--amber">
+                    <li>Cualquier formato de PDF</li>
+                    <li>Múltiple, selección múltiple y V/F</li>
+                    <li>Detecta preguntas con imagen</li>
+                  </ul>
+                </div>
               </div>
               <div className="gp-page-footer">
                 <button className="gp-btn-secondary" onClick={volverALista}>
@@ -877,14 +895,20 @@ export default function GestionPreguntas() {
           )}
 
           {/* ═══════ VISTA: EXCEL (Carga masiva) ════════════════════════ */}
-          {vista === VISTA.EXCEL && (
+          {(vista === VISTA.EXCEL || vista === VISTA.PDF) && (
             <CargaExcel
+              key={vista}
+              soloPdf={vista === VISTA.PDF}
               idMateria={materiaSeleccionada.id_materia}
               nombreMateria={materiaSeleccionada.nombre}
               onVolver={() => irA(VISTA.MODO)}
               onExito={() => {
                 cargarPreguntas(materiaSeleccionada.id_materia);
-                toast("Preguntas cargadas desde Excel.");
+                toast(
+                  vista === VISTA.PDF
+                    ? "Preguntas cargadas desde el PDF."
+                    : "Preguntas cargadas desde Excel.",
+                );
               }}
             />
           )}

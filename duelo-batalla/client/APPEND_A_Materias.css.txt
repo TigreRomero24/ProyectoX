@@ -1,0 +1,21 @@
+/* ── Agregar al final de Materias.css ────────────────────────────────────── */
+.mat-flash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  border: 1.5px dashed var(--c-brand-400, var(--border-strong));
+  border-radius: var(--radius-md);
+  background: var(--c-brand-50, var(--bg-subtle));
+  color: var(--c-brand-700, var(--c-brand-600));
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease-out);
+}
+.mat-flash-btn:hover:not(:disabled) { filter: brightness(0.97); }
+.mat-flash-btn:disabled { opacity: .5; cursor: not-allowed; }

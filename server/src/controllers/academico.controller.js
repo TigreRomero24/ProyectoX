@@ -1,4 +1,6 @@
 import { AcademicoService } from "../services/academico.service.js";
+import { Inscripcion } from "../models/academico.models/inscripcion.js";
+import { PdfPreguntasService } from "../services/pdfPreguntas.service.js";
 import { buildPreguntaPublicUrl, deletePreguntaImageByUrl } from "../utils/mediaUpload.js";
 
 export class AcademicoController {
@@ -172,6 +174,18 @@ export class AcademicoController {
           error:
             "VALIDACION: El ID de la materia debe ser un número entero positivo.",
         });
+      }
+
+      // La práctica incluye las respuestas (feedback inmediato y flashcards),
+      // así que solo la ven los inscritos en la materia.
+      if (req.user?.rol !== "ADMINISTRADOR") {
+        const inscrito = await Inscripcion.findOne({
+          where: { id_usuario: req.user.id, id_materia: id, activo: true },
+          attributes: ["id_usuario"],
+        });
+        if (!inscrito) {
+          throw new Error("RESTRICCION: No está inscrito en esta materia.");
+        }
       }
 
       const preguntas = await AcademicoService.obtenerPreguntasPorMateria(
@@ -363,6 +377,22 @@ export class AcademicoController {
         error,
         "Error al reactivar la pregunta.",
       );
+    }
+  }
+
+  /**
+   * Lee un PDF con IA y devuelve las preguntas en formato de plantilla Excel
+   * para revisarlas en la vista previa. No inserta nada.
+   */
+  static async extraerPreguntasPdf(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ ok: false, error: "VALIDACION: Adjunta un PDF." });
+      }
+      const filas = await PdfPreguntasService.extraer(req.file.buffer);
+      return res.status(200).json({ ok: true, data: filas });
+    } catch (error) {
+      return AcademicoController.#manejarError(res, error, "Error al leer el PDF.");
     }
   }
 

@@ -25,6 +25,7 @@ export function useDuelo() {
   const [pregunta, setPregunta] = useState(null);
   const [progreso, setProgreso] = useState(null);
   const [ranking, setRanking] = useState(null);
+  const [musicaId, setMusicaId] = useState(null);
 
   const desconectar = useCallback(() => {
     socketRef.current?.disconnect();
@@ -34,6 +35,7 @@ export function useDuelo() {
     setPregunta(null);
     setProgreso(null);
     setRanking(null);
+    setMusicaId(null);
   }, []);
 
   useEffect(() => () => desconectar(), [desconectar]);
@@ -49,22 +51,36 @@ export function useDuelo() {
         setConectando(true);
         setErrorConexion("");
 
+        socketRef.current?.disconnect();
         const socket = io("/duelo", {
-          auth: { token },
+          // Callback: en cada reconexión toma el token vigente (el refresh lo renueva).
+          auth: (cb) => cb({ token: localStorage.getItem("token") || token }),
           transports: ["websocket"],
         });
         socketRef.current = socket;
 
+        let unido = false;
         socket.on("connect_error", (err) => {
+          // Ya dentro del duelo, socket.io reintenta solo; no se corta.
+          if (unido) return;
           setConectando(false);
           setErrorConexion(err.message || "No se pudo conectar al duelo.");
+          socket.disconnect();
           reject(err);
+        });
+
+        socket.on("duelo:cancelado", () => {
+          desconectar();
+          setErrorConexion("El creador abandonó la sala; el duelo se canceló.");
         });
 
         socket.on("duelo:participantes", (data) => {
           setParticipantes(data.participantes);
+          setMusicaId(data.youtube_video_id || null);
           if (data.estado === "ESPERANDO") setFase(FASE.SALA);
         });
+
+        socket.on("duelo:musica", (data) => setMusicaId(data.youtube_video_id || null));
 
         socket.on("duelo:iniciado", () => setFase(FASE.EN_CURSO));
 
@@ -85,15 +101,18 @@ export function useDuelo() {
         socket.on("connect", () => {
           socket.emit("duelo:unirse", { codigo }, (res) => {
             setConectando(false);
-            if (res?.ok) resolve();
-            else {
+            if (res?.ok) {
+              unido = true;
+              resolve();
+            } else {
               setErrorConexion(res?.error || "No se pudo unir al duelo.");
+              socket.disconnect();
               reject(new Error(res?.error));
             }
           });
         });
       }),
-    [token],
+    [token, desconectar],
   );
 
   const marcarListo = useCallback((listo) => {
@@ -112,11 +131,11 @@ export function useDuelo() {
   );
 
   const responder = useCallback(
-    (id_pregunta, id_opcion_elegida, tiempo_respuesta_ms) =>
+    (id_pregunta, id_opcion_elegida) =>
       new Promise((resolve) => {
         socketRef.current?.emit(
           "duelo:responder",
-          { id_pregunta, id_opcion_elegida, tiempo_respuesta_ms },
+          { id_pregunta, id_opcion_elegida },
           (res) => resolve(res),
         );
       }),
@@ -127,6 +146,17 @@ export function useDuelo() {
     socketRef.current?.emit("duelo:salir", {}, () => desconectar());
   }, [desconectar]);
 
+  const actualizarMusica = useCallback(
+    (youtube_url) =>
+      new Promise((resolve, reject) => {
+        socketRef.current?.emit("duelo:musica", { youtube_url }, (res) => {
+          if (res?.ok) resolve(res.youtube_video_id);
+          else reject(new Error(res?.error || "No se pudo actualizar la música."));
+        });
+      }),
+    [],
+  );
+
   return {
     FASE,
     fase,
@@ -136,11 +166,13 @@ export function useDuelo() {
     pregunta,
     progreso,
     ranking,
+    musicaId,
     conectarYUnirse,
     marcarListo,
     iniciarDuelo,
     responder,
     salir,
     desconectar,
+    actualizarMusica,
   };
 }

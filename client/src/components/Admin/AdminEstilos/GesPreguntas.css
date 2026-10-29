@@ -1194,3 +1194,12 @@
   outline: none;
   border-color: var(--c-brand-400);
 }
+/* Tarjeta "Importar PDF con IA" */
+.gp-modo-amber {
+  background: var(--c-warn-bg);
+  color: var(--c-warn-txt);
+}
+
+.gp-modo-list--amber {
+  color: var(--c-warn-txt);
+}

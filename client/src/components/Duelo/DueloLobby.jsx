@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Swords, Users, Hash, Loader2, AlertCircle, Plus, LogIn } from "lucide-react";
+import { Swords, Users, Hash, Loader2, AlertCircle, Plus, LogIn, Music2 } from "lucide-react";
 import { api } from "../../services/api";
 
 const TAB = { CREAR: "crear", UNIRSE: "unirse" };
@@ -13,6 +13,7 @@ export default function DueloLobby({ onUnirse, conectando, error }) {
   const [cantidadPreguntas, setCantidadPreguntas] = useState(10);
   const [maxParticipantes, setMaxParticipantes] = useState(10);
   const [tiempoSegundos, setTiempoSegundos] = useState(20);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
 
   const [codigoInput, setCodigoInput] = useState("");
   const [errorLocal, setErrorLocal] = useState("");
@@ -43,6 +44,7 @@ export default function DueloLobby({ onUnirse, conectando, error }) {
         cantidad_preguntas: Number(cantidadPreguntas),
         max_participantes: Number(maxParticipantes),
         tiempo_por_pregunta_ms: Number(tiempoSegundos) * 1000,
+        youtube_url: youtubeUrl.trim() || undefined,
       });
       await onUnirse(res.data.codigo);
     } catch (err) {
@@ -148,6 +150,16 @@ export default function DueloLobby({ onUnirse, conectando, error }) {
               />
             </label>
           </div>
+
+          <label>
+            <Music2 size={13} /> Música de fondo (opcional)
+            <input
+              type="text"
+              placeholder="Pega un link de YouTube…"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+            />
+          </label>
 
           <button className="duelo-btn duelo-btn--primary" type="submit" disabled={creando || conectando}>
             {creando || conectando ? <Loader2 size={16} className="duelo-spin" /> : <Swords size={16} />}

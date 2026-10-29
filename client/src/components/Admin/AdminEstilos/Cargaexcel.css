@@ -666,3 +666,23 @@
     transform: rotate(360deg);
   }
 }
+/* Adjuntar imagen a una fila de la vista previa */
+.ce-imagen-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 8px;
+  padding: 5px 10px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ce-imagen-row:hover {
+  border-color: var(--c-brand-600);
+  color: var(--c-brand-600);
+}

@@ -64,6 +64,11 @@ export const Duelo = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    youtube_video_id: {
+      // solo el ID de 11 caracteres del video (ya parseado desde la URL pegada)
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
   },
   {
     tableName: "duelo",

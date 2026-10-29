@@ -219,6 +219,13 @@ export const api = {
   reactivarPregunta: (id) =>
     request(`/academico/preguntas/${id}/reactivar`, { method: "PATCH" }),
 
+  // Lee un PDF con IA; devuelve filas con formato de la plantilla Excel.
+  extraerPreguntasPdf: (archivo) => {
+    const formData = new FormData();
+    formData.append("pdf", archivo);
+    return requestFormData("/academico/preguntas/pdf", { method: "POST", body: formData });
+  },
+
   crearPreguntasBulk: (idMateria, preguntas, forzarDuplicados = false) =>
     request("/academico/preguntas/bulk", {
       method: "POST",
@@ -321,4 +328,29 @@ export const api = {
 
   unirseDuelo: (codigo) =>
     request(`/duelos/${codigo}/unirse`, { method: "POST" }),
+
+  // ── Personaje / Tienda ────────────────────────────────────────────────────────
+
+  getPersonaje: () => request("/personaje"),
+
+  actualizarApariencia: (datos) =>
+    request("/personaje/apariencia", {
+      method: "PUT",
+      body: JSON.stringify(datos),
+    }),
+
+  getTienda: () => request("/personaje/tienda"),
+
+  comprarItem: (idItem) =>
+    request(`/personaje/tienda/${idItem}/comprar`, { method: "POST" }),
+
+  equiparItem: (idItem) =>
+    request(`/personaje/equipar/${idItem}`, { method: "POST" }),
+
+  desequiparItem: (tipo) =>
+    request(`/personaje/equipar/${tipo}`, { method: "DELETE" }),
+
+  // ── Música ────────────────────────────────────────────────────────────────────
+
+  buscarMusica: (q) => request(`/musica/buscar?q=${encodeURIComponent(q)}`),
 };

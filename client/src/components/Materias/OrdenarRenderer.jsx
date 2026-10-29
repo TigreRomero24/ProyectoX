@@ -10,10 +10,12 @@ export default function OrdenarRenderer({ pregunta, onReorder, disabled, respues
     const correctIds = pregunta.estructura_json?.respuesta?.orden_ids || [];
     
     // Create base items
-    const baseItems = opciones.map((texto, i) => ({
-      id: correctIds[i] || String.fromCharCode(65 + i),
-      texto,
-    }));
+    // En examen el servidor ya envía { id, texto } mezclados y sin la respuesta.
+    const baseItems = opciones.map((o, i) =>
+      typeof o === "object"
+        ? { id: o.id, texto: o.texto }
+        : { id: correctIds[i] || String.fromCharCode(65 + i), texto: o },
+    );
 
     if (respuestaActual?.orden_ids && respuestaActual.orden_ids.length === baseItems.length) {
       // Reconstruct based on user answer

@@ -3,8 +3,8 @@ import { CheckCircle2, Clock, Users, XCircle } from "lucide-react";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 
-export default function DueloJuego({ pregunta, progreso, participantes, onResponder }) {
-  const inicioRef = useRef(Date.now());
+export default function DueloJuego({ pregunta, progreso, onResponder }) {
+  const inicioRef = useRef(0); // lo fija el efecto al llegar cada pregunta
   const [tiempoRestanteMs, setTiempoRestanteMs] = useState(pregunta?.tiempo_limite_ms || 0);
   const [seleccionada, setSeleccionada] = useState(null);
   const [respondida, setRespondida] = useState(false);
@@ -34,11 +34,11 @@ export default function DueloJuego({ pregunta, progreso, participantes, onRespon
 
   const elegir = async (idOpcion) => {
     if (respondida) return;
-    const tiempoMs = Date.now() - inicioRef.current;
     setSeleccionada(idOpcion);
     setRespondida(true);
 
-    const res = await onResponder(pregunta.id_pregunta, idOpcion, tiempoMs);
+    // El tiempo de respuesta lo mide el servidor.
+    const res = await onResponder(pregunta.id_pregunta, idOpcion);
     if (res?.ok) {
       setFeedback({ esCorrecta: res.es_correcta, puntos: res.puntos_obtenidos });
     }

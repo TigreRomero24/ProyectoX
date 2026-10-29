@@ -11,6 +11,7 @@ import GestionLogs from "../Admin/GestionLogs";
 import About from "../About/About";
 import Perfil from "../Perfil/Perfil";
 import Duelo from "../Duelo/Duelo";
+import PersonajePagina from "../Personaje/PersonajePagina";
 
 const useTheme = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem("eq-theme") || "light");
@@ -31,6 +32,7 @@ export default function Dashboard({ user }) {
     switch (activeSection) {
       case "materias":            return <MateriasList />;
       case "duelo":                return <Duelo />;
+      case "personaje":            return <PersonajePagina />;
       case "historial":           return <Historial />;
       case "about":               return <About />;
       case "perfil":              return <Perfil />;

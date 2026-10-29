@@ -3,6 +3,7 @@ import { sequelize } from "../config/database.js";
 import { BancoPregunta } from "../models/academico.models/bancoPregunta.js";
 import { OpcionRespuesta } from "../models/academico.models/opcionRespuesta.js";
 import { Materia } from "../models/academico.models/materia.js";
+import { estructuraPublica } from "../utils/estructuraPublica.js";
 import { DetalleIntento } from "../models/evaluacion.models/detalleIntento.js";
 
 export class AcademicoService {
@@ -236,7 +237,9 @@ export class AcademicoService {
       enunciado: data.enunciado,
       tipo_pregunta: data.tipo_pregunta,
       url_imagen: data.url_imagen ?? null,
-      estructura_json: data.estructura_json ?? null,
+      estructura_json: esAdmin
+        ? data.estructura_json ?? null
+        : estructuraPublica(data.tipo_pregunta, data.estructura_json),
       activo: data.activo,
       createdAt: data.createdAt,
       opciones: Array.isArray(data.opciones)
@@ -647,12 +650,12 @@ export class AcademicoService {
       }
       if (
         !item.tipo_pregunta ||
-        !["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE", "ORDENAR", "RELACIONAR", "COMPLETAR"].includes(item.tipo_pregunta)
+        !["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE", "ORDENAR", "COMPLETAR"].includes(item.tipo_pregunta)
       ) {
         errores.push({
           fila,
           enunciado: item.enunciado,
-          motivo: "Tipo de pregunta inválido. Tipos válidos: MULTIPLE, VERDADERO_FALSO, SELECCION_MULTIPLE, ORDENAR, RELACIONAR, COMPLETAR.",
+          motivo: "Tipo de pregunta inválido. Tipos válidos: MULTIPLE, VERDADERO_FALSO, SELECCION_MULTIPLE, ORDENAR, COMPLETAR.",
         });
         return;
       }

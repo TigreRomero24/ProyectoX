@@ -1,0 +1,69 @@
+.prog-root {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+@media (max-width: 800px) {
+  .prog-root { grid-template-columns: 1fr; }
+}
+
+.prog-columna {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.prog-subtitulo { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.prog-ayuda { margin: 0 0 16px; font-size: 12.5px; color: var(--text-muted); }
+
+/* ── Barras de precisión por materia ──────────────────────────────────────── */
+.prog-barras { display: flex; flex-direction: column; gap: 8px; }
+.prog-barra-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.prog-barra-fila:hover { background: var(--bg-muted); }
+.prog-barra-fila.activa { background: var(--c-brand-50, var(--bg-subtle)); }
+
+.prog-barra-nombre {
+  width: 110px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prog-barra-track { flex: 1; height: 10px; border-radius: 999px; background: var(--bg-muted); overflow: hidden; }
+.prog-barra-fill { height: 100%; background: var(--c-success-bdr, #10b981); border-radius: 999px; transition: width .3s ease; }
+.prog-barra-fill.baja { background: #f59e0b; }
+.prog-barra-pct { width: 38px; text-align: right; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+.prog-alerta-icon { color: #f59e0b; flex-shrink: 0; }
+
+/* ── Línea de evolución ───────────────────────────────────────────────────── */
+.prog-linea-svg { width: 100%; height: auto; }
+.prog-linea-referencia { stroke: var(--border-strong, #cbd5e1); stroke-dasharray: 4 4; stroke-width: 1; }
+.prog-linea-path { stroke: var(--c-brand-600); stroke-width: 2.5; }
+.prog-linea-punto { fill: var(--c-brand-600); }
+.prog-linea-punto.baja { fill: #f59e0b; }
+.prog-linea-vacio { font-size: 13px; color: var(--text-muted); padding: 40px 0; text-align: center; }
+
+.prog-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 50px 20px;
+  color: var(--text-secondary);
+  text-align: center;
+}

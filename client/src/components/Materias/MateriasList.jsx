@@ -10,10 +10,12 @@ import {
   AlertCircle,
   CheckCheck,
   Atom,
+  Layers,
 } from "lucide-react";
 import { api } from "../../services/api";
 import TestMode from "./TestMode";
 import ExamMode from "./ExamMode";
+import Flashcards from "./Flashcards";
 
 import { useAuth } from "../../hooks/useAuth";
 
@@ -52,6 +54,7 @@ const VISTA = {
   DETALLE: "detalle",
   TEST: "test",
   EXAMEN: "examen",
+  FLASHCARDS: "flashcards",
 };
 
 export default function MateriasList() {
@@ -64,6 +67,8 @@ export default function MateriasList() {
   const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [preguntasTest, setPreguntasTest] = useState([]);
   const [loadingTest, setLoadingTest] = useState(false);
+  const [preguntasFlash, setPreguntasFlash] = useState([]);
+  const [loadingFlash, setLoadingFlash] = useState(false);
   const [examenData, setExamenData] = useState(null);
   const [iniciando, setIniciando] = useState(null);
   const [modosHabilitados, setModosHabilitados] = useState(null);
@@ -137,6 +142,25 @@ export default function MateriasList() {
     }
   };
 
+  const iniciarFlashcards = async () => {
+    setLoadingFlash(true);
+    setError("");
+    try {
+      const res = await api.getPreguntasTest(detalle.materia.id_materia);
+      const todas = res.data || [];
+      if (!todas.length) {
+        setError("No hay preguntas activas.");
+        return;
+      }
+      setPreguntasFlash(todas);
+      setVista(VISTA.FLASHCARDS);
+    } catch (e) {
+      setError(e.message || "Error al cargar preguntas.");
+    } finally {
+      setLoadingFlash(false);
+    }
+  };
+
   const iniciarExamen = async (config) => {
     setIniciando(config.id_config);
     setError("");
@@ -183,12 +207,14 @@ export default function MateriasList() {
   const volverADetalle = () => {
     setVista(VISTA.DETALLE);
     setPreguntasTest([]);
+    setPreguntasFlash([]);
     setExamenData(null);
   };
   const volverALista = () => {
     setVista(VISTA.LISTA);
     setDetalle(null);
     setPreguntasTest([]);
+    setPreguntasFlash([]);
     setExamenData(null);
     setModosHabilitados(null);
     setError("");
@@ -200,6 +226,15 @@ export default function MateriasList() {
         preguntas={preguntasTest}
         nombreMateria={detalle?.materia?.nombre || ""}
         idMateria={detalle?.materia?.id_materia}
+        onVolver={volverADetalle}
+      />
+    );
+  }
+  if (vista === VISTA.FLASHCARDS && preguntasFlash.length > 0) {
+    return (
+      <Flashcards
+        preguntas={preguntasFlash}
+        nombreMateria={detalle?.materia?.nombre || ""}
         onVolver={volverADetalle}
       />
     );
@@ -337,6 +372,17 @@ export default function MateriasList() {
               <AlertCircle size={15} />
               Esta materia aún no tiene preguntas activas.
             </div>
+          )}
+
+          {detalle.total_preguntas_activas > 0 && (
+            <button
+              className="mat-flash-btn"
+              onClick={iniciarFlashcards}
+              disabled={loadingFlash}
+            >
+              <Layers size={16} />
+              {loadingFlash ? "Cargando..." : "Repaso relámpago (flashcards)"}
+            </button>
           )}
 
           {detalle.configuraciones.length === 0 ? (

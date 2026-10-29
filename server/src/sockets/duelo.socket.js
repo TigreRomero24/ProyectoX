@@ -13,6 +13,10 @@ const BUFFER_RED_MS = 800;
 // es una limitación aceptada de un MVP en memoria de un solo proceso.)
 const temporizadores = new Map();
 
+// Pregunta activa por duelo y cuándo se emitió: el tiempo de respuesta lo
+// mide el servidor (el que manda el cliente se podría falsificar).
+const preguntasActivas = new Map(); // id_duelo -> { pregunta, inicio }
+
 const limpiarTemporizador = (id_duelo) => {
   const t = temporizadores.get(id_duelo);
   if (t) {
@@ -52,6 +56,7 @@ export function setupDueloSocket(io) {
     const duelo = await DueloService.obtenerDueloPorCodigo(codigo);
     nsp.to(codigo).emit("duelo:participantes", {
       estado: duelo.estado,
+      youtube_video_id: duelo.youtube_video_id,
       participantes: duelo.participantes.map((p) => ({
         id_usuario: p.id_usuario,
         nombre: p.usuario?.nombre || "Estudiante",
@@ -66,21 +71,25 @@ export function setupDueloSocket(io) {
 
   const emitirPreguntaActual = async (codigo, id_duelo) => {
     const pregunta = await DueloService.obtenerPreguntaActual(id_duelo);
+    preguntasActivas.set(id_duelo, { pregunta, inicio: Date.now() });
     nsp.to(codigo).emit("duelo:pregunta", pregunta);
 
     limpiarTemporizador(id_duelo);
+    const indice = pregunta.numero - 1;
     const timeout = setTimeout(
-      () => avanzar(codigo, id_duelo).catch((err) => console.error("[DueloSocket] auto-avance:", err.message)),
+      () => avanzar(codigo, id_duelo, indice).catch((err) => console.error("[DueloSocket] auto-avance:", err.message)),
       pregunta.tiempo_limite_ms + BUFFER_RED_MS,
     );
     temporizadores.set(id_duelo, timeout);
   };
 
-  const avanzar = async (codigo, id_duelo) => {
-    limpiarTemporizador(id_duelo);
-    const { finalizado } = await DueloService.avanzarPregunta(id_duelo);
+  const avanzar = async (codigo, id_duelo, desdeIndice) => {
+    const { finalizado, omitido } = await DueloService.avanzarPregunta(id_duelo, desdeIndice);
+    if (omitido) return; // otro llamado (timer o última respuesta) ya avanzó
 
+    limpiarTemporizador(id_duelo);
     if (finalizado) {
+      preguntasActivas.delete(id_duelo);
       const ranking = await DueloService.obtenerRanking(id_duelo);
       nsp.to(codigo).emit("duelo:finalizado", { ranking });
       return;
@@ -93,14 +102,26 @@ export function setupDueloSocket(io) {
     // ── Unirse a la sala ────────────────────────────────────────────────────
     socket.on("duelo:unirse", async ({ codigo }, ack) => {
       try {
-        const duelo = await DueloService.unirseDuelo(codigo, socket.user.id);
+        const duelo = await DueloService.unirseDuelo(codigo, socket.user.id, socket.user.rol);
         await DueloService.marcarConexion(duelo.id_duelo, socket.user.id, true);
 
-        socket.join(codigo);
-        socket.data.codigo = codigo;
+        // codigo canónico (mayúsculas): es el nombre de la sala
+        socket.join(duelo.codigo);
+        socket.data.codigo = duelo.codigo;
         socket.data.id_duelo = duelo.id_duelo;
 
-        await emitirParticipantes(codigo);
+        await emitirParticipantes(duelo.codigo);
+
+        // Reconexión con el duelo en curso: se le reenvía la pregunta activa
+        // con el tiempo que le queda.
+        const activa = preguntasActivas.get(duelo.id_duelo);
+        if (duelo.estado === "EN_CURSO" && activa) {
+          const restante = activa.pregunta.tiempo_limite_ms - (Date.now() - activa.inicio);
+          socket.emit("duelo:pregunta", {
+            ...activa.pregunta,
+            tiempo_limite_ms: Math.max(0, restante),
+          });
+        }
         ack?.({ ok: true });
       } catch (error) {
         ack?.({ ok: false, error: error.message });
@@ -115,6 +136,24 @@ export function setupDueloSocket(io) {
         await DueloService.marcarListo(id_duelo, socket.user.id, listo);
         await emitirParticipantes(codigo);
         ack?.({ ok: true });
+      } catch (error) {
+        ack?.({ ok: false, error: error.message });
+      }
+    });
+
+    // ── El creador configura o cambia la música (en cualquier fase) ─────────
+    socket.on("duelo:musica", async ({ youtube_url }, ack) => {
+      try {
+        const { codigo, id_duelo } = socket.data;
+        if (!codigo) throw new Error("ESTADO_INVALIDO: No estás en una sala.");
+
+        const youtube_video_id = await DueloService.actualizarMusica(
+          id_duelo,
+          socket.user.id,
+          youtube_url,
+        );
+        nsp.to(codigo).emit("duelo:musica", { youtube_video_id });
+        ack?.({ ok: true, youtube_video_id });
       } catch (error) {
         ack?.({ ok: false, error: error.message });
       }
@@ -136,10 +175,13 @@ export function setupDueloSocket(io) {
     });
 
     // ── Responder la pregunta activa ────────────────────────────────────────
-    socket.on("duelo:responder", async ({ id_pregunta, id_opcion_elegida, tiempo_respuesta_ms }, ack) => {
+    socket.on("duelo:responder", async ({ id_pregunta, id_opcion_elegida }, ack) => {
       try {
         const { codigo, id_duelo } = socket.data;
         if (!codigo) throw new Error("ESTADO_INVALIDO: No estás en una sala.");
+
+        const activa = preguntasActivas.get(id_duelo);
+        const tiempo_respuesta_ms = activa ? Date.now() - activa.inicio : null;
 
         const respuesta = await DueloService.registrarRespuesta(id_duelo, socket.user.id, {
           id_pregunta,
@@ -154,13 +196,13 @@ export function setupDueloSocket(io) {
         });
 
         // Progreso en vivo (para mostrar "3/6 ya respondieron")
-        const { totalParticipantes, totalRespuestas } =
+        const { totalParticipantes, totalRespuestas, indice } =
           await DueloService.contarRespuestasPreguntaActual(id_duelo);
         nsp.to(codigo).emit("duelo:progreso", { totalParticipantes, totalRespuestas });
 
         // Si ya respondieron todos los conectados, no hace falta esperar el timer.
         if (totalRespuestas >= totalParticipantes) {
-          await avanzar(codigo, id_duelo);
+          await avanzar(codigo, id_duelo, indice);
         }
       } catch (error) {
         ack?.({ ok: false, error: error.message });
@@ -171,8 +213,15 @@ export function setupDueloSocket(io) {
     const salir = async () => {
       const { codigo, id_duelo } = socket.data;
       if (!codigo || !id_duelo) return;
+      socket.data.codigo = null;
+      socket.data.id_duelo = null;
       try {
-        await DueloService.marcarConexion(id_duelo, socket.user.id, false);
+        // En la sala de espera se libera el cupo; en curso solo queda desconectado.
+        const { cancelado } = await DueloService.abandonarDuelo(id_duelo, socket.user.id);
+        if (cancelado) {
+          nsp.to(codigo).emit("duelo:cancelado");
+          return;
+        }
         await emitirParticipantes(codigo);
       } catch (error) {
         console.error("[DueloSocket] al salir:", error.message);
@@ -180,8 +229,9 @@ export function setupDueloSocket(io) {
     };
 
     socket.on("duelo:salir", async (_payload, ack) => {
+      const { codigo } = socket.data;
       await salir();
-      socket.leave(socket.data.codigo);
+      if (codigo) socket.leave(codigo);
       ack?.({ ok: true });
     });
 

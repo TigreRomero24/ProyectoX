@@ -26,7 +26,7 @@ export class DueloController {
   static async crearDuelo(req, res) {
     try {
       const id_usuario = req.user.id;
-      const duelo = await DueloService.crearDuelo(id_usuario, req.body);
+      const duelo = await DueloService.crearDuelo(id_usuario, req.body, req.user.rol);
       return res.status(201).json({
         ok: true,
         mensaje: "Duelo creado correctamente.",
@@ -58,7 +58,7 @@ export class DueloController {
   static async unirseDuelo(req, res) {
     try {
       const id_usuario = req.user.id;
-      const duelo = await DueloService.unirseDuelo(req.params.codigo, id_usuario);
+      const duelo = await DueloService.unirseDuelo(req.params.codigo, id_usuario, req.user.rol);
       return res.status(200).json({ ok: true, data: duelo });
     } catch (error) {
       return DueloController.#manejarError(res, error, "Error al unirse al duelo.");

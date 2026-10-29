@@ -19,6 +19,14 @@ if (!fs.existsSync(FILE)) {
   fs.writeFileSync(FILE, "<securityLogs>\n</securityLogs>");
 }
 
+// Escapa texto para meterlo en el XML; recorta para que nadie infle el archivo.
+export const xmlSeguro = (valor, max = 300) =>
+  String(valor ?? "")
+    .slice(0, max)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 export const logSecurityEvent = ({
   event,
   user = "ANONIMO",
@@ -28,11 +36,11 @@ export const logSecurityEvent = ({
 }) => {
   const logEntry = `
   <log>
-    <event>${event}</event>
-    <user>${user}</user>
-    <ip>${ip}</ip>
-    <severity>${severity}</severity>
-    <details>${details}</details>
+    <event>${xmlSeguro(event)}</event>
+    <user>${xmlSeguro(user)}</user>
+    <ip>${xmlSeguro(ip)}</ip>
+    <severity>${xmlSeguro(severity)}</severity>
+    <details>${xmlSeguro(details)}</details>
     <timestamp>${new Date().toISOString()}</timestamp>
   </log>`;
 

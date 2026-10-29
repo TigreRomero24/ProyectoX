@@ -7,6 +7,8 @@ import academicoRoutes from "./academico.routes.js";
 import evaluacionRoutes from "./evaluacion.routes.js";
 import usuarioRoutes from "./usuario.routes.js";
 import dueloRoutes from "./duelo.routes.js";
+import personajeRoutes from "./personaje.routes.js";
+import musicaRoutes from "./musica.routes.js";
 
 const router = Router();
 
@@ -21,5 +23,7 @@ router.use("/academico", academicoRoutes);
 router.use("/evaluaciones", evaluacionRoutes);
 router.use("/usuarios", usuarioRoutes);
 router.use("/duelos", dueloRoutes);
+router.use("/personaje", personajeRoutes);
+router.use("/musica", musicaRoutes);
 
 export default router;

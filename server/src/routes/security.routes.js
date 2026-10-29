@@ -7,6 +7,8 @@ import { AuthMiddleware } from "../middlewares/authMiddleware.js";
 import { SessionMiddleware } from "../middlewares/sessionMiddleware.js";
 import { RoleMiddleware } from "../middlewares/roleMiddleware.js";
 import { Usuario } from "../models/security.models/usuarioModel.js";
+import { isIP } from "net";
+import { xmlSeguro } from "../utils/securityLogger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,18 +91,23 @@ router.get("/security-logs", soloAdmin, async (req, res) => {
 router.post("/security-log", async (req, res) => {
   const { event, timestamp, user, url, userAgent, severity, errorCode, ipPublic } = req.body;
 
-  const ip =
+  const ipCandidata = String(
     ipPublic ||
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress;
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.socket.remoteAddress ||
+      "",
+  ).trim();
+  const ip = isIP(ipCandidata) ? ipCandidata : "UNKNOWN";
 
   let geoData = {};
 
-  try {
-    const geoRes = await fetch(`https://ipapi.co/${ip}/json/`);
-    geoData = await geoRes.json();
-  } catch (error) {
-    console.error("Error obteniendo geolocalización:", error);
+  if (ip !== "UNKNOWN") {
+    try {
+      const geoRes = await fetch(`https://ipapi.co/${ip}/json/`);
+      geoData = await geoRes.json();
+    } catch (error) {
+      console.error("Error obteniendo geolocalización:", error);
+    }
   }
 
   const detailsParts = [];
@@ -117,12 +124,12 @@ router.post("/security-log", async (req, res) => {
 
   const logEntry = `
   <log>
-    <event>${event}</event>
-    <user>${user}</user>
-    <ip>${ip}</ip>
-    <severity>${severity || "LOW"}</severity>
-    <details>${details}</details>
-    <timestamp>${timestamp}</timestamp>
+    <event>${xmlSeguro(event)}</event>
+    <user>${xmlSeguro(user)}</user>
+    <ip>${xmlSeguro(ip)}</ip>
+    <severity>${xmlSeguro(severity || "LOW", 20)}</severity>
+    <details>${xmlSeguro(details, 1000)}</details>
+    <timestamp>${xmlSeguro(timestamp || new Date().toISOString(), 40)}</timestamp>
   </log>`;
 
   try {

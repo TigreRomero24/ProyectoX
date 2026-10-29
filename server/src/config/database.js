@@ -9,7 +9,8 @@ export const sequelize = new Sequelize(
     host: env.db.host,
     port: env.db.port,
     dialect: "postgres",
-    logging: env.isDevelopment ? console.log : false,
+    // Para depurar consultas: DB_LOGGING=true en el .env
+    logging: process.env.DB_LOGGING === "true" ? console.log : false,
 
     pool: {
       max: 5,

@@ -25,8 +25,8 @@ function sanitizeFrontendUrl(raw) {
   if (!raw || typeof raw !== "string") return null;
   try {
     const url = new URL(raw.trim());
-    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-    return url.origin;
+    // Solo orígenes propios: evita redirigir el token a un dominio ajeno.
+    return env.allowedOrigins.includes(url.origin) ? url.origin : null;
   } catch (_) {
     return null;
   }
@@ -87,66 +87,6 @@ router.get(
 router.post("/refresh", AuthController.refreshToken);
 
 router.post("/logout", AuthController.logout);
-
-// Endpoint público para crear el primer usuario
-router.post("/crear-usuario", async (req, res) => {
-  try {
-    const { correo_institucional, rol = "ADMINISTRADOR", limite_dispositivos = 5 } = req.body;
-
-    if (!correo_institucional) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: "El correo institucional es requerido",
-      });
-    }
-
-    // Verificar que sea correo @unemi.edu.ec
-    if (!correo_institucional.endsWith("@unemi.edu.ec")) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: "Solo se permiten correos @unemi.edu.ec",
-      });
-    }
-
-    // Verificar si ya existe un usuario
-    const usuarioExistente = await Usuario.findOne({
-      where: { correo_institucional: correo_institucional.toLowerCase() },
-    });
-
-    if (usuarioExistente) {
-      return res.status(409).json({
-        ok: false,
-        mensaje: "El usuario ya existe",
-      });
-    }
-
-    // Crear el nuevo usuario
-    const nuevoUsuario = await Usuario.create({
-      correo_institucional: correo_institucional.toLowerCase(),
-      rol,
-      limite_dispositivos,
-      activo: true,
-    });
-
-    return res.status(201).json({
-      ok: true,
-      mensaje: "Usuario creado exitosamente",
-      data: {
-        id_usuario: nuevoUsuario.id_usuario,
-        correo_institucional: nuevoUsuario.correo_institucional,
-        rol: nuevoUsuario.rol,
-        limite_dispositivos: nuevoUsuario.limite_dispositivos,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating user:", error.message);
-    return res.status(500).json({
-      ok: false,
-      mensaje: "Error al crear el usuario",
-      error: error.message,
-    });
-  }
-});
 
 // ── Perfil del usuario autenticado ────────────────────────────────────────────
 

@@ -31,6 +31,9 @@ const REQUIRED = [
   "DB_PORT",
 ];
 
+// Mismo .env que el contenedor de Postgres: se acepta su nombre de variable.
+process.env.DB_PASSWORD ||= process.env.POSTGRES_PASSWORD;
+
 const missing = REQUIRED.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
@@ -70,13 +73,25 @@ if (
 }
 
 const NODE_ENV = process.env.NODE_ENV || "development";
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+
+// Orígenes a los que se permite CORS y redirigir tras el login de Google.
+// ALLOWED_ORIGINS (opcional) = lista separada por comas.
+const ALLOWED_ORIGINS = [
+  FRONTEND_URL,
+  ...(process.env.ALLOWED_ORIGINS || "").split(","),
+  ...(NODE_ENV === "production" ? [] : ["http://localhost:5173", "http://127.0.0.1:5173"]),
+]
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 
 export const env = Object.freeze({
   nodeEnv: NODE_ENV,
   isProduction: NODE_ENV === "production",
   isDevelopment: NODE_ENV === "development",
   port: parseInt(process.env.PORT, 10) || 3000,
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  frontendUrl: FRONTEND_URL,
+  allowedOrigins: Object.freeze([...new Set(ALLOWED_ORIGINS)]),
 
   db: Object.freeze({
     name: process.env.DB_NAME,
@@ -103,6 +118,24 @@ export const env = Object.freeze({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+  }),
+
+  // Opcional: sin esta key, la búsqueda de música por nombre responde con
+  // un error claro en vez de tumbar el servidor al arrancar.
+  youtube: Object.freeze({
+    apiKey: process.env.YOUTUBE_API_KEY || null,
+  }),
+
+  // Opcional: lectura de preguntas desde PDF (capa gratuita de Gemini para pruebas).
+  gemini: Object.freeze({
+    apiKey: process.env.GEMINI_API_KEY || null,
+    // En orden de preferencia; si uno está saturado se usa el siguiente.
+    models: Object.freeze(
+      (process.env.GEMINI_MODELS || process.env.GEMINI_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash,gemini-flash-latest")
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean),
+    ),
   }),
 
   get sanitized() {

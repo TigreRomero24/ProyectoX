@@ -7,6 +7,8 @@ import { Materia } from "../models/academico.models/materia.js";
 import { ConfiguracionExamen } from "../models/evaluacion.models/configuracionExamen.js";
 import { Intento } from "../models/evaluacion.models/intento.js";
 import { DetalleIntento } from "../models/evaluacion.models/detalleIntento.js";
+import { PersonajeService } from "./personaje.service.js";
+import { estructuraPublica } from "../utils/estructuraPublica.js";
 
 // 🔥 CAMBIO: el límite fijo ahora aplica a EXAMEN, no a TEST.
 const PREGUNTAS_MODO_EXAMEN = 30;
@@ -183,7 +185,7 @@ export class EvaluacionService {
         enunciado: raw.enunciado,
         url_imagen: raw.url_imagen ?? null,
         tipo_pregunta: raw.tipo_pregunta,
-        estructura_json: raw.estructura_json,
+        estructura_json: estructuraPublica(raw.tipo_pregunta, raw.estructura_json),
         opciones: opcionesPorPregunta[raw.id_pregunta] ?? [],
       };
     });
@@ -209,6 +211,10 @@ export class EvaluacionService {
     if (!Array.isArray(respuestasUsuario)) {
       throw new Error("VALIDACION: El formato de las respuestas es inválido.");
     }
+    // Una sola respuesta por pregunta (la última): evita sumar la misma varias veces.
+    respuestasUsuario = [
+      ...new Map(respuestasUsuario.map((r) => [r?.id_pregunta, r])).values(),
+    ];
 
     const t = await sequelize.transaction();
 
@@ -273,9 +279,13 @@ export class EvaluacionService {
 
       const idsValidos = new Set(preguntasValidas.map((p) => p.id_pregunta));
       const preguntasMap = new Map(preguntasValidas.map((p) => [p.id_pregunta, p]));
+      // Intentos legacy no guardan preguntas_ids: ahí solo se valida la materia.
+      const asignadas = Array.isArray(intento.preguntas_ids)
+        ? new Set(intento.preguntas_ids)
+        : null;
 
       for (const r of respuestasUsuario) {
-        if (!idsValidos.has(r.id_pregunta)) {
+        if (!idsValidos.has(r.id_pregunta) || (asignadas && !asignadas.has(r.id_pregunta))) {
           throw new Error(
             `VALIDACION: La pregunta ${r.id_pregunta} no pertenece a este examen.`,
           );
@@ -313,7 +323,7 @@ export class EvaluacionService {
           const correctasIds = opcionesPregunta.filter((o) => o.es_correcta).map((o) => o.id_opcion);
           
           const raw = respuesta.respuesta_json;
-          const elegidasIds = Array.isArray(raw) ? raw : (raw?.opciones_ids || []);
+          const elegidasIds = [...new Set(Array.isArray(raw) ? raw : (raw?.opciones_ids || []))];
 
           const esCorrecta = elegidasIds.length === correctasIds.length && elegidasIds.every((id) => correctasIds.includes(id));
           const puntos = esCorrecta ? 1.0 : 0.0;
@@ -430,6 +440,15 @@ export class EvaluacionService {
 
       await t.commit();
 
+      // Monedas del personaje: fuera de la transacción del examen (que ya
+      // se confirmó), para que un fallo acá nunca tumbe el resultado.
+      try {
+        const monedasGanadas = Math.round(notaFinal * 5) + (notaFinal === 10 ? 20 : 0);
+        await PersonajeService.otorgarMonedas(id_usuario, monedasGanadas);
+      } catch (errorMonedas) {
+        console.error("[EvaluacionService] No se pudieron otorgar monedas:", errorMonedas.message);
+      }
+
       // ── DTO de respuesta — expone resultado completo (decisión confirmada) ────
       return {
         id_intento: intento.id_intento,
@@ -517,7 +536,7 @@ export class EvaluacionService {
         enunciado: raw.enunciado,
         url_imagen: raw.url_imagen ?? null,
         tipo_pregunta: raw.tipo_pregunta,
-        estructura_json: raw.estructura_json,
+        estructura_json: estructuraPublica(raw.tipo_pregunta, raw.estructura_json),
         opciones: opcionesPorPregunta[raw.id_pregunta] ?? [],
       };
     });
@@ -818,6 +837,10 @@ export class EvaluacionService {
     if (!Array.isArray(respuestasUsuario)) {
       throw new Error("VALIDACION: El formato de las respuestas es inválido.");
     }
+    // Una sola respuesta por pregunta (la última): evita sumar la misma varias veces.
+    respuestasUsuario = [
+      ...new Map(respuestasUsuario.map((r) => [r?.id_pregunta, r])).values(),
+    ];
 
     // Verificar que el usuario está inscrito en la materia
     const inscripcion = await Inscripcion.findOne({
@@ -921,7 +944,7 @@ export class EvaluacionService {
           const correctasIds = opcionesPregunta.filter((o) => o.es_correcta).map((o) => o.id_opcion);
           
           const raw = respuesta.respuesta_json;
-          const elegidasIds = Array.isArray(raw) ? raw : (raw?.opciones_ids || []);
+          const elegidasIds = [...new Set(Array.isArray(raw) ? raw : (raw?.opciones_ids || []))];
 
           const esCorrecta = elegidasIds.length === correctasIds.length && elegidasIds.every((id) => correctasIds.includes(id));
           const puntos = esCorrecta ? 1.0 : 0.0;
@@ -1033,6 +1056,15 @@ export class EvaluacionService {
       );
 
       await t.commit();
+
+      try {
+        await PersonajeService.otorgarMonedasLeccion(id_usuario, totalCorrectas);
+      } catch (errorMonedas) {
+        console.error(
+          "[EvaluacionService] No se pudieron otorgar monedas de lección:",
+          errorMonedas.message,
+        );
+      }
 
       return {
         id_intento: intento.id_intento,
