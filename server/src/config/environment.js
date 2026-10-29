@@ -1,13 +1,10 @@
 import dotenv from "dotenv";
 import path from "path";
 
+// El .env es opcional: en Docker las variables llegan por env_file y el
+// archivo no va dentro de la imagen. Si falta algo, lo detecta REQUIRED abajo.
 const envPath = path.resolve(process.cwd(), ".env");
-const { error } = dotenv.config({ path: envPath });
-
-if (error) {
-  console.error("\n🔴 FATAL: No se encontró el archivo .env o es ilegible.");
-  process.exit(1);
-}
+dotenv.config({ path: envPath, quiet: true });
 
 // ====================================================================
 // 1. VARIABLES REQUERIDAS (Contrato de existencia)
