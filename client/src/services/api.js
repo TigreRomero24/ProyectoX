@@ -333,12 +333,6 @@ export const api = {
 
   getPersonaje: () => request("/personaje"),
 
-  actualizarApariencia: (datos) =>
-    request("/personaje/apariencia", {
-      method: "PUT",
-      body: JSON.stringify(datos),
-    }),
-
   getTienda: () => request("/personaje/tienda"),
 
   comprarItem: (idItem) =>
@@ -346,9 +340,6 @@ export const api = {
 
   equiparItem: (idItem) =>
     request(`/personaje/equipar/${idItem}`, { method: "POST" }),
-
-  desequiparItem: (tipo) =>
-    request(`/personaje/equipar/${tipo}`, { method: "DELETE" }),
 
   // ── Música ────────────────────────────────────────────────────────────────────
 

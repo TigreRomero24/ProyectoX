@@ -42,7 +42,7 @@ export default function PersonajePagina() {
       <div className="per-header">
         <h2 className="per-titulo">Mi Personaje</h2>
         <p className="per-subtitulo">
-          Gana monedas estudiando y úsalas para personalizarte.
+          Gana monedas estudiando y úsalas para conseguir nuevas skins.
         </p>
       </div>
 

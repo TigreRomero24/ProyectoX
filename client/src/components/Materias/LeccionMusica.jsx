@@ -27,7 +27,7 @@ export default function LeccionMusica() {
       <div className="leccion-musica-header" onClick={() => setMinimizado((m) => !m)}>
         <Music2 size={14} />
         <span>Música</span>
-        {minimizado ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        {minimizado ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
       </div>
 
       {!minimizado && (

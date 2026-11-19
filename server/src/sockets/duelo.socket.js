@@ -3,6 +3,7 @@ import { TokenFactory } from "../utils/tokenFactory.js";
 import { SesionDispositivo } from "../models/security.models/sessionModel.js";
 import { Usuario } from "../models/security.models/usuarioModel.js";
 import { DueloService } from "../services/duelo.service.js";
+import { PersonajeService } from "../services/personaje.service.js";
 
 // Buffer de red: tiempo extra que el servidor espera antes de forzar el
 // avance de pregunta, para absorber la latencia de la última respuesta.
@@ -54,6 +55,7 @@ export function setupDueloSocket(io) {
 
   const emitirParticipantes = async (codigo) => {
     const duelo = await DueloService.obtenerDueloPorCodigo(codigo);
+    const skins = await PersonajeService.skinsDeUsuarios(duelo.participantes.map((p) => p.id_usuario));
     nsp.to(codigo).emit("duelo:participantes", {
       estado: duelo.estado,
       youtube_video_id: duelo.youtube_video_id,
@@ -61,6 +63,7 @@ export function setupDueloSocket(io) {
         id_usuario: p.id_usuario,
         nombre: p.usuario?.nombre || "Estudiante",
         url_foto: p.usuario?.url_foto || null,
+        skin: skins.get(p.id_usuario),
         listo: p.listo,
         conectado: p.conectado,
         es_creador: p.id_usuario === duelo.id_creador,

@@ -26,19 +26,6 @@ export class PersonajeController {
     }
   }
 
-  static async actualizarApariencia(req, res) {
-    try {
-      const personaje = await PersonajeService.actualizarApariencia(req.user.id, req.body);
-      return res.status(200).json({
-        ok: true,
-        mensaje: "Apariencia actualizada.",
-        data: personaje,
-      });
-    } catch (error) {
-      return PersonajeController.#manejarError(res, error, "Error al actualizar apariencia.");
-    }
-  }
-
   static async obtenerTienda(req, res) {
     try {
       const data = await PersonajeService.obtenerTienda();
@@ -68,12 +55,4 @@ export class PersonajeController {
     }
   }
 
-  static async desequiparItem(req, res) {
-    try {
-      const data = await PersonajeService.desequiparItem(req.user.id, req.params.tipo);
-      return res.status(200).json({ ok: true, data });
-    } catch (error) {
-      return PersonajeController.#manejarError(res, error, "Error al desequipar el item.");
-    }
-  }
 }

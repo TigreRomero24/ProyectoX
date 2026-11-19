@@ -27,9 +27,10 @@
 .byt-resultados {
   position: absolute;
   top: calc(100% + 4px);
-  left: 0;
+  /* el widget va pegado al borde derecho: la lista crece hacia la izquierda */
   right: 0;
-  max-height: 220px;
+  width: min(320px, calc(100vw - 36px));
+  max-height: min(320px, 50vh);
   overflow-y: auto;
   list-style: none;
   margin: 0;

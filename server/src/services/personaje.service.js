@@ -8,9 +8,10 @@ const XP_POR_NIVEL = 100;
 const LIMITE_MONEDAS_LECCION_DIA = 30;
 const MONEDAS_POR_ACIERTO_LECCION = 2;
 
-const GENEROS_VALIDOS = new Set(["MASCULINO", "FEMENINO"]);
-const ANIMALES_VALIDOS = new Set(["owl", "fox", "cat", "panda", "penguin"]);
-const HEX_VALIDO = /^#[0-9a-fA-F]{6}$/;
+// Skin equipada por defecto; siempre hay una equipada. Todas las skins con
+// costo 0 se regalan, así cada estudiante elige la que prefiera.
+const SKIN_INICIAL = "Estudiante";
+export const SKIN_INICIAL_IMAGEN = "skins/estudiante.png";
 
 export class PersonajeService {
   static #calcularNivel(xp) {
@@ -25,11 +26,33 @@ export class PersonajeService {
     return personaje;
   }
 
+  /**
+   * Regala las skins gratuitas que falten (incluye las que se agreguen
+   * después) y, si no hay ninguna equipada, equipa la inicial.
+   */
+  static async #asegurarSkin(personaje) {
+    const gratis = await ItemTienda.findAll({
+      where: { tipo: "SKIN", costo: 0, activo: true },
+      attributes: ["id_item", "nombre"],
+    });
+    if (!gratis.length) return; // tienda aún no sembrada
+    await UsuarioItem.bulkCreate(
+      gratis.map((g) => ({ id_usuario: personaje.id_usuario, id_item: g.id_item })),
+      { ignoreDuplicates: true },
+    );
+
+    if (personaje.accesorios_equipados?.SKIN) return;
+    const inicial = gratis.find((g) => g.nombre === SKIN_INICIAL) || gratis[0];
+    personaje.accesorios_equipados = { SKIN: inicial.id_item };
+    await personaje.save();
+  }
+
   static async obtenerPerfil(id_usuario) {
     const personaje = await PersonajeService.obtenerOCrearPersonaje(id_usuario);
+    await PersonajeService.#asegurarSkin(personaje);
     const inventario = await UsuarioItem.findAll({
       where: { id_usuario },
-      include: [{ model: ItemTienda, as: "item" }],
+      include: [{ model: ItemTienda, as: "item", where: { tipo: "SKIN" } }],
     });
 
     return {
@@ -39,36 +62,33 @@ export class PersonajeService {
     };
   }
 
-  static async actualizarApariencia(id_usuario, { animal, genero, tono_piel, color_cabello, color_outfit }) {
-    const personaje = await PersonajeService.obtenerOCrearPersonaje(id_usuario);
-
-    if (animal !== undefined) {
-      if (!ANIMALES_VALIDOS.has(animal)) {
-        throw new Error("VALIDACION: Animal inválido.");
-      }
-      personaje.animal = animal;
+  /**
+   * Imagen de la skin equipada de varios usuarios (para el duelo, rankings).
+   * Dos consultas sin importar cuántos sean. Quien no tenga personaje o skin
+   * sale con la inicial.
+   */
+  static async skinsDeUsuarios(ids) {
+    const resultado = new Map(ids.map((id) => [id, SKIN_INICIAL_IMAGEN]));
+    if (!ids.length) return resultado;
+    const personajes = await Personaje.findAll({
+      where: { id_usuario: ids },
+      attributes: ["id_usuario", "accesorios_equipados"],
+    });
+    const skinPorUsuario = new Map(
+      personajes
+        .filter((p) => p.accesorios_equipados?.SKIN)
+        .map((p) => [p.id_usuario, p.accesorios_equipados.SKIN]),
+    );
+    const items = await ItemTienda.findAll({
+      where: { id_item: [...new Set(skinPorUsuario.values())] },
+      attributes: ["id_item", "imagen"],
+    });
+    const imagenPorItem = new Map(items.map((i) => [i.id_item, i.imagen]));
+    for (const [id_usuario, id_item] of skinPorUsuario) {
+      const imagen = imagenPorItem.get(id_item);
+      if (imagen) resultado.set(id_usuario, imagen);
     }
-
-    if (genero !== undefined) {
-      if (!GENEROS_VALIDOS.has(genero)) {
-        throw new Error("VALIDACION: Género inválido.");
-      }
-      personaje.genero = genero;
-    }
-    for (const [campo, valor] of Object.entries({
-      tono_piel,
-      color_cabello,
-      color_outfit,
-    })) {
-      if (valor === undefined) continue;
-      if (!HEX_VALIDO.test(valor)) {
-        throw new Error(`VALIDACION: ${campo} debe ser un color hexadecimal válido (#rrggbb).`);
-      }
-      personaje[campo] = valor;
-    }
-
-    await personaje.save();
-    return personaje;
+    return resultado;
   }
 
   /** Otorga monedas + xp por igual (examen, duelo). Sin tope diario. */
@@ -179,53 +199,59 @@ export class PersonajeService {
       throw new Error("RESTRICCION: No posees este item.");
     }
 
+    if (poseido.item.tipo !== "SKIN") {
+      throw new Error("RESTRICCION: Solo se pueden equipar skins.");
+    }
+
+    // Una sola skin equipada; reemplaza a la anterior.
     const personaje = await PersonajeService.obtenerOCrearPersonaje(id_usuario);
-    personaje.accesorios_equipados = {
-      ...personaje.accesorios_equipados,
-      [poseido.item.tipo]: id_item,
-    };
+    personaje.accesorios_equipados = { SKIN: id_item };
     await personaje.save();
     return personaje;
   }
 
-  static async desequiparItem(id_usuario, tipo) {
-    const personaje = await PersonajeService.obtenerOCrearPersonaje(id_usuario);
-    const equipados = { ...personaje.accesorios_equipados };
-    delete equipados[tipo];
-    personaje.accesorios_equipados = equipados;
-    await personaje.save();
-    return personaje;
-  }
-
-  /** Idempotente: crea solo los items que aún no existen (por nombre). */
+  /**
+   * Idempotente: crea las skins que falten y actualiza las existentes (esta
+   * lista es la fuente de verdad de la tienda). Los accesorios del sistema
+   * anterior (mascotas por capas) se desactivan y se devuelven sus monedas.
+   */
   static async sembrarTiendaSiVacia() {
-    const items = [
-      { nombre: "Lentes clásicos", tipo: "GAFAS", color: "#1f2937", costo: 30, rareza: "COMUN" },
-      { nombre: "Lentes de sol", tipo: "GAFAS", color: "#0f172a", costo: 50, rareza: "RARO" },
-      { nombre: "Birrete de graduación", tipo: "SOMBRERO", color: "#111827", costo: 60, rareza: "RARO" },
-      { nombre: "Gorra casual", tipo: "SOMBRERO", color: "#dc2626", costo: 40, rareza: "COMUN" },
-      { nombre: "Capa de campeón", tipo: "CAPA", color: "#f59e0b", costo: 100, rareza: "EPICO" },
-      { nombre: "Capa básica", tipo: "CAPA", color: "#2563eb", costo: 45, rareza: "COMUN" },
-      { nombre: "Mochila aventurera", tipo: "MOCHILA", color: "#92400e", costo: 55, rareza: "COMUN" },
-      { nombre: "Marco dorado", tipo: "MARCO", color: "#facc15", costo: 120, rareza: "EPICO" },
-      { nombre: "Marco plateado", tipo: "MARCO", color: "#94a3b8", costo: 70, rareza: "RARO" },
-
-      { nombre: "Birrete con borla", tipo: "CABEZA", color: "#1e1b4b", costo: 60, rareza: "COMUN", imagen: "hat_grad.png" },
-      { nombre: "Gorro de mago", tipo: "CABEZA", color: "#6d28d9", costo: 90, rareza: "RARO", imagen: "hat_wizard.png" },
-      { nombre: "Corona dorada", tipo: "CABEZA", color: "#facc15", costo: 150, rareza: "EPICO", imagen: "crown_gold.png" },
-      { nombre: "Gafas redondas", tipo: "OJOS", color: "#1e1b4b", costo: 35, rareza: "COMUN", imagen: "glasses_round.png" },
-      { nombre: "Gafas de sol", tipo: "OJOS", color: "#0f172a", costo: 55, rareza: "RARO", imagen: "glasses_sun.png" },
-      { nombre: "Capa de héroe", tipo: "ESPALDA", color: "#dc2626", costo: 100, rareza: "RARO", imagen: "cape_hero.png" },
-      { nombre: "Alas con plumas", tipo: "ESPALDA", color: "#e2e8f0", costo: 140, rareza: "EPICO", imagen: "wings.png" },
-      { nombre: "Espada rayo", tipo: "MANO", color: "#facc15", costo: 120, rareza: "EPICO", imagen: "sword_bolt.png" },
-      { nombre: "Escudo de madera", tipo: "MANO", color: "#92400e", costo: 70, rareza: "COMUN", imagen: "shield_wood.png" },
-      { nombre: "Libro abierto", tipo: "MANO", color: "#2563eb", costo: 50, rareza: "COMUN", imagen: "book_open.png" },
-      { nombre: "Sudadera azul", tipo: "CUERPO", color: "#2563eb", costo: 65, rareza: "COMUN", imagen: "hoodie_blue.png" },
-      { nombre: "Peto de armadura", tipo: "CUERPO", color: "#94a3b8", costo: 130, rareza: "EPICO", imagen: "armor_silver.png" },
+    // Skins: personaje completo, PNG vertical con fondo transparente en
+    // client/public/personajes/skins/. Para agregar una, copia el PNG ahí y
+    // añade una línea aquí; aparece en la tienda al reiniciar el servidor.
+    const skins = [
+      { nombre: SKIN_INICIAL, color: "#6b7280", costo: 0, rareza: "COMUN", imagen: SKIN_INICIAL_IMAGEN },
+      { nombre: "Universitaria", color: "#9ca3af", costo: 0, rareza: "COMUN", imagen: "skins/universitaria.png" },
+      { nombre: "Cazador del Bosque", color: "#1f4d3a", costo: 300, rareza: "EPICO", imagen: "skins/cazador_bosque.png" },
+      { nombre: "Arquera Lunar", color: "#1e2a5a", costo: 300, rareza: "EPICO", imagen: "skins/arquera_lunar.png" },
+      { nombre: "Rebelde", color: "#4b5563", costo: 100, rareza: "RARO", imagen: "skins/rebelde.png" },
+      { nombre: "Melena Roja", color: "#b91c1c", costo: 100, rareza: "RARO", imagen: "skins/melena_roja.png" },
+      { nombre: "Arquero Carmesí", color: "#7f1d1d", costo: 300, rareza: "EPICO", imagen: "skins/arquero_carmesi.png" },
+      { nombre: "Caballera Escarlata", color: "#111827", costo: 300, rareza: "EPICO", imagen: "skins/caballera_escarlata.png" },
     ];
 
-    for (const item of items) {
-      await ItemTienda.findOrCreate({ where: { nombre: item.nombre }, defaults: item });
+    for (const skin of skins) {
+      const datos = { ...skin, tipo: "SKIN", activo: true };
+      const [item, creado] = await ItemTienda.findOrCreate({ where: { nombre: skin.nombre }, defaults: datos });
+      if (!creado) await item.update(datos);
     }
+
+    // Accesorios comprados con el sistema anterior: se devuelve lo pagado.
+    const comprados = await UsuarioItem.findAll({
+      include: [{ model: ItemTienda, as: "item", where: { tipo: { [Op.ne]: "SKIN" } } }],
+    });
+    for (const ui of comprados) {
+      await sequelize.transaction(async (transaction) => {
+        await Personaje.update(
+          { monedas: sequelize.literal(`monedas + ${ui.item.costo}`) },
+          { where: { id_usuario: ui.id_usuario }, transaction },
+        );
+        await ui.destroy({ transaction });
+      });
+    }
+    if (comprados.length) {
+      console.info(`🪙 Tienda: ${comprados.length} accesorio(s) antiguo(s) reembolsado(s).`);
+    }
+    await ItemTienda.update({ activo: false }, { where: { tipo: { [Op.ne]: "SKIN" } } });
   }
 }

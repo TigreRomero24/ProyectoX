@@ -3,19 +3,6 @@ import { Coins, Check, Loader2 } from "lucide-react";
 import { api } from "../../services/api";
 import { rutaItem } from "./personajeConfig";
 
-const TIPOS_LABEL = {
-  GAFAS: "Gafas",
-  SOMBRERO: "Sombrero",
-  CAPA: "Capa",
-  MOCHILA: "Mochila",
-  MARCO: "Marco",
-  CABEZA: "Cabeza",
-  OJOS: "Ojos",
-  ESPALDA: "Espalda",
-  MANO: "Mano",
-  CUERPO: "Cuerpo",
-};
-
 const RAREZA_LABEL = {
   COMUN: "Común",
   RARO: "Raro",
@@ -54,20 +41,16 @@ export default function Tienda({ personaje, tienda, onCompra, onError }) {
           const alcanza = personaje.monedas >= item.costo;
           return (
             <div key={item.id_item} className={`per-item-card per-rareza--${item.rareza.toLowerCase()}`}>
-              {item.imagen ? (
-                <img className="per-item-img" src={rutaItem(item.imagen)} alt="" />
-              ) : (
-                <span className="per-item-swatch" style={{ background: item.color }} />
-              )}
+              <img className="per-item-img per-item-img--skin" src={rutaItem(item.imagen)} alt="" />
               <h4 className="per-item-nombre">{item.nombre}</h4>
               <div className="per-item-meta">
-                <span>{TIPOS_LABEL[item.tipo]}</span>
+                <span>Skin</span>
                 <span className={`per-item-rareza per-item-rareza--${item.rareza.toLowerCase()}`}>
                   {RAREZA_LABEL[item.rareza]}
                 </span>
               </div>
               <div className="per-item-costo">
-                <Coins size={14} /> {item.costo}
+                {item.costo === 0 ? "Gratis" : <><Coins size={14} /> {item.costo}</>}
               </div>
               <button
                 className="per-btn per-btn--primary"

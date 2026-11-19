@@ -1,17 +1,11 @@
-Coloca aqui los PNG transparentes de 1024x1024 (sin recortar el lienzo).
+Skins del personaje: PNG verticales con fondo transparente en skins/.
+Todas deben tener el mismo encuadre y escala (cuerpo completo, de la cabeza a los pies).
 
-Mascotas base:
-  owl.png  fox.png  cat.png  panda.png  penguin.png
+Para agregar una skin:
+  1. Copia el PNG en skins/ (ej. skins/mago.png).
+  2. Agrégala a la lista "skins" en server/src/services/personaje.service.js
+     (sembrarTiendaSiVacia). Aparece en la tienda al reiniciar el servidor.
 
-Objetos de la tienda (los nombres deben coincidir con la columna imagen de item_tienda):
-  hat_grad.png  hat_wizard.png  crown_gold.png
-  glasses_round.png  glasses_sun.png
-  cape_hero.png  wings.png
-  sword_bolt.png  shield_wood.png  book_open.png
-  hoodie_blue.png  armor_silver.png
-
-Si un PNG no existe, esa capa simplemente no se dibuja; si falta la mascota base,
-se usa el personaje SVG clasico como respaldo.
-
-Posiciones: client/src/components/Personaje/personajeConfig.js
-(SLOT_GEOMETRIA y AJUSTE_ANIMAL; o CAPAS_ALINEADAS = true si generas los objetos ya alineados).
+Las skins con costo 0 se regalan a todos los estudiantes (hoy "Estudiante" y
+"Universitaria"). "Estudiante" (skins/estudiante.png) es la que se equipa por
+defecto. No las borres.

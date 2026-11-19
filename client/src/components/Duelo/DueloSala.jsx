@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Check, Copy, Crown, LogOut, Play, User, WifiOff } from "lucide-react";
+import { Check, Copy, Crown, LogOut, Play, WifiOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import SkinPersonaje from "../Personaje/SkinPersonaje";
 
 export default function DueloSala({ codigo, participantes, onMarcarListo, onIniciar, onSalir }) {
   const { user } = useAuth();
@@ -52,18 +53,25 @@ export default function DueloSala({ codigo, participantes, onMarcarListo, onInic
         </button>
       </div>
 
-      <ul className="duelo-participantes">
+      {/* Lobby: cada participante con su personaje; en gris hasta que se marca listo */}
+      <ul className="duelo-lobby-personajes">
         {participantes.map((p) => (
-          <li key={p.id_usuario} className={`duelo-participante${p.conectado ? "" : " duelo-participante--offline"}`}>
-            <div className="duelo-avatar">
-              {p.url_foto ? <img src={p.url_foto} alt={p.nombre} /> : <User size={16} />}
-            </div>
-            <span className="duelo-participante-nombre">
+          <li
+            key={p.id_usuario}
+            className={[
+              "duelo-jugador",
+              p.listo ? "duelo-jugador--listo" : "",
+              p.conectado ? "" : "duelo-jugador--offline",
+              p.id_usuario === user?.id ? "duelo-jugador--yo" : "",
+            ].join(" ")}
+          >
+            {p.es_creador && <Crown size={16} className="duelo-jugador-corona" title="Creador de la sala" />}
+            <SkinPersonaje className="duelo-jugador-skin" imagen={p.skin} alt={p.nombre} />
+            <span className="duelo-jugador-nombre">
+              {!p.conectado && <WifiOff size={12} title="Desconectado" />}
               {p.nombre}
               {p.id_usuario === user?.id && " (tú)"}
             </span>
-            {p.es_creador && <Crown size={14} className="duelo-icon-creador" title="Creador de la sala" />}
-            {!p.conectado && <WifiOff size={14} className="duelo-icon-offline" title="Desconectado" />}
             <span className={`duelo-badge-listo${p.listo ? " listo" : ""}`}>
               {p.listo ? "Listo" : "Esperando"}
             </span>

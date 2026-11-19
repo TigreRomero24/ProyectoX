@@ -134,32 +134,51 @@
   cursor: pointer;
 }
 
-.duelo-participantes { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.duelo-participante {
-  display: flex;
-  align-items: center;
+/* Lobby: tarjetas con el personaje de cada participante */
+.duelo-lobby-personajes {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
   gap: 10px;
-  padding: 10px 12px;
+}
+.duelo-jugador {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px;
   border-radius: var(--radius-md);
   background: var(--bg-subtle);
+  border: 1.5px solid transparent;
+  transition: border-color .2s, background .2s;
 }
-.duelo-participante--offline { opacity: .55; }
-.duelo-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--c-brand-100);
-  color: var(--c-brand-700);
+.duelo-jugador-skin {
+  height: 150px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: grayscale(1) opacity(.55);
+  transition: filter .3s, transform .3s;
+}
+.duelo-jugador--listo { border-color: var(--c-success-txt); background: var(--c-success-bg); }
+.duelo-jugador--listo .duelo-jugador-skin { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .18)); transform: translateY(-2px); }
+.duelo-jugador--offline { opacity: .5; }
+.duelo-jugador--yo { box-shadow: inset 0 0 0 2px var(--c-brand-400); }
+.duelo-jugador-corona { position: absolute; top: 6px; right: 6px; color: #f59e0b; }
+.duelo-jugador-nombre {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 4px;
+  max-width: 100%;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.duelo-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.duelo-participante-nombre { flex: 1; font-weight: 600; color: var(--text-primary); font-size: 14px; }
-.duelo-icon-creador { color: #f59e0b; }
-.duelo-icon-offline { color: var(--text-muted); }
 .duelo-badge-listo {
   font-size: 11.5px;
   font-weight: 700;
@@ -242,12 +261,79 @@
 .duelo-ranking-nombre { flex: 1; font-weight: 600; color: var(--text-primary); }
 .duelo-ranking-correctas { font-size: 12.5px; color: var(--text-muted); }
 .duelo-ranking-puntaje { font-weight: 800; color: var(--c-brand-700); }
+.duelo-ranking-skin { height: 44px; width: 20px; object-fit: contain; }
+
+/* Podio 2-1-3 con los personajes */
+.duelo-podio {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+.duelo-podio-col {
+  flex: 0 1 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.duelo-podio-skin {
+  height: 150px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .2));
+  animation: duelo-podio-entrar .5s ease-out both;
+}
+.duelo-podio-col--1 .duelo-podio-skin {
+  height: 200px;
+  filter: drop-shadow(0 0 14px rgba(245, 158, 11, .55));
+  animation-delay: .3s;
+}
+.duelo-podio-col--2 .duelo-podio-skin { animation-delay: .15s; }
+@keyframes duelo-podio-entrar {
+  from { opacity: 0; transform: translateY(16px) scale(.94); }
+  to { opacity: 1; transform: none; }
+}
+.duelo-podio-nombre {
+  max-width: 100%;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.duelo-podio-col--yo .duelo-podio-nombre { color: var(--c-brand-700); }
+.duelo-podio-puntaje { font-size: 12.5px; font-weight: 800; color: var(--c-brand-700); }
+.duelo-podio-base {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 8px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  color: #fff;
+}
+.duelo-podio-col--1 .duelo-podio-base { height: 92px; background: linear-gradient(#fbbf24, #d97706); }
+.duelo-podio-col--2 .duelo-podio-base { height: 66px; background: linear-gradient(#cbd5e1, #94a3b8); }
+.duelo-podio-col--3 .duelo-podio-base { height: 48px; background: linear-gradient(#d6a26b, #b45309); }
+.duelo-podio-numero { font-size: 24px; font-weight: 900; line-height: 1; text-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
+.duelo-podio-aciertos { font-size: 11px; font-weight: 600; opacity: .9; }
+@media (max-width: 480px) {
+  .duelo-podio-skin { height: 110px; }
+  .duelo-podio-col--1 .duelo-podio-skin { height: 145px; }
+}
 
 /* ── Mini reproductor de música flotante ─────────────────────────────────── */
 .duelo-musica {
   position: fixed;
   right: 18px;
-  bottom: 18px;
+  /* arriba a la derecha, bajo la barra: la lista de resultados se abre hacia abajo y queda visible */
+  top: calc(var(--navbar-h) + 12px);
   width: 220px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);

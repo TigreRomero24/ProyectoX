@@ -426,11 +426,14 @@ export class DueloService {
       ],
     });
 
+    const skins = await PersonajeService.skinsDeUsuarios(participantes.map((p) => p.id_usuario));
+
     return participantes.map((p, index) => ({
       posicion: index + 1,
       id_usuario: p.id_usuario,
       nombre: p.usuario?.nombre || "Estudiante",
       url_foto: p.usuario?.url_foto || null,
+      skin: skins.get(p.id_usuario),
       puntaje: p.puntaje,
       respuestas_correctas: p.respuestas_correctas,
     }));
