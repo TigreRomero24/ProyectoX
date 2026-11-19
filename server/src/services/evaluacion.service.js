@@ -8,7 +8,13 @@ import { ConfiguracionExamen } from "../models/evaluacion.models/configuracionEx
 import { Intento } from "../models/evaluacion.models/intento.js";
 import { DetalleIntento } from "../models/evaluacion.models/detalleIntento.js";
 import { PersonajeService } from "./personaje.service.js";
+import { Usuario } from "../models/security.models/usuarioModel.js";
+
 import { estructuraPublica } from "../utils/estructuraPublica.js";
+
+// Monedas por sacar el 100%; con menos, proporcional (90% de 10 = 9).
+const MONEDAS_EXAMEN_PERFECTO = 15;
+const MONEDAS_LECCION_PERFECTA = 10;
 
 // 🔥 CAMBIO: el límite fijo ahora aplica a EXAMEN, no a TEST.
 const PREGUNTAS_MODO_EXAMEN = 30;
@@ -444,8 +450,10 @@ export class EvaluacionService {
       // Monedas del personaje: fuera de la transacción del examen (que ya
       // se confirmó), para que un fallo acá nunca tumbe el resultado.
       try {
-        const monedasGanadas = Math.round(notaFinal * 5) + (notaFinal === 10 ? 20 : 0);
-        await PersonajeService.otorgarMonedas(id_usuario, monedasGanadas);
+        await PersonajeService.otorgarMonedas(
+          id_usuario,
+          PersonajeService.monedasPorResultado(totalCorrectas, totalExamen, MONEDAS_EXAMEN_PERFECTO),
+        );
       } catch (errorMonedas) {
         console.error("[EvaluacionService] No se pudieron otorgar monedas:", errorMonedas.message);
       }
@@ -616,10 +624,15 @@ export class EvaluacionService {
    * Incluye materia y configuración para que el frontend pueda renderizar
    * el historial sin queries adicionales.
    */
-  static async obtenerHistorial(id_usuario) {
+  static async obtenerHistorial(id_usuario, todos = false) {
     const intentos = await Intento.findAll({
-      where: { id_usuario, estado: "FINALIZADO" },
+      // todos: vista del administrador con los intentos de todos los usuarios
+      where: todos ? { estado: "FINALIZADO" } : { id_usuario, estado: "FINALIZADO" },
       include: [
+        {
+          model: Usuario,
+          attributes: ["id_usuario", "nombre", "correo_institucional", "url_foto"],
+        },
         {
           model: ConfiguracionExamen,
           as: "configuracion",
@@ -637,6 +650,7 @@ export class EvaluacionService {
         "fecha_fin",
         "nota_final",
         "estado",
+        "total_preguntas",
       ],
       order: [["fecha_fin", "DESC"]],
       // ponytail: tope fijo en vez de paginación, porque el cliente calcula
@@ -663,12 +677,15 @@ export class EvaluacionService {
     const porIntento = new Map(conteos.map((c) => [c.id_intento, c]));
 
     return intentos.map((intento) => {
-      const plain = intento.get({ plain: true });
+      const { Usuario: u, ...plain } = intento.get({ plain: true });
       const c = porIntento.get(plain.id_intento);
       return {
         ...plain,
+        usuario: u && { nombre: u.nombre, correo: u.correo_institucional, url_foto: u.url_foto },
         preguntas_correctas: Number(c?.correctas || 0),
-        total_preguntas: Number(c?.total || 0),
+        // Total del examen/lección (incluye las no respondidas); los intentos
+        // antiguos sin ese dato usan las respondidas.
+        total_preguntas: plain.total_preguntas || Number(c?.total || 0),
       };
     });
   }
@@ -1046,23 +1063,27 @@ export class EvaluacionService {
       // Insertar detalles
       await DetalleIntento.bulkCreate(detallesAInsertar, { transaction: t });
 
-      // Calcular nota final
-      const totalRespondidas = detallesAInsertar.length;
-      const notaFinal =
-        totalRespondidas > 0
-          ? parseFloat(((totalCorrectas / totalRespondidas) * 10).toFixed(2))
-          : 0;
+      // Nota sobre el total de la lección (todas las preguntas activas de la
+      // materia, igual que las que carga el modo TEST), no solo las respondidas.
+      const totalLeccion = Math.max(
+        await BancoPregunta.count({ where: { id_materia, activo: true }, transaction: t }),
+        detallesAInsertar.length,
+      );
+      const notaFinal = parseFloat(((totalCorrectas / totalLeccion) * 10).toFixed(2));
 
       // Actualizar intento con nota final
       await intento.update(
-        { nota_final: notaFinal },
+        { nota_final: notaFinal, total_preguntas: totalLeccion },
         { transaction: t },
       );
 
       await t.commit();
 
       try {
-        await PersonajeService.otorgarMonedasLeccion(id_usuario, totalCorrectas);
+        await PersonajeService.otorgarMonedasLeccion(
+          id_usuario,
+          PersonajeService.monedasPorResultado(totalCorrectas, totalLeccion, MONEDAS_LECCION_PERFECTA),
+        );
       } catch (errorMonedas) {
         console.error(
           "[EvaluacionService] No se pudieron otorgar monedas de lección:",
@@ -1075,8 +1096,8 @@ export class EvaluacionService {
         estado: "FINALIZADO",
         nota_final: notaFinal,
         preguntas_correctas: totalCorrectas,
-        total_preguntas: totalRespondidas,
-        porcentaje: parseFloat(((totalCorrectas / totalRespondidas) * 100).toFixed(2)),
+        total_preguntas: totalLeccion,
+        porcentaje: parseFloat(((totalCorrectas / totalLeccion) * 100).toFixed(2)),
       };
     } catch (error) {
       await t.rollback();

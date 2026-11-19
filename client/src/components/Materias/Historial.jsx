@@ -122,6 +122,16 @@ function StatCard({ icon, valor, label, color }) {
   );
 }
 
+// Foto de perfil, o la inicial si no tiene.
+function AvatarUsuario({ usuario, grande = false }) {
+  const clase = `hi-avatar${grande ? " hi-avatar--grande" : ""}`;
+  return usuario?.url_foto ? (
+    <img className={clase} src={usuario.url_foto} alt="" referrerPolicy="no-referrer" />
+  ) : (
+    <div className={clase}>{usuario?.nombre?.[0] ?? "U"}</div>
+  );
+}
+
 // ─── Fila de tabla ────────────────────────────────────────────────────────────
 function FilaIntento({ intento, conUsuario, onClick }) {
   const pct = porcentaje(intento);
@@ -136,7 +146,7 @@ function FilaIntento({ intento, conUsuario, onClick }) {
     <div className="hi-fila" onClick={() => onClick(intento)}>
       {conUsuario && (
         <div className="hi-fila-usuario">
-          <div className="hi-avatar">{intento.usuario?.nombre?.[0] ?? "U"}</div>
+          <AvatarUsuario usuario={intento.usuario} />
           <div>
             <span className="hi-usuario-nombre">{intento.usuario?.nombre}</span>
             <span className="hi-usuario-correo">{intento.usuario?.correo}</span>
@@ -188,7 +198,7 @@ function FilaIntento({ intento, conUsuario, onClick }) {
 
 // ─── Principal ────────────────────────────────────────────────────────────────
 export default function Historial() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   const [vista, setVista] = useState("mio"); // "mio" | "todos"
   const [datos, setDatos] = useState([]);
@@ -210,7 +220,7 @@ export default function Historial() {
     //  setLoading(false);
     //}, 300);
     // Real:
-    api.getHistorial().then(r => { setDatos(r.data ?? []); setLoading(false); })
+    api.getHistorial(vista === "todos").then(r => { setDatos(r.data ?? []); setLoading(false); })
        .catch(() => { setError("Error al cargar historial"); setLoading(false); });
   }, [vista]);
 
@@ -420,11 +430,14 @@ export default function Historial() {
     <div className="hi-root">
       {/* Header */}
       <div className="hi-header">
-        <div>
+        <div className="hi-header-info">
+          <AvatarUsuario usuario={user} grande />
+          <div>
           <h2 className="hi-titulo">Historial de Evaluaciones</h2>
           <p className="hi-subtitulo">
             Consulta el registro completo de tests y exámenes realizados
           </p>
+          </div>
         </div>
       </div>
 

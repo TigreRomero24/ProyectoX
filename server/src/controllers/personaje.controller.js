@@ -1,4 +1,7 @@
 import { PersonajeService } from "../services/personaje.service.js";
+import { Usuario } from "../models/security.models/usuarioModel.js";
+import { TokenFactory } from "../utils/tokenFactory.js";
+import { env } from "../config/environment.js";
 
 export class PersonajeController {
   static #manejarError(res, error, mensajeServidor) {
@@ -49,7 +52,20 @@ export class PersonajeController {
     try {
       const id_item = parseInt(req.params.id_item, 10);
       const data = await PersonajeService.equiparItem(req.user.id, id_item);
-      return res.status(200).json({ ok: true, data });
+      if (!data.url_foto) return res.status(200).json({ ok: true, data });
+
+      // Cambió la foto de perfil: token nuevo para que la sesión la refleje
+      // (mismo criterio que PUT /auth/me).
+      const usuario = await Usuario.findByPk(req.user.id);
+      const accessToken = TokenFactory.create("ACCESS", env.jwt).generateToken({
+        id: usuario.id_usuario,
+        rol: usuario.rol,
+        dispositivoId: req.user.dispositivoId,
+        nombre: usuario.nombre || null,
+        correo: usuario.correo_institucional,
+        url_foto: usuario.url_foto || null,
+      });
+      return res.status(200).json({ ok: true, data, accessToken });
     } catch (error) {
       return PersonajeController.#manejarError(res, error, "Error al equipar el item.");
     }

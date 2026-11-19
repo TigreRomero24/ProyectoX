@@ -3,6 +3,12 @@ import { Coins, Check, Loader2 } from "lucide-react";
 import { api } from "../../services/api";
 import { rutaItem } from "./personajeConfig";
 
+// Secciones de la tienda, en orden.
+const SECCIONES = [
+  { tipo: "SKIN", titulo: "Skins", etiqueta: "Skin" },
+  { tipo: "AVATAR", titulo: "Fotos de perfil", etiqueta: "Foto de perfil" },
+];
+
 const RAREZA_LABEL = {
   COMUN: "Común",
   RARO: "Raro",
@@ -35,16 +41,19 @@ export default function Tienda({ personaje, tienda, onCompra, onError }) {
         <Coins size={16} /> Tienes <strong>{personaje.monedas}</strong> monedas
       </div>
 
+      {SECCIONES.map(({ tipo, titulo, etiqueta }) => (
+      <section key={tipo}>
+      <h3 className="per-subtitulo per-subtitulo--mt">{titulo}</h3>
       <div className="per-tienda-grid">
-        {tienda.map((item) => {
+        {tienda.filter((item) => item.tipo === tipo).map((item) => {
           const poseido = idsPoseidos.has(item.id_item);
           const alcanza = personaje.monedas >= item.costo;
           return (
             <div key={item.id_item} className={`per-item-card per-rareza--${item.rareza.toLowerCase()}`}>
-              <img className="per-item-img per-item-img--skin" src={rutaItem(item.imagen)} alt="" />
+              <img className={`per-item-img per-item-img--${tipo.toLowerCase()}`} src={rutaItem(item.imagen)} alt="" />
               <h4 className="per-item-nombre">{item.nombre}</h4>
               <div className="per-item-meta">
-                <span>Skin</span>
+                <span>{etiqueta}</span>
                 <span className={`per-item-rareza per-item-rareza--${item.rareza.toLowerCase()}`}>
                   {RAREZA_LABEL[item.rareza]}
                 </span>
@@ -68,6 +77,8 @@ export default function Tienda({ personaje, tienda, onCompra, onError }) {
           );
         })}
       </div>
+      </section>
+      ))}
     </div>
   );
 }

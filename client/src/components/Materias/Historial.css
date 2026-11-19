@@ -300,6 +300,9 @@
   min-width: 0;
   grid-column: 1;
 }
+.hi-header-info { display: flex; align-items: center; gap: 14px; }
+.hi-avatar--grande { width: 52px !important; height: 52px !important; font-size: var(--text-lg) !important; }
+img.hi-avatar { object-fit: cover; background: var(--bg-muted); }
 .hi-avatar {
   width: 32px;
   height: 32px;

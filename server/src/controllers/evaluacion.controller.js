@@ -217,8 +217,9 @@ export class EvaluacionController {
   static async obtenerHistorial(req, res) {
     try {
       const id_usuario = req.user.id;
+      const todos = req.query.todos === "1" && req.user.rol === "ADMINISTRADOR";
 
-      const historial = await EvaluacionService.obtenerHistorial(id_usuario);
+      const historial = await EvaluacionService.obtenerHistorial(id_usuario, todos);
 
       return res.status(200).json({ ok: true, data: historial });
     } catch (error) {

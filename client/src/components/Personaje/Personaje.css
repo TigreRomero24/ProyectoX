@@ -179,3 +179,5 @@
 .per-item-img--skin { width: 72px; height: 110px; }
 .per-skin-nombre { margin: -4px 0 0; font-size: 13px; font-weight: 700; color: var(--text-secondary); }
 .per-inv-img--skin { width: 26px; height: 40px; }
+.per-item-img--avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }
+.per-inv-img--avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }

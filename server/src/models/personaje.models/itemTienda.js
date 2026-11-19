@@ -29,6 +29,8 @@ export const ItemTienda = sequelize.define(
         "CUERPO",
         // personaje completo con su atuendo: reemplaza a la mascota y sus capas
         "SKIN",
+        // retrato del personaje; equipado se usa como foto de perfil
+        "AVATAR",
       ),
       allowNull: false,
     },

@@ -272,7 +272,8 @@ export const api = {
 
   retomarExamen: (idIntento) => request(`/evaluaciones/retomar/${idIntento}`),
 
-  getHistorial: () => request("/evaluaciones/historial", { cache: "no-store" }),
+  getHistorial: (todos = false) =>
+    request(`/evaluaciones/historial${todos ? "?todos=1" : ""}`, { cache: "no-store" }),
 
   // ── Admin: intentos de estudiantes ───────────────────────────────────────────
   getIntentosEstudiante: (idUsuario) =>

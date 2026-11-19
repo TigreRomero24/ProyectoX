@@ -3,15 +3,18 @@ import { sequelize } from "../config/database.js";
 import { Personaje } from "../models/personaje.models/personaje.js";
 import { ItemTienda } from "../models/personaje.models/itemTienda.js";
 import { UsuarioItem } from "../models/personaje.models/usuarioItem.js";
+import { Usuario } from "../models/security.models/usuarioModel.js";
 
 const XP_POR_NIVEL = 100;
 const LIMITE_MONEDAS_LECCION_DIA = 30;
-const MONEDAS_POR_ACIERTO_LECCION = 2;
 
 // Skin equipada por defecto; siempre hay una equipada. Todas las skins con
 // costo 0 se regalan, así cada estudiante elige la que prefiera.
 const SKIN_INICIAL = "Estudiante";
 export const SKIN_INICIAL_IMAGEN = "skins/estudiante.png";
+// Lo que se puede tener y equipar (uno de cada tipo a la vez).
+const TIPOS_EQUIPABLES = ["SKIN", "AVATAR"];
+const COSTO_AVATAR = 10;
 
 export class PersonajeService {
   static #calcularNivel(xp) {
@@ -52,7 +55,7 @@ export class PersonajeService {
     await PersonajeService.#asegurarSkin(personaje);
     const inventario = await UsuarioItem.findAll({
       where: { id_usuario },
-      include: [{ model: ItemTienda, as: "item", where: { tipo: "SKIN" } }],
+      include: [{ model: ItemTienda, as: "item", where: { tipo: TIPOS_EQUIPABLES } }],
     });
 
     return {
@@ -91,6 +94,11 @@ export class PersonajeService {
     return resultado;
   }
 
+  /** Monedas proporcionales al resultado: 9 de 10 aciertos con máximo 10 -> 9. */
+  static monedasPorResultado(correctas, total, maximo) {
+    return total > 0 ? Math.round((correctas / total) * maximo) : 0;
+  }
+
   /** Otorga monedas + xp por igual (examen, duelo). Sin tope diario. */
   static async otorgarMonedas(id_usuario, cantidad) {
     const n = parseInt(cantidad, 10);
@@ -108,11 +116,11 @@ export class PersonajeService {
   }
 
   /**
-   * Otorga monedas por aciertos en modo lección, con tope diario para
-   * evitar que se farmee infinito repitiendo el mismo test sin límite.
+   * Otorga las monedas de una lección, con tope diario para evitar que se
+   * farmee infinito repitiendo la misma lección.
    */
-  static async otorgarMonedasLeccion(id_usuario, aciertos) {
-    if (aciertos <= 0) return 0;
+  static async otorgarMonedasLeccion(id_usuario, monedas) {
+    if (!(monedas > 0)) return 0;
     await PersonajeService.obtenerOCrearPersonaje(id_usuario);
 
     // Bloquea la fila: dos lecciones simultáneas no pueden saltarse el tope.
@@ -131,7 +139,7 @@ export class PersonajeService {
       }
 
       const disponible = LIMITE_MONEDAS_LECCION_DIA - personaje.monedas_hoy_leccion;
-      const aOtorgar = Math.max(0, Math.min(aciertos * MONEDAS_POR_ACIERTO_LECCION, disponible));
+      const aOtorgar = Math.max(0, Math.min(monedas, disponible));
 
       if (aOtorgar > 0) {
         personaje.monedas += aOtorgar;
@@ -199,15 +207,24 @@ export class PersonajeService {
       throw new Error("RESTRICCION: No posees este item.");
     }
 
-    if (poseido.item.tipo !== "SKIN") {
-      throw new Error("RESTRICCION: Solo se pueden equipar skins.");
+    const { tipo, imagen } = poseido.item;
+    if (!TIPOS_EQUIPABLES.includes(tipo)) {
+      throw new Error("RESTRICCION: Este item no se puede equipar.");
     }
 
-    // Una sola skin equipada; reemplaza a la anterior.
+    // Uno por tipo; reemplaza al anterior del mismo tipo.
     const personaje = await PersonajeService.obtenerOCrearPersonaje(id_usuario);
-    personaje.accesorios_equipados = { SKIN: id_item };
+    personaje.accesorios_equipados = { ...personaje.accesorios_equipados, [tipo]: id_item };
     await personaje.save();
-    return personaje;
+
+    // El retrato pasa a ser la foto de perfil (navbar, duelo, historial...).
+    // La foto subida antes no se borra del disco; si vuelve a subir una, la reemplaza.
+    let url_foto;
+    if (tipo === "AVATAR") {
+      url_foto = `/personajes/${imagen}`;
+      await Usuario.update({ url_foto }, { where: { id_usuario } });
+    }
+    return { accesorios_equipados: personaje.accesorios_equipados, url_foto };
   }
 
   /**
@@ -222,23 +239,34 @@ export class PersonajeService {
     const skins = [
       { nombre: SKIN_INICIAL, color: "#6b7280", costo: 0, rareza: "COMUN", imagen: SKIN_INICIAL_IMAGEN },
       { nombre: "Universitaria", color: "#9ca3af", costo: 0, rareza: "COMUN", imagen: "skins/universitaria.png" },
-      { nombre: "Cazador del Bosque", color: "#1f4d3a", costo: 300, rareza: "EPICO", imagen: "skins/cazador_bosque.png" },
-      { nombre: "Arquera Lunar", color: "#1e2a5a", costo: 300, rareza: "EPICO", imagen: "skins/arquera_lunar.png" },
-      { nombre: "Rebelde", color: "#4b5563", costo: 100, rareza: "RARO", imagen: "skins/rebelde.png" },
-      { nombre: "Melena Roja", color: "#b91c1c", costo: 100, rareza: "RARO", imagen: "skins/melena_roja.png" },
-      { nombre: "Arquero Carmesí", color: "#7f1d1d", costo: 300, rareza: "EPICO", imagen: "skins/arquero_carmesi.png" },
-      { nombre: "Caballera Escarlata", color: "#111827", costo: 300, rareza: "EPICO", imagen: "skins/caballera_escarlata.png" },
+      { nombre: "Cazador del Bosque", color: "#1f4d3a", costo: 100, rareza: "EPICO", imagen: "skins/cazador_bosque.png" },
+      { nombre: "Arquera Lunar", color: "#1e2a5a", costo: 100, rareza: "EPICO", imagen: "skins/arquera_lunar.png" },
+      { nombre: "Rebelde", color: "#4b5563", costo: 50, rareza: "RARO", imagen: "skins/rebelde.png" },
+      { nombre: "Melena Roja", color: "#b91c1c", costo: 50, rareza: "RARO", imagen: "skins/melena_roja.png" },
+      { nombre: "Arquero Carmesí", color: "#7f1d1d", costo: 100, rareza: "EPICO", imagen: "skins/arquero_carmesi.png" },
+      { nombre: "Caballera Escarlata", color: "#111827", costo: 100, rareza: "EPICO", imagen: "skins/caballera_escarlata.png" },
     ];
 
-    for (const skin of skins) {
-      const datos = { ...skin, tipo: "SKIN", activo: true };
+    // Cada skin trae su retrato para foto de perfil (client/public/personajes/avatars/,
+    // mismo nombre de archivo que la skin).
+    const avatares = skins.map((s) => ({
+      nombre: `Retrato ${s.nombre}`,
+      color: s.color,
+      costo: COSTO_AVATAR,
+      rareza: s.rareza,
+      imagen: s.imagen.replace("skins/", "avatars/"),
+      tipo: "AVATAR",
+    }));
+
+    for (const skin of [...skins.map((s) => ({ ...s, tipo: "SKIN" })), ...avatares]) {
+      const datos = { ...skin, activo: true };
       const [item, creado] = await ItemTienda.findOrCreate({ where: { nombre: skin.nombre }, defaults: datos });
       if (!creado) await item.update(datos);
     }
 
     // Accesorios comprados con el sistema anterior: se devuelve lo pagado.
     const comprados = await UsuarioItem.findAll({
-      include: [{ model: ItemTienda, as: "item", where: { tipo: { [Op.ne]: "SKIN" } } }],
+      include: [{ model: ItemTienda, as: "item", where: { tipo: { [Op.notIn]: TIPOS_EQUIPABLES } } }],
     });
     for (const ui of comprados) {
       await sequelize.transaction(async (transaction) => {
@@ -252,6 +280,6 @@ export class PersonajeService {
     if (comprados.length) {
       console.info(`🪙 Tienda: ${comprados.length} accesorio(s) antiguo(s) reembolsado(s).`);
     }
-    await ItemTienda.update({ activo: false }, { where: { tipo: { [Op.ne]: "SKIN" } } });
+    await ItemTienda.update({ activo: false }, { where: { tipo: { [Op.notIn]: TIPOS_EQUIPABLES } } });
   }
 }
