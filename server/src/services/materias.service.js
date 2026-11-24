@@ -20,6 +20,7 @@ export class MateriaService {
     const dto = {};
     if (datos.nombre !== undefined) dto.nombre = datos.nombre;
     if (datos.img !== undefined) dto.img = datos.img;
+    if (datos.semestre !== undefined) dto.semestre = datos.semestre;
     return dto;
   }
 
@@ -44,15 +45,35 @@ export class MateriaService {
     const nueva = await Materia.create({
       nombre: datosMateria.nombre,
       img: datosMateria.img || null,
+      semestre: datosMateria.semestre ?? null,
     });
     return nueva.get({ plain: true });
   }
 
   // ─── Listar todas ────────────────────────────────────────────────────────────
   static async obtenerMaterias() {
+    // Conteos para que el inicio del admin avise qué falta preparar.
     return Materia.findAll({
-      attributes: ["id_materia", "nombre", "img", "createdAt"],
-      order: [["nombre", "ASC"]],
+      attributes: [
+        "id_materia",
+        "nombre",
+        "img",
+        "semestre",
+        "createdAt",
+        [
+          sequelize.literal(
+            `(SELECT COUNT(*)::int FROM banco_pregunta bp WHERE bp.id_materia = "Materia"."id_materia" AND bp.activo)`,
+          ),
+          "total_preguntas",
+        ],
+        [
+          sequelize.literal(
+            `(SELECT COUNT(*)::int FROM configuracion_examen ce WHERE ce.id_materia = "Materia"."id_materia")`,
+          ),
+          "total_configuraciones",
+        ],
+      ],
+      order: [["semestre", "ASC NULLS LAST"], ["nombre", "ASC"]],
       raw: true,
     });
   }
@@ -66,7 +87,7 @@ export class MateriaService {
   static async obtenerMateriasDeUsuario(id_usuario) {
     const inscripciones = await Inscripcion.findAll({
       where: { id_usuario, activo: true },
-      include: [{ model: Materia, attributes: ["id_materia", "nombre", "img"] }],
+      include: [{ model: Materia, attributes: ["id_materia", "nombre", "img", "semestre"] }],
       raw: true,
       nest: true,
     });
@@ -87,6 +108,7 @@ export class MateriaService {
           id_materia: mat.id_materia,
           nombre: mat.nombre,
           img: mat.img,
+          semestre: mat.semestre,
           modos_inscritos: ["TEST", "EXAMEN"], // Ahora siempre tiene ambos modos si está inscrito
         });
       }
@@ -100,7 +122,7 @@ export class MateriaService {
   // ─── Obtener por ID ──────────────────────────────────────────────────────────
   static async obtenerMateriaPorId(id_materia) {
     const materia = await Materia.findByPk(id_materia, {
-      attributes: ["id_materia", "nombre", "img", "createdAt"],
+      attributes: ["id_materia", "nombre", "img", "semestre", "createdAt"],
     });
     if (!materia)
       throw new Error("NO_ENCONTRADO: La materia solicitada no existe.");

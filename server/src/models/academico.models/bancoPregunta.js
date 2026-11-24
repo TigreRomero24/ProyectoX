@@ -30,7 +30,8 @@ export const BancoPregunta = sequelize.define(
         "VERDADERO_FALSO",
         "SELECCION_MULTIPLE",
         "ORDENAR",
-        "COMPLETAR"
+        "COMPLETAR",
+        "RELACIONAR"
       ),
       allowNull: false,
     },

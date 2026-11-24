@@ -178,7 +178,7 @@ export function setupDueloSocket(io) {
     });
 
     // ── Responder la pregunta activa ────────────────────────────────────────
-    socket.on("duelo:responder", async ({ id_pregunta, id_opcion_elegida }, ack) => {
+    socket.on("duelo:responder", async ({ id_pregunta, id_opcion_elegida, respuesta_json }, ack) => {
       try {
         const { codigo, id_duelo } = socket.data;
         if (!codigo) throw new Error("ESTADO_INVALIDO: No estás en una sala.");
@@ -189,6 +189,7 @@ export function setupDueloSocket(io) {
         const respuesta = await DueloService.registrarRespuesta(id_duelo, socket.user.id, {
           id_pregunta,
           id_opcion_elegida,
+          respuesta_json,
           tiempo_respuesta_ms,
         });
 

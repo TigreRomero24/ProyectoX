@@ -27,6 +27,7 @@ const COLUMNAS = [
   "opcion_b",
   "opcion_c",
   "opcion_d",
+  "opcion_e",
   "correcta",
   "tipo",
   "imagen",
@@ -44,6 +45,8 @@ const COLUMNAS = [
   - imagen: cualquier valor (ej. "si") marca que la pregunta lleva imagen; la
     fila queda en rojo hasta adjuntarla en la vista previa
   - opcion_c y opcion_d son opcionales (mínimo 2 opciones)
+  - tipo "REL" (relacionar): cada opcion_x lleva "izquierda = derecha";
+    correcta se ignora. Admite más columnas (opcion_e, opcion_f…).
 */
 
 const LETRAS = ["A", "B", "C", "D"];
@@ -55,13 +58,29 @@ const TIPO_POR_TEXTO = {
   SELECCION: "SELECCION_MULTIPLE",
   SELECCION_MULTIPLE: "SELECCION_MULTIPLE",
   MULTIPLE: "MULTIPLE",
+  REL: "RELACIONAR",
+  RELACIONAR: "RELACIONAR",
+};
+
+const letra = (i) => String.fromCharCode(65 + i);
+// "Perro = Ladra" → { izquierda: "Perro", derecha: "Ladra" }
+const partirPar = (t) => {
+  const i = t.indexOf("=");
+  return i < 0
+    ? { izquierda: t.trim(), derecha: "" }
+    : { izquierda: t.slice(0, i).trim(), derecha: t.slice(i + 1).trim() };
 };
 
 // ─── Validar una pregunta (al leerla y al editarla) ────────────────────────────
 const validarPregunta = (p) => {
   const errs = [];
   if (!p.enunciado.trim()) errs.push("Enunciado vacío");
-  if (p.tipo_pregunta !== "VERDADERO_FALSO") {
+  if (p.tipo_pregunta === "RELACIONAR") {
+    const pares = p._opcionTextos.filter((t) => t.trim() !== "").map(partirPar);
+    if (pares.length < 2) errs.push("Mínimo 2 pares");
+    if (pares.some((x) => !x.izquierda || !x.derecha))
+      errs.push('Cada par va como "opción = respuesta"');
+  } else if (p.tipo_pregunta !== "VERDADERO_FALSO") {
     const validas = p._opcionTextos.filter((t) => t.trim() !== "");
     if (validas.length < 2) errs.push("Mínimo 2 opciones con texto");
     const correctas = p._correctas.filter((i) => i < validas.length);
@@ -90,6 +109,12 @@ const parsearFila = (fila, idx) => {
   const opcionTextos =
     tipo === "VERDADERO_FALSO"
       ? ["Verdadero", "Falso"]
+      : tipo === "RELACIONAR"
+      ? Object.keys(fila)
+          .filter((k) => /^opcion_[a-z]$/.test(k))
+          .sort()
+          .map(texto)
+          .filter((t) => t !== "")
       : [texto("opcion_a"), texto("opcion_b"), texto("opcion_c"), texto("opcion_d")].filter(
           (t) => t !== "",
         );
@@ -113,6 +138,20 @@ const parsearFila = (fila, idx) => {
 
 // ─── Convertir pregunta interna → payload API ──────────────────────────────────
 const toPayload = (p) => {
+  if (p.tipo_pregunta === "RELACIONAR") {
+    const pares = p._opcionTextos.filter((t) => t.trim() !== "").map(partirPar);
+    return {
+      enunciado: p.enunciado.trim(),
+      tipo_pregunta: "RELACIONAR",
+      estructura_json: {
+        tipo: "RELACIONAR",
+        pares,
+        respuesta: {
+          pares: pares.map((x, i) => ({ izq_id: letra(i), derecha: x.derecha })),
+        },
+      },
+    };
+  }
   const textos = p._opcionTextos.filter((t) => t.trim() !== "");
   const opciones = textos.map((texto, i) => ({
     texto,
@@ -185,6 +224,16 @@ const descargarPlantilla = () => {
       tipo: "MULTIPLE",
       imagen: "si",
     },
+    {
+      enunciado: "Relaciona cada animal con su sonido",
+      opcion_a: "Perro = Ladra",
+      opcion_b: "Gato = Maúlla",
+      opcion_c: "Vaca = Muge",
+      opcion_d: "Oveja = Bala",
+      opcion_e: "Pato = Grazna",
+      correcta: "",
+      tipo: "REL",
+    },
   ];
   const ws = XLSX.utils.json_to_sheet(datos, { header: COLUMNAS });
   const wb = XLSX.utils.book_new();
@@ -192,6 +241,7 @@ const descargarPlantilla = () => {
   // Ajustar anchos de columna
   ws["!cols"] = [
     { wch: 50 },
+    { wch: 20 },
     { wch: 20 },
     { wch: 20 },
     { wch: 20 },
@@ -581,6 +631,10 @@ export default function CargaExcel({
                       <>
                         <CheckCheck size={10} /> Selección
                       </>
+                    ) : p.tipo_pregunta === "RELACIONAR" ? (
+                      <>
+                        <List size={10} /> Relacionar
+                      </>
                     ) : (
                       <>
                         <ToggleLeft size={10} /> V/F
@@ -663,6 +717,7 @@ export default function CargaExcel({
                     ) : (
                       p._opcionTextos.map((texto, oi) => (
                         <div key={oi} className="ce-opcion-edit-row">
+                          {p.tipo_pregunta !== "RELACIONAR" && (
                           <button
                             className={`ce-radio${p._correctas.includes(oi) ? " ce-radio--active" : ""}`}
                             onClick={() => marcarCorrecta(idx, oi)}
@@ -673,12 +728,17 @@ export default function CargaExcel({
                               <Circle size={17} />
                             )}
                           </button>
-                          <span className="ce-letra">{LETRAS[oi]}</span>
+                          )}
+                          <span className="ce-letra">{letra(oi)}</span>
                           <input
                             className="ce-input-opcion"
                             type="text"
                             value={texto}
-                            placeholder={`Opción ${LETRAS[oi]}`}
+                            placeholder={
+                              p.tipo_pregunta === "RELACIONAR"
+                                ? "opción = respuesta"
+                                : `Opción ${letra(oi)}`
+                            }
                             onChange={(e) =>
                               actualizarOpcion(idx, oi, e.target.value)
                             }
@@ -713,7 +773,7 @@ export default function CargaExcel({
                             className={`ce-opcion-chip${p._correctas.includes(i) ? " ce-opcion-chip--ok" : ""}`}
                           >
                             {p._correctas.includes(i) && <CheckCircle2 size={11} />}{" "}
-                            {LETRAS[i]}. {t}
+                            {letra(i)}. {t}
                           </span>
                         ))
                     )}

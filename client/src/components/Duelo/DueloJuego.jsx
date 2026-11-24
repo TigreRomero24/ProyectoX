@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Clock, Users, XCircle } from "lucide-react";
+import RelacionarRenderer from "../Materias/RelacionarRenderer";
 
 const LETRAS = ["A", "B", "C", "D", "E", "F"];
 
@@ -9,6 +10,7 @@ export default function DueloJuego({ pregunta, progreso, onResponder }) {
   const [seleccionada, setSeleccionada] = useState(null);
   const [respondida, setRespondida] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [relacion, setRelacion] = useState(null);
 
   // Al llegar una pregunta nueva, reinicia el estado local y el reloj.
   useEffect(() => {
@@ -17,6 +19,7 @@ export default function DueloJuego({ pregunta, progreso, onResponder }) {
     setSeleccionada(null);
     setRespondida(false);
     setFeedback(null);
+    setRelacion(null);
   }, [pregunta?.id_pregunta, pregunta?.numero]);
 
   useEffect(() => {
@@ -32,13 +35,13 @@ export default function DueloJuego({ pregunta, progreso, onResponder }) {
     return <div className="duelo-juego-cargando">Esperando la siguiente pregunta…</div>;
   }
 
-  const elegir = async (idOpcion) => {
+  const elegir = async (idOpcion, respuestaJson) => {
     if (respondida) return;
     setSeleccionada(idOpcion);
     setRespondida(true);
 
     // El tiempo de respuesta lo mide el servidor.
-    const res = await onResponder(pregunta.id_pregunta, idOpcion);
+    const res = await onResponder(pregunta.id_pregunta, idOpcion, respuestaJson);
     if (res?.ok) {
       setFeedback({ esCorrecta: res.es_correcta, puntos: res.puntos_obtenidos });
     }
@@ -75,6 +78,25 @@ export default function DueloJuego({ pregunta, progreso, onResponder }) {
       )}
       <h3 className="duelo-pregunta-enunciado">{pregunta.enunciado}</h3>
 
+      {pregunta.tipo_pregunta === "RELACIONAR" ? (
+        <div className="duelo-opciones">
+          <RelacionarRenderer
+            pregunta={pregunta}
+            valor={relacion}
+            onChange={setRelacion}
+            disabled={respondida}
+          />
+          {!respondida && (
+            <button
+              className="duelo-opcion"
+              onClick={() => elegir(null, relacion)}
+              disabled={!relacion?.pares?.length}
+            >
+              Enviar respuesta
+            </button>
+          )}
+        </div>
+      ) : (
       <div className="duelo-opciones">
         {pregunta.opciones.map((op, i) => {
           const esSeleccionada = seleccionada === op.id_opcion;
@@ -102,6 +124,7 @@ export default function DueloJuego({ pregunta, progreso, onResponder }) {
           );
         })}
       </div>
+      )}
 
       {respondida && (
         <div className={`duelo-feedback${feedback?.esCorrecta ? " ok" : " fail"}`}>

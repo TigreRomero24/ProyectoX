@@ -15,6 +15,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import OrdenarRenderer from "./OrdenarRenderer";
+import RelacionarRenderer from "./RelacionarRenderer";
 import CompletarRenderer from "./completar/CompletarRenderer";
 import { parseCompletarText } from "./completar/completarParser";
 import { 
@@ -452,6 +453,11 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
                 <CheckCheck size={11} /> Completar
               </>
             )}
+            {pregunta.tipo_pregunta === "RELACIONAR" && (
+              <>
+                <List size={11} /> Relacionar
+              </>
+            )}
           </span>
           {yaRespondio && (
             <span className="ev-badge ev-badge--respondida">
@@ -507,6 +513,15 @@ export default function ExamMode({ examenData, nombreMateria, onVolver }) {
               onReorder={handleOrdenar}
               disabled={entregando || !!resultado}
               respuestaActual={respuestas[pregunta.id_pregunta]}
+            />
+          )}
+
+          {pregunta.tipo_pregunta === "RELACIONAR" && (
+            <RelacionarRenderer
+              pregunta={pregunta}
+              valor={respuestas[pregunta.id_pregunta]}
+              onChange={handleOrdenar}
+              disabled={entregando || !!resultado}
             />
           )}
 

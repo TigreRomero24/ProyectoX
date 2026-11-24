@@ -45,6 +45,11 @@ export const obtenerRespuestaCorrecta = (preguntaBanco) => {
     return textos.length > 0 ? textos.join(" → ") : "Orden no disponible";
   }
 
+  if (tipo === "RELACIONAR") {
+    const pares = estructura.pares || [];
+    return pares.map((p) => `${p.izquierda} → ${p.derecha}`).join(", ") || null;
+  }
+
   if (tipo === "COMPLETAR") {
     const aceptadas = estructura.respuesta.aceptadas || [];
     const textos = aceptadas.map((a) => `[${a.valores.join(" / ")}]`);
@@ -108,6 +113,15 @@ export const obtenerRespuestaUsuario = (detalle, preguntaBanco) => {
       .map((e) => e?.respuesta ?? e?.valor ?? "")
       .filter((t) => String(t).trim() !== "");
     return textos.length > 0 ? textos.join(", ") : "Sin responder";
+  }
+
+  if (tipo === "RELACIONAR") {
+    const izq = new Map(
+      (estructura?.pares || []).map((p, i) => [String.fromCharCode(65 + i), p.izquierda]),
+    );
+    const pares = raw?.pares || [];
+    if (pares.length === 0) return "Sin responder";
+    return pares.map((p) => `${izq.get(p.izq_id) ?? p.izq_id} → ${p.derecha}`).join(", ");
   }
 
   return JSON.stringify(raw);

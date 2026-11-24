@@ -31,6 +31,19 @@ const manejarError = (res, error, mensajeServidor) => {
  * Parsea y valida un ID entero positivo desde req.params.
  * Retorna null si el valor no es válido.
  */
+// undefined = no se envió; "" = sin semestre (null); 1..12 = válido; false = inválido.
+const parsearSemestre = (valor) => {
+  if (valor === undefined) return undefined;
+  if (valor === "" || valor === null || valor === "null") return null;
+  const n = Number(valor);
+  return Number.isInteger(n) && n >= 1 && n <= 12 ? n : false;
+};
+const errorSemestre = (res) =>
+  res.status(400).json({
+    ok: false,
+    error: "VALIDACION: El semestre debe ser un número entre 1 y 12.",
+  });
+
 const parsearId = (valor) => {
   const id = parseInt(valor, 10);
   return isNaN(id) || id <= 0 ? null : id;
@@ -73,7 +86,9 @@ export class MateriaController {
       }
       // Si se subió una imagen, construir la URL pública
       const img = req.file ? buildMateriaPublicUrl(req.file.filename) : null;
-      const data = await MateriaService.crearMateria({ nombre, img });
+      const semestre = parsearSemestre(req.body.semestre);
+      if (semestre === false) return errorSemestre(res);
+      const data = await MateriaService.crearMateria({ nombre, img, semestre });
       return res
         .status(201)
         .json({ ok: true, mensaje: "Materia creada exitosamente.", data });
@@ -142,7 +157,9 @@ export class MateriaController {
       }
       // Si se subió una imagen, construir la URL pública
       const img = req.file ? buildMateriaPublicUrl(req.file.filename) : null;
-      const data = await MateriaService.actualizarMateria(id, { nombre, img });
+      const semestre = parsearSemestre(req.body.semestre);
+      if (semestre === false) return errorSemestre(res);
+      const data = await MateriaService.actualizarMateria(id, { nombre, img, semestre });
       return res.status(200).json({
         ok: true,
         mensaje: "Materia actualizada correctamente.",

@@ -116,8 +116,8 @@ export class PersonajeService {
   }
 
   /**
-   * Otorga las monedas de una lección, con tope diario para evitar que se
-   * farmee infinito repitiendo la misma lección.
+   * Otorga monedas de lección o de duelo ganado, con un tope diario
+   * compartido para evitar que se farmee infinito.
    */
   static async otorgarMonedasLeccion(id_usuario, monedas) {
     if (!(monedas > 0)) return 0;

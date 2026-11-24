@@ -108,6 +108,7 @@ export default function GestionMaterias() {
   const [editando, setEditando] = useState(null);
   const [imgMateria, setImgMateria] = useState(null);
   const [nombreInput, setNombreInput] = useState("");
+  const [semestreInput, setSemestreInput] = useState("");
   const [errModal, setErrModal] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null); // { materia } | null
@@ -141,6 +142,7 @@ export default function GestionMaterias() {
     setEditando(null);
     setImgMateria(null);
     setNombreInput("");
+    setSemestreInput("");
     setErrModal("");
     setModal(true);
   };
@@ -149,6 +151,7 @@ export default function GestionMaterias() {
     setEditando(m);
     setImgMateria(null);
     setNombreInput(m.nombre);
+    setSemestreInput(m.semestre ?? "");
     setErrModal("");
     setModal(true);
   };
@@ -171,10 +174,10 @@ export default function GestionMaterias() {
     setErrModal("");
     try {
       if (editando) {
-        await api.actualizarMateria(editando.id_materia, nombreInput.trim(), imgMateria);
+        await api.actualizarMateria(editando.id_materia, nombreInput.trim(), imgMateria, semestreInput);
         toast("Materia actualizada correctamente.");
       } else {
-        await api.crearMateria(nombreInput.trim(), imgMateria);
+        await api.crearMateria(nombreInput.trim(), imgMateria, semestreInput);
         toast("Materia creada correctamente.");
       }
       await cargar();
@@ -381,6 +384,20 @@ export default function GestionMaterias() {
                 autoFocus
               />
               {errModal && <p className="gm-input-error">{errModal}</p>}
+
+              <label className="gm-label" style={{ marginTop: "16px" }}>
+                Semestre
+              </label>
+              <select
+                className="gm-input"
+                value={semestreInput}
+                onChange={(e) => setSemestreInput(e.target.value)}
+              >
+                <option value="">Sin semestre</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n}.º semestre</option>
+                ))}
+              </select>
 
               <label className="gm-label" style={{ marginTop: "16px" }}>
                 Imagen de la Materia

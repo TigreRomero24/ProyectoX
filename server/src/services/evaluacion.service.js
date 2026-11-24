@@ -10,7 +10,7 @@ import { DetalleIntento } from "../models/evaluacion.models/detalleIntento.js";
 import { PersonajeService } from "./personaje.service.js";
 import { Usuario } from "../models/security.models/usuarioModel.js";
 
-import { estructuraPublica } from "../utils/estructuraPublica.js";
+import { estructuraPublica, puntuarRelacionar } from "../utils/estructuraPublica.js";
 
 // Monedas por sacar el 100%; con menos, proporcional (90% de 10 = 9).
 const MONEDAS_EXAMEN_PERFECTO = 15;
@@ -363,6 +363,19 @@ export class EvaluacionService {
             id_pregunta: respuesta.id_pregunta,
             id_opcion_elegida: null,
             respuesta_json: { orden_ids: userOrder },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "RELACIONAR") {
+          const puntos = puntuarRelacionar(estructura, respuesta.respuesta_json);
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { pares: respuesta.respuesta_json?.pares || [] },
             es_correcta_snapshot: esCorrecta,
             puntos_obtenidos: puntos,
           });
@@ -998,6 +1011,19 @@ export class EvaluacionService {
             id_pregunta: respuesta.id_pregunta,
             id_opcion_elegida: null,
             respuesta_json: { orden_ids: userOrder },
+            es_correcta_snapshot: esCorrecta,
+            puntos_obtenidos: puntos,
+          });
+        } else if (tipo === "RELACIONAR") {
+          const puntos = puntuarRelacionar(estructura, respuesta.respuesta_json);
+          const esCorrecta = puntos === 1.0;
+          if (esCorrecta) totalCorrectas++;
+
+          detallesAInsertar.push({
+            id_intento: intento.id_intento,
+            id_pregunta: respuesta.id_pregunta,
+            id_opcion_elegida: null,
+            respuesta_json: { pares: respuesta.respuesta_json?.pares || [] },
             es_correcta_snapshot: esCorrecta,
             puntos_obtenidos: puntos,
           });

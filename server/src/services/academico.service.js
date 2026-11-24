@@ -132,6 +132,15 @@ export class AcademicoService {
           "VALIDACION: RELACIONAR debe tener al menos 2 pares.",
         );
       }
+      if (
+        estructura_json.pares.some(
+          (p) => !String(p?.izquierda ?? "").trim() || !String(p?.derecha ?? "").trim(),
+        )
+      ) {
+        throw new Error(
+          "VALIDACION: RELACIONAR: cada par necesita texto en ambos lados.",
+        );
+      }
       if (!Array.isArray(estructura_json.respuesta?.pares)) {
         throw new Error(
           "VALIDACION: RELACIONAR requiere respuesta.pares en estructura_json.",
@@ -650,7 +659,7 @@ export class AcademicoService {
       }
       if (
         !item.tipo_pregunta ||
-        !["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE", "ORDENAR", "COMPLETAR"].includes(item.tipo_pregunta)
+        !["MULTIPLE", "VERDADERO_FALSO", "SELECCION_MULTIPLE", "ORDENAR", "COMPLETAR", "RELACIONAR"].includes(item.tipo_pregunta)
       ) {
         errores.push({
           fila,

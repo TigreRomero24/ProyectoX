@@ -13,6 +13,11 @@ export const Materia = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    semestre: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: { min: 1, max: 12 },
+    },
     nombre: {
       type: DataTypes.STRING(100),
       allowNull: false,

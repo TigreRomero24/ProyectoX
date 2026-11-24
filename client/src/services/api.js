@@ -123,9 +123,10 @@ export const api = {
 
   getMateriaById: (id) => request(`/materias/${id}`),
 
-  crearMateria: (nombre, imagen) => {
+  crearMateria: (nombre, imagen, semestre) => {
     const formData = new FormData();
     formData.append("nombre", nombre);
+    if (semestre !== undefined) formData.append("semestre", semestre ?? "");
     if (imagen) {
       formData.append("imagen", imagen);
     }
@@ -135,9 +136,10 @@ export const api = {
     });
   },
 
-  actualizarMateria: (id, nombre, imagen) => {
+  actualizarMateria: (id, nombre, imagen, semestre) => {
     const formData = new FormData();
     formData.append("nombre", nombre);
+    if (semestre !== undefined) formData.append("semestre", semestre ?? "");
     if (imagen) {
       formData.append("imagen", imagen);
     }

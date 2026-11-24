@@ -6,6 +6,7 @@ export const TIPO_LABEL = {
   ORDENAR: "Ordenar",
   VERDADERO_FALSO: "Verdadero / Falso",
   COMPLETAR: "Completar",
+  RELACIONAR: "Relacionar",
 };
 
 export const esLegacy = (tipo) =>
@@ -207,6 +208,28 @@ export const corregirRespuestaTest = (pregunta, respuesta) => {
       textoCorrecta: textoOrdenCorrecto,
     };
   }
+  if (tipo === "RELACIONAR") {
+    const pares = estructura.pares || [];
+    const user = new Map(
+      (respuesta?.respuesta_json?.pares || []).map((p) => [
+        p.izq_id,
+        String(p.derecha ?? "").trim().toLowerCase(),
+      ]),
+    );
+    const hits = pares.filter(
+      (p, i) =>
+        user.get(String.fromCharCode(65 + i)) ===
+        String(p.derecha ?? "").trim().toLowerCase(),
+    ).length;
+    const puntos = pares.length ? hits / pares.length : 0;
+    return {
+      correcto: puntos === 1,
+      puntos,
+      detalle: puntos === 1 ? "Correcta" : "Parcial",
+      textoCorrecta: pares.map((p) => `${p.izquierda} → ${p.derecha}`).join(", "),
+    };
+  }
+
   const modo = resolveCompletarInteractionMode(estructura.modo_interaccion).resolved;
 
   const aceptadas = new Map(

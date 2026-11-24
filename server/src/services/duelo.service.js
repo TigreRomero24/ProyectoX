@@ -7,12 +7,14 @@ import { OpcionRespuesta } from "../models/academico.models/opcionRespuesta.js";
 import { Usuario } from "../models/security.models/usuarioModel.js";
 import { Inscripcion } from "../models/academico.models/inscripcion.js";
 import { PersonajeService } from "./personaje.service.js";
+import { estructuraPublica, puntuarRelacionar } from "../utils/estructuraPublica.js";
 
 const MIN_PREGUNTAS_MATERIA = 4;
 const PUNTOS_BASE = 1000;
 const PUNTOS_MINIMOS_ACIERTO = 100;
 // El duelo solo califica preguntas de una única opción correcta.
-const TIPOS_DUELO = ["MULTIPLE", "VERDADERO_FALSO"];
+const MONEDAS_GANADOR_DUELO = 10;
+const TIPOS_DUELO = ["MULTIPLE", "VERDADERO_FALSO", "RELACIONAR"];
 const CODIGO_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin caracteres ambiguos (0,O,1,I)
 
 export class DueloService {
@@ -300,13 +302,17 @@ export class DueloService {
       url_imagen: pregunta.url_imagen,
       tipo_pregunta: pregunta.tipo_pregunta,
       tiempo_limite_ms: duelo.tiempo_por_pregunta_ms,
+      estructura_json:
+        pregunta.tipo_pregunta === "RELACIONAR"
+          ? estructuraPublica(pregunta.tipo_pregunta, pregunta.estructura_json)
+          : null,
       opciones: DueloService.#mezclarArreglo(
         pregunta.opciones.map((o) => ({ id_opcion: o.id_opcion, texto: o.texto })),
       ),
     };
   }
 
-  static async registrarRespuesta(id_duelo, id_usuario, { id_pregunta, id_opcion_elegida, tiempo_respuesta_ms }) {
+  static async registrarRespuesta(id_duelo, id_usuario, { id_pregunta, id_opcion_elegida, respuesta_json, tiempo_respuesta_ms }) {
     const duelo = await DueloService.#obtenerDueloOrFallar(id_duelo);
     if (duelo.estado !== "EN_CURSO") {
       throw new Error("ESTADO_INVALIDO: El duelo no está en curso.");
@@ -323,7 +329,14 @@ export class DueloService {
     if (yaRespondio) return yaRespondio;
 
     let esCorrecta = false;
-    if (id_opcion_elegida) {
+    let fraccion = 1; // RELACIONAR puntúa en proporción a los pares acertados
+    const pregunta = await BancoPregunta.findByPk(id_pregunta, {
+      attributes: ["tipo_pregunta", "estructura_json"],
+    });
+    if (pregunta?.tipo_pregunta === "RELACIONAR") {
+      fraccion = puntuarRelacionar(pregunta.estructura_json, respuesta_json);
+      esCorrecta = fraccion === 1;
+    } else if (id_opcion_elegida) {
       const opcion = await OpcionRespuesta.findOne({
         where: { id_opcion: id_opcion_elegida, id_pregunta },
       });
@@ -333,10 +346,10 @@ export class DueloService {
       esCorrecta = opcion.es_correcta;
     }
 
-    const puntos = DueloService.calcularPuntos(
-      esCorrecta,
-      tiempo_respuesta_ms,
-      duelo.tiempo_por_pregunta_ms,
+    const acierto = pregunta?.tipo_pregunta === "RELACIONAR" ? fraccion > 0 : esCorrecta;
+    const puntos = Math.round(
+      DueloService.calcularPuntos(acierto, tiempo_respuesta_ms, duelo.tiempo_por_pregunta_ms) *
+        fraccion,
     );
 
     const respuesta = await DueloRespuesta.create({
@@ -402,12 +415,11 @@ export class DueloService {
 
     const ranking = await DueloService.obtenerRanking(id_duelo);
 
-    // Monedas por posición: no bloquea la respuesta si falla.
-    const MONEDAS_POR_POSICION = { 1: 100, 2: 60, 3: 40 };
-    for (const p of ranking) {
-      const monedas = MONEDAS_POR_POSICION[p.posicion] ?? 20;
+    // Solo el primer lugar gana monedas, y cuentan dentro del tope diario.
+    // No bloquea la respuesta si falla.
+    for (const p of ranking.filter((r) => r.posicion === 1)) {
       try {
-        await PersonajeService.otorgarMonedas(p.id_usuario, monedas);
+        await PersonajeService.otorgarMonedasLeccion(p.id_usuario, MONEDAS_GANADOR_DUELO);
       } catch (error) {
         console.error("[DueloService] No se pudieron otorgar monedas:", error.message);
       }

@@ -131,11 +131,11 @@ export function useDuelo() {
   );
 
   const responder = useCallback(
-    (id_pregunta, id_opcion_elegida) =>
+    (id_pregunta, id_opcion_elegida, respuesta_json) =>
       new Promise((resolve) => {
         socketRef.current?.emit(
           "duelo:responder",
-          { id_pregunta, id_opcion_elegida },
+          { id_pregunta, id_opcion_elegida, respuesta_json },
           (res) => resolve(res),
         );
       }),

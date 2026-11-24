@@ -15,6 +15,7 @@ import {
   MoveDown,
 } from "lucide-react";
 import OrdenarRenderer from "./OrdenarRenderer";
+import RelacionarRenderer from "./RelacionarRenderer";
 import CompletarRenderer from "./completar/CompletarRenderer";
 import { parseCompletarText } from "./completar/completarParser";
 import { 
@@ -159,7 +160,7 @@ export default function TestMode({ preguntas, nombreMateria, idMateria, onVolver
               id_pregunta: p.id_pregunta,
               respuesta_json: { orden_ids: resp || [] },
             };
-          } else if (p.tipo_pregunta === "COMPLETAR") {
+          } else if (["COMPLETAR", "RELACIONAR"].includes(p.tipo_pregunta)) {
             return {
               id_pregunta: p.id_pregunta,
               respuesta_json: resp,
@@ -352,6 +353,11 @@ export default function TestMode({ preguntas, nombreMateria, idMateria, onVolver
                 <CheckCheck size={11} /> Completar
               </>
             )}
+            {pregunta.tipo_pregunta === "RELACIONAR" && (
+              <>
+                <List size={11} /> Relacionar
+              </>
+            )}
           </span>
           {yaRespondio && (
             <span
@@ -415,6 +421,15 @@ export default function TestMode({ preguntas, nombreMateria, idMateria, onVolver
             />
           )}
 
+          {pregunta.tipo_pregunta === "RELACIONAR" && (
+            <RelacionarRenderer
+              pregunta={pregunta}
+              valor={respuestas[pregunta.id_pregunta]}
+              onChange={handleOrdenar}
+              disabled={yaRespondio}
+            />
+          )}
+
           {pregunta.tipo_pregunta === "COMPLETAR" && (
             <CompletarRenderer 
               estructura={pregunta.estructura_json}
@@ -433,6 +448,19 @@ export default function TestMode({ preguntas, nombreMateria, idMateria, onVolver
               disabled={(respuestas[pregunta.id_pregunta] || []).length === 0}
             >
               Confirmar Respuesta
+            </button>
+          </div>
+        )}
+
+        {pregunta.tipo_pregunta === "RELACIONAR" && !yaRespondio && (
+          <div style={{ marginTop: "16px", textAlign: "right" }}>
+            <button
+              className="ev-btn-volver"
+              style={{ background: "#2563eb", color: "#fff", padding: "8px 16px" }}
+              onClick={confirmarOrdenar}
+              disabled={!respuestas[pregunta.id_pregunta]?.pares?.length}
+            >
+              Confirmar Relaciones
             </button>
           </div>
         )}

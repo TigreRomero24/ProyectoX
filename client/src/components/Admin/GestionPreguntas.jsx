@@ -39,6 +39,7 @@ const TIPO_P = {
   SELECCION_MULTIPLE: "SELECCION_MULTIPLE",
   ORDENAR: "ORDENAR",
   COMPLETAR: "COMPLETAR",
+  RELACIONAR: "RELACIONAR",
 };
 const nuevaOpcion = () => ({
   texto: "",
@@ -54,6 +55,7 @@ const nuevoElementoOrdenar = () => ({
   orden: 0,
   _id: Math.random(),
 });
+const nuevoPar = () => ({ izquierda: "", derecha: "", _id: Math.random() });
 const nuevoEspacioCompletar = () => ({
   label: "",
   respuestas: [],
@@ -96,6 +98,11 @@ export default function GestionPreguntas() {
     nuevoElementoOrdenar(),
     nuevoElementoOrdenar(),
   ]);
+
+  // Relacionar
+  const [pares, setPares] = useState([nuevoPar(), nuevoPar()]);
+  const cambiarPar = (id, campo, v) =>
+    setPares((prev) => prev.map((x) => (x._id === id ? { ...x, [campo]: v } : x)));
 
   // Completar
   const [textoCompletar, setTextoCompletar] = useState("");
@@ -308,6 +315,10 @@ export default function GestionPreguntas() {
           _id: Math.random(),
         })) || [nuevoElementoOrdenar()],
       );
+    } else if (p.tipo_pregunta === TIPO_P.RELACIONAR) {
+      setPares(
+        (p.estructura_json?.pares || []).map((x) => ({ ...x, _id: Math.random() })),
+      );
     } else if (p.tipo_pregunta === TIPO_P.COMPLETAR) {
       const estructura = p.estructura_json || {};
       setTextoCompletar(estructura.texto || "");
@@ -354,6 +365,10 @@ export default function GestionPreguntas() {
       if (elementosOrdenar.length < 2) return "Mínimo 2 elementos para ordenar.";
       if (elementosOrdenar.some((e) => !e.texto.trim()))
         return "Todos los elementos deben tener texto.";
+    } else if (tipoPregunta === TIPO_P.RELACIONAR) {
+      if (pares.length < 2) return "Mínimo 2 pares.";
+      if (pares.some((x) => !x.izquierda.trim() || !x.derecha.trim()))
+        return "Cada par necesita texto en ambos lados.";
     } else if (tipoPregunta === TIPO_P.COMPLETAR) {
       if (!textoCompletar.trim()) return "El texto con espacios es obligatorio.";
       const slots = (textoCompletar || "").match(/\[\[([^\]]+)\]\]/g) || [];
@@ -433,6 +448,21 @@ export default function GestionPreguntas() {
           orden_ids: elementosOrdenados.map((e, idx) =>
             String.fromCharCode(65 + idx),
           ),
+        },
+      };
+    } else if (tipoPregunta === TIPO_P.RELACIONAR) {
+      const limpios = pares.map((x) => ({
+        izquierda: x.izquierda.trim(),
+        derecha: x.derecha.trim(),
+      }));
+      estructura_json = {
+        tipo: tipoPregunta,
+        pares: limpios,
+        respuesta: {
+          pares: limpios.map((x, i) => ({
+            izq_id: String.fromCharCode(65 + i),
+            derecha: x.derecha,
+          })),
         },
       };
     } else if (tipoPregunta === TIPO_P.COMPLETAR) {
@@ -799,6 +829,11 @@ export default function GestionPreguntas() {
                                 <PenLine size={11} /> Completar
                               </>
                             )}
+                            {p.tipo_pregunta === TIPO_P.RELACIONAR && (
+                              <>
+                                <List size={11} /> Relacionar
+                              </>
+                            )}
                           </span>
                           <span className="gp-opts-count">
                             {p.opciones?.length || 0} opciones
@@ -1130,6 +1165,22 @@ export default function GestionPreguntas() {
                   <p>Ordenar una lista de elementos</p>
                 </div>
 
+                {/* Relacionar */}
+                <div
+                  className="gp-tipo-card"
+                  onClick={() => {
+                    setTipoPregunta(TIPO_P.RELACIONAR);
+                    setPares([nuevoPar(), nuevoPar()]);
+                    irA(VISTA.FORM);
+                  }}
+                >
+                  <div className="gp-tipo-icon">
+                    <List size={26} />
+                  </div>
+                  <h4>Relacionar</h4>
+                  <p>Unir cada opción con su respuesta</p>
+                </div>
+
                 {/* Completar */}
                 <div
                   className="gp-tipo-card"
@@ -1201,6 +1252,11 @@ export default function GestionPreguntas() {
                   {tipoPregunta === TIPO_P.COMPLETAR && (
                     <>
                       <PenLine size={13} /> Completar Espacios
+                    </>
+                  )}
+                  {tipoPregunta === TIPO_P.RELACIONAR && (
+                    <>
+                      <List size={13} /> Relacionar
                     </>
                   )}
                 </div>
@@ -1446,6 +1502,59 @@ export default function GestionPreguntas() {
                           }}
                         >
                           <Plus size={15} /> Agregar elemento
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* RELACIONAR */}
+                {tipoPregunta === TIPO_P.RELACIONAR && (
+                  <div className="gp-form-group">
+                    <label className="gp-label">Pares a Relacionar</label>
+                    <p className="gp-hint">
+                      Escribe cada opción con su respuesta correcta. Al estudiante
+                      se le mostrarán las respuestas mezcladas en una lista desplegable.
+                    </p>
+                    <div className="gp-opciones">
+                      {pares.map((par, idx) => (
+                        <div key={par._id} className="gp-opcion-row">
+                          <div className="gp-elemento-pos">
+                            <strong>{String.fromCharCode(65 + idx)}</strong>
+                          </div>
+                          <input
+                            className="gp-opcion-input"
+                            type="text"
+                            placeholder="Opción"
+                            value={par.izquierda}
+                            onChange={(e) => cambiarPar(par._id, "izquierda", e.target.value)}
+                          />
+                          <span>→</span>
+                          <input
+                            className="gp-opcion-input"
+                            type="text"
+                            placeholder="Respuesta"
+                            value={par.derecha}
+                            onChange={(e) => cambiarPar(par._id, "derecha", e.target.value)}
+                          />
+                          {pares.length > 2 && (
+                            <button
+                              className="gp-opcion-del"
+                              onClick={() =>
+                                setPares((prev) => prev.filter((x) => x._id !== par._id))
+                              }
+                            >
+                              <X size={15} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {pares.length < 10 && (
+                        <button
+                          className="gp-add-opcion"
+                          onClick={() => setPares((prev) => [...prev, nuevoPar()])}
+                        >
+                          <Plus size={15} /> Agregar par
                         </button>
                       )}
                     </div>

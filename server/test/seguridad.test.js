@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { estructuraPublica } from "../src/utils/estructuraPublica.js";
+import { estructuraPublica, puntuarRelacionar } from "../src/utils/estructuraPublica.js";
 import { xmlSeguro } from "../src/utils/securityLogger.js";
 const ord = estructuraPublica("ORDENAR", { opciones: ["a","b","c"], respuesta: { orden_ids: ["A","B","C"] } });
 assert.equal(ord.respuesta, undefined);
@@ -10,5 +10,12 @@ assert.equal(comp.respuesta, undefined);
 assert.equal(comp.espacios[0].respuestas, undefined);
 assert.equal(comp.espacios[0].label, "1");
 assert.equal(estructuraPublica("MULTIPLE", null), null);
+const relE = { pares: [{ izquierda: "Perro", derecha: "Ladra" }, { izquierda: "Gato", derecha: "Maulla" }], respuesta: { pares: [] } };
+const rel = estructuraPublica("RELACIONAR", structuredClone(relE));
+assert.equal(rel.respuesta, undefined);
+assert.equal(rel.pares, undefined);
+assert.deepEqual(rel.derecha.slice().sort(), ["Ladra", "Maulla"]);
+assert.equal(puntuarRelacionar(relE, { pares: [{ izq_id: "A", derecha: "ladra" }, { izq_id: "B", derecha: "Maulla" }] }), 1);
+assert.equal(puntuarRelacionar(relE, { pares: [{ izq_id: "A", derecha: "Maulla" }] }), 0);
 assert.equal(xmlSeguro("</securityLogs><x>&"), "&lt;/securityLogs&gt;&lt;x&gt;&amp;");
 

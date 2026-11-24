@@ -49,6 +49,16 @@ const INFO_MODO = {
   },
 };
 
+const ALERTA = {
+  fontSize: 11,
+  padding: "2px 8px",
+  borderRadius: 999,
+  background: "#fef3c7",
+  color: "#b45309",
+};
+const etiquetaSemestre = (sem) =>
+  sem === "TODOS" ? "Todos" : sem === "SIN" ? "Sin semestre" : `${sem}.º semestre`;
+
 const VISTA = {
   LISTA: "lista",
   DETALLE: "detalle",
@@ -74,6 +84,23 @@ export default function MateriasList() {
   const [modosHabilitados, setModosHabilitados] = useState(null);
   const [intentoEnProgreso, setIntentoEnProgreso] = useState(null);
   const { isAdmin } = useAuth();
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroSemestre, setFiltroSemestre] = useState("TODOS");
+
+  // Semestres presentes ("SIN" = materias sin semestre asignado).
+  const semestres = [...new Set(materias.map((m) => m.semestre ?? "SIN"))].sort(
+    (a, b) => (a === "SIN") - (b === "SIN") || a - b,
+  );
+  const q = busqueda.trim().toLowerCase();
+  const grupos = semestres
+    .filter((sem) => filtroSemestre === "TODOS" || filtroSemestre === sem)
+    .map((sem) => [
+      sem,
+      materias.filter(
+        (m) => (m.semestre ?? "SIN") === sem && m.nombre.toLowerCase().includes(q),
+      ),
+    ])
+    .filter(([, lista]) => lista.length > 0);
 
   useEffect(() => {
     (async () => {
@@ -289,8 +316,42 @@ export default function MateriasList() {
               <p>No hay materias disponibles.</p>
             </div>
           ) : (
-            <div className="mat-grid">
-              {materias.map((m, i) => {
+            <>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+                <input
+                  type="search"
+                  placeholder="Buscar materia..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  style={{ flex: "1 1 220px", padding: "8px 12px", borderRadius: 8, border: "1px solid #cbd5e1" }}
+                />
+                {["TODOS", ...semestres].map((sem) => (
+                  <button
+                    key={sem}
+                    onClick={() => setFiltroSemestre(sem)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      border: "1px solid #cbd5e1",
+                      background: filtroSemestre === sem ? "#2563eb" : "#fff",
+                      color: filtroSemestre === sem ? "#fff" : "#334155",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {etiquetaSemestre(sem)}
+                  </button>
+                ))}
+              </div>
+              {grupos.length === 0 && (
+                <p className="mat-subtitle">Ninguna materia coincide con la búsqueda.</p>
+              )}
+              {grupos.map(([sem, lista]) => (
+                <section key={sem} style={{ marginBottom: 24 }}>
+                  <h3 style={{ margin: "0 0 12px", fontSize: 16, color: "#334155" }}>
+                    {etiquetaSemestre(sem)} <small style={{ color: "#94a3b8" }}>({lista.length})</small>
+                  </h3>
+                  <div className="mat-grid">
+                    {lista.map((m, i) => {
                 const p = getPaleta(i);
                 const Icono = getIcono(i);
                 return (
@@ -314,6 +375,16 @@ export default function MateriasList() {
                       {m.descripcion && (
                         <p className="mat-card-desc">{m.descripcion}</p>
                       )}
+                      {isAdmin && (
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                          {m.total_preguntas === 0 && (
+                            <span style={ALERTA}>Sin preguntas</span>
+                          )}
+                          {m.total_configuraciones === 0 && (
+                            <span style={ALERTA}>Sin cuestionario</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <button
                       className="mat-card-footer"
@@ -325,8 +396,11 @@ export default function MateriasList() {
                     </button>
                   </div>
                 );
-              })}
-            </div>
+                    })}
+                  </div>
+                </section>
+              ))}
+            </>
           )}
         </>
       )}
