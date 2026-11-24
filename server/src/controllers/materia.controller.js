@@ -156,7 +156,7 @@ export class MateriaController {
         });
       }
       // Si se subió una imagen, construir la URL pública
-      const img = req.file ? buildMateriaPublicUrl(req.file.filename) : null;
+      const img = req.file ? buildMateriaPublicUrl(req.file.filename) : undefined; // sin archivo = conservar la imagen actual
       const semestre = parsearSemestre(req.body.semestre);
       if (semestre === false) return errorSemestre(res);
       const data = await MateriaService.actualizarMateria(id, { nombre, img, semestre });
